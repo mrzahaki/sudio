@@ -10,6 +10,8 @@ from scipy.signal import upfirdn, firwin
 from scipy import pi
 import threading
 import queue
+from tools import Tools
+
 
 
 class Audio():
@@ -255,6 +257,7 @@ class Audio():
         else:  # output == 'array':
             wav_width = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(sample_width)]  # 1 2 4 8
             frame_size = int(len(frames) / nchannels)
+            print(len(frames), ' ',frame_size, nchannels, wav_width, sample_width)
             signal = list(struct.unpack(f'<{frame_size}{wav_width}', frames))
             if fast_mode:
                 return np.array(signal)
@@ -276,13 +279,16 @@ class Audio():
     class Recognition():
         HUMAN_VOICE_FREQ = int(8e3)
         SOUND_BUFFER_SIZE = 400
-
+        SAMPLE_CATCH_TIME = 10
         def __init__(self, input_dev_id=None, frame_rate=48000, nchannels=2, record_period=0.3,
                      data_format=pyaudio.paInt16,
                      optimum_mono=False):
 
-            self.functions = [self.process]
-
+            self.recognized = []
+            self.functions = []
+            #self.functions = [self.main]
+            self.functions.append(self.process)
+            self.record_period = record_period
             if input_dev_id is None:
                 rec = Audio.record(output='array', ui_mode=False)
                 self.nchannels = rec['nchannels']
@@ -295,11 +301,14 @@ class Audio():
                 self.sampwidth = pyaudio.get_sample_size(data_format)
                 self.nchannels = nchannels
                 self.input_dev_id = input_dev_id
+
+            self.rms = np.vectorize(Tools.rms, signature='(m)->()')
             if optimum_mono:
                 to_mono = np.vectorize(np.mean, signature='(m)->()')
-                self.to_mono = lambda x: to_mono(x.reshape(self.data_chunk, self.nchannels))
+                self.to_mono = lambda x: to_mono(x.reshape((self.data_chunk, self.nchannels)))
             else:
                 self.to_mono = lambda x: x[::self.nchannels]
+
             self.frame_rate.append(Audio.Recognition.HUMAN_VOICE_FREQ * 2)
             downsample = int(np.round(self.frame_rate[0] / self.frame_rate[1]))
             self.frame_rate[1] = int(self.frame_rate[0] / downsample) # human voice high frequency
@@ -315,6 +324,7 @@ class Audio():
             print(self.frame_rate[0], self.frame_rate[1], self.constants[1])
             self.threads = []
             try:
+                self.semaphore = [threading.Semaphore(), threading.Semaphore()]
                 self.paudio = pyaudio.PyAudio()  # Create an interface to PortAudio
                 self.dataq = queue.Queue(maxsize=Audio.Recognition.SOUND_BUFFER_SIZE)
                 self.queue = queue.Queue()
@@ -372,7 +382,7 @@ class Audio():
             # self.a1 = time.perf_counter()
             return None, pyaudio.paContinue
 
-        def process(self, thread_id):
+        def play(self, thread_id):
             stream_out = self.paudio.open(
                 format=pyaudio.get_format_from_width(self.sampwidth),
                 channels=1,
@@ -380,18 +390,94 @@ class Audio():
             stream_out.start_stream()
             sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
             # data len int(self.data_chunk/self.constants[1]) + 10
-            format = f'<{int(self.data_chunk/self.constants[1]) + 10}{sampwidth}'
-            #print(format)
-            while 1:
-                ding_data = struct.pack(format, *self.dataq.get().tolist())
-                stream_out.write(ding_data)
+            format = f'<{int(self.data_chunk / self.constants[1]) + 10}{sampwidth}'
 
+            while 1:
+                a = self.dataq.get()
+                #print(Tools.rms(a))
+                print(Tools.dbu(Tools.rms(a) / ((2**(self.sampwidth*8) - 1) * 1.225)))
+                #sample = self.dataq.get()
+                #for i in range(int(np.round(Audio.Recognition.SAMPLE_CATCH_TIME / self.record_period)) - 1):
+                #    sample = np.vstack((sample, self.dataq.get()))
+                #self.preprocess(sample)
+                ding_data = struct.pack(format, *a.tolist())
+                stream_out.write(ding_data)
 
             stream_out.stop_stream()
             stream_out.close()
             pass
 
+        # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
+        def process(self, thread_id):
+            self.play(0)
+            # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
+            # # data len int(self.data_chunk/self.constants[1]) + 10
+            # format = f'<{int(self.data_chunk / self.constants[1]) + 10}{sampwidth}'
+            # # print(format)
+            # while 1:
+            #     self.semaphore[1].acquire()
+            #     if not len(self.recognized):
+            #         self.dataq.get()
+            #         continue
+            #
+            #     ding_data = struct.pack(format, *self.dataq.get().tolist())
+            #     self.semaphore[1].release()
+
 
         def main(self, thread_id):
-            pass
+            try:
+                while 1:
+                    inp = input('>>').strip().lower()
+                    if not inp.find('add '):
+                        self.safe_print('^^^^^^^^^^Please Wait...^^^^^^^^^^^^^^')
+                        inp = inp.replace('add ', '', 1).strip()
+
+                        # Waiting for Recognition processing to be disabled
+                        self.semaphore[1].acquire()
+
+                        self.safe_print(f'^^^^^^^^^^Please say your name in a quiet place for a limited time\
+                                         of {Audio.Recognition.SAMPLE_CATCH_TIME} seconds^^^^^^^^^^^^^^')
+
+                        # record sample for  SAMPLE_CATCH_TIME duration
+                        sample = self.dataq.get()
+                        for i in range(int(np.round(Audio.Recognition.SAMPLE_CATCH_TIME / self.record_period)) - 1):
+                            sample = np.vstack(sample, self.dataq.get())
+
+                        # sample preprocessing
+                        sample = self.preprocess(sample)
+
+                        # Waiting for Recognition processing to be enabled
+
+                        # self.recognized.append({
+                        #     'name': inp
+                        #     'o': sample
+                        # })
+                    else:
+                        raise Error('Please enter valid statement')
+
+            except Error as msg:
+                print('Error:! ', msg)
+
+        # sample must be a 2d array
+        def preprocess(self, sample, final_period=0.1, base_period=0.3):
+            # Break into different sections based on period time
+            tmp = sample.shape[1] * sample.shape[0]
+            cols = Tools.near_divisor(tmp, final_period * sample.shape[1] / base_period)
+            # Reshaping of arrays based on time period
+            sample = sample.reshape((int(tmp / cols), cols))
+            rms = self.rms(sample)
+
+        def safe_input(self, *args, **kwargs):
+            self.semaphore[0].acquire()
+            res = input(*args, **kwargs)
+            self.semaphore[0].release()
+            return res
+
+        def safe_print(self, *args, **kwargs):
+            self.semaphore[0].acquire(timeout=1)
+            print(*args, **kwargs)
+            self.semaphore[0].release()
+
+class Error(Exception):
+    pass
 
