@@ -200,8 +200,8 @@ class Audio():
                     dev.append(tmp)
             assert len(dev) > 0
             print('please choose input device from index :')
-            for j in dev:
-                print(f'index {j["index"]}: name: {j["name"]}')
+            for idx, j in enumerate(dev):
+                print(f'Index {idx}: Name: {j["name"]}, Input Channels:{j["maxInputChannels"]}, Sample Rate:{j["defaultSampleRate"]}, Host Api:{j["hostApi"]}')
 
             while 1:
                 try:
@@ -256,8 +256,8 @@ class Audio():
 
         else:  # output == 'array':
             wav_width = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(sample_width)]  # 1 2 4 8
-            frame_size = int(len(frames) / nchannels)
-            print(len(frames), ' ',frame_size, nchannels, wav_width, sample_width)
+            frame_size = int(data_chunk * nchannels)
+            print(len(frames),frame_size, nchannels, wav_width, sample_width)
             signal = list(struct.unpack(f'<{frame_size}{wav_width}', frames))
             if fast_mode:
                 return np.array(signal)
@@ -289,6 +289,7 @@ class Audio():
             #self.functions = [self.main]
             self.functions.append(self.process)
             self.record_period = record_period
+
             if input_dev_id is None:
                 rec = Audio.record(output='array', ui_mode=False)
                 self.nchannels = rec['nchannels']
@@ -302,7 +303,7 @@ class Audio():
                 self.nchannels = nchannels
                 self.input_dev_id = input_dev_id
 
-            self.rms = np.vectorize(Tools.rms, signature='(m)->()')
+            self.dbu = np.vectorize(self.rdbu, signature='(m)->()')
             if optimum_mono:
                 to_mono = np.vectorize(np.mean, signature='(m)->()')
                 self.to_mono = lambda x: to_mono(x.reshape((self.data_chunk, self.nchannels)))
@@ -314,13 +315,15 @@ class Audio():
             self.frame_rate[1] = int(self.frame_rate[0] / downsample) # human voice high frequency
             self.filters = [firwin(30, Audio.Recognition.HUMAN_VOICE_FREQ, fs=self.frame_rate[0])]
             self.data_chunk = int(self.frame_rate[0] * record_period)
-            # data type of buffer
-            # used in callback method(down sampling)
-            # format specifier used in struct.unpack
+            # data type of buffer                       0
+            # used in callback method(down sampling)    1
+            # format specifier used in struct.unpack    2
+            # rms constant value                        3
             sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
             self.constants = [f'int{self.sampwidth * 8}',
                               downsample,
-                              f'<{self.data_chunk * self.nchannels}{sampwidth}']
+                              f'<{self.data_chunk * self.nchannels}{sampwidth}',
+                              ((2 ** (self.sampwidth * 8 - 1) - 1) / 1.225)]
             print(self.frame_rate[0], self.frame_rate[1], self.constants[1])
             self.threads = []
             try:
@@ -394,12 +397,7 @@ class Audio():
 
             while 1:
                 a = self.dataq.get()
-                #print(Tools.rms(a))
-                print(Tools.dbu(Tools.rms(a) / ((2**(self.sampwidth*8) - 1) * 1.225)))
-                #sample = self.dataq.get()
-                #for i in range(int(np.round(Audio.Recognition.SAMPLE_CATCH_TIME / self.record_period)) - 1):
-                #    sample = np.vstack((sample, self.dataq.get()))
-                #self.preprocess(sample)
+
                 ding_data = struct.pack(format, *a.tolist())
                 stream_out.write(ding_data)
 
@@ -409,7 +407,9 @@ class Audio():
 
         # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
         def process(self, thread_id):
-            self.play(0)
+            #self.play(0)
+            while 1:
+                print(self.rdbu(self.dataq.get()))
             # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
             # # data len int(self.data_chunk/self.constants[1]) + 10
             # format = f'<{int(self.data_chunk / self.constants[1]) + 10}{sampwidth}'
@@ -477,6 +477,11 @@ class Audio():
             self.semaphore[0].acquire(timeout=1)
             print(*args, **kwargs)
             self.semaphore[0].release()
+
+        # RMS to dbu
+        # signal maps to standard +4 dbu
+        def rdbu(self, arr):
+            return Tools.dbu(np.max(arr) / self.constants[3])
 
 class Error(Exception):
     pass

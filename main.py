@@ -17,7 +17,7 @@ if __name__=='__main__':
         rec = Audio.record(output='array', dev_id=dev_id, ui_mode=False, rate=framerate, nchannels=nchannels, record_time=0.)
         Audio.play(rec, inp_format='array', nchannels=nchannels, framerate=framerate, sampwidth=sampwidth)
     if I==2:
-        a = Audio.Recognition(record_period=0.1)
+        a = Audio.Recognition(record_period=0.05)
         a.start()
         #arr = np.linspace(2.0, 500.0, num=300)
         #arr.reshape()

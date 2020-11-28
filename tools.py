@@ -36,10 +36,6 @@ class Tools:
     def adbu(dbu):
         return np.sqrt(.6) * 10 ** (dbu/20)
 
-    @staticmethod
-    def rms(arr):
-        return np.max(arr) / np.sqrt(2)
-        #return np.sqrt(np.abs(np.mean(arr[arr >= 0] ** 2)))
 
 
 
