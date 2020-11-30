@@ -1,0 +1,26 @@
+echo [on / off]
+
+set [options] [param] [states]
+    param 'primary filter':
+        states: off, on
+        option: --fc
+    param 'speaker recognition':
+        states: off, on
+
+add [param] [value]
+    param 'user':
+        value: name of user
+
+ls [user name(optional)]
+    list name of current user
+    with user name: list properties of the [user name]
+    Note:
+        user name can be 'database' to show data base contents
+
+save [user name]
+    save local database to stable database.
+    note you can use '.' to save all of the saved instances
+
+load [user name]
+    load stable database to local database.
+    note you can use '.' to load all of the saved instances

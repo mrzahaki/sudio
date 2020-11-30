@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from scipy.signal import upfirdn, firwin, lfilter, correlate
 
 
 class Tools:
