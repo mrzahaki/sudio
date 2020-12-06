@@ -265,3 +265,4 @@ def del_channel(wav, ch_index, output='wave', out_wave_name='sound0'):
     return set_channel(wav, ch_index, np.zeros(wav.getnframes(), dtype='int'), inp_format='array',
                              output=output, out_wave_name=out_wave_name)
 
+

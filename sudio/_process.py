@@ -1,6 +1,7 @@
 from ._register import Members as Mem
 from ._tools import Tools
 from ._audio import *
+from ._pipeline import Pipeline
 import tqdm
 from scipy.signal import upfirdn, firwin, lfilter, correlate
 import threading
@@ -10,27 +11,28 @@ import pyaudio
 import numpy as np
 
 
-
 @Mem.sudio.add
 class Process():
-
-    DATABASE_PATH = './data.pickle'
+    DATABASE_PATH = './sudio.sufile'
     HUMAN_VOICE_FREQ = int(8e3)  # Hz
     SOUND_BUFFER_SIZE = 400
     SAMPLE_CATCH_TIME = 10  # s
     SAMPLE_CATCH_PRECISION = 0.1  # s
     SPEAK_LEVEL_GAP = 10  # dbu
+    _shuffle3d_channels = np.vectorize(lambda x: x.T.reshape(np.prod(x.shape)),
+                                     signature='(m,n)->(c)')
 
     def __init__(self, input_dev_id=None, frame_rate=48000, nchannels=2, record_period=0.3,
                  data_format=pyaudio.paInt16,
+                 mono_mode=True,
                  optimum_mono=False):
 
         self.functions = []
         self.functions = [self.main]
-        self.functions.append(self.speaker_recognition)
+        self.functions.append(self.process)
         self.functions.append(self.play)
         self.record_period = record_period
-
+        self.mono_mode = mono_mode
         if input_dev_id is None:
 
             rec = record(output='array', ui_mode=False)
@@ -46,11 +48,19 @@ class Process():
             self.input_dev_id = input_dev_id
         # Vectorized dbu calculator
         self.vdbu = np.vectorize(self.rdbu, signature='(m)->()')
-        if optimum_mono:
-            to_mono = np.vectorize(np.mean, signature='(m)->()')
-            self.to_mono = lambda x: to_mono(x.reshape((self.data_chunk, self.nchannels)))
+        if mono_mode:
+            if optimum_mono:
+                get_channels = np.vectorize(np.mean, signature='(m)->()')
+                Process.get_channels = lambda x: get_channels(x.reshape((self.data_chunk, self.nchannels)))
+            else:
+                Process.get_channels = lambda x: x[::self.nchannels]
         else:
-            self.to_mono = lambda x: x[::self.nchannels]
+            Process.get_channels = lambda x: np.append(*[[x[i::self.nchannels]] for i in range(self.nchannels)], axis=0)
+
+        if mono_mode:
+            self.process_nchannel = 1
+        else:
+            self.process_nchannel = self.nchannels
 
         self.frame_rate.append(Process.HUMAN_VOICE_FREQ * 2)
         downsample = int(np.round(self.frame_rate[0] / self.frame_rate[1]))
@@ -62,18 +72,18 @@ class Process():
         # used in callback method(down sampling)    1
         # None   2
         # rms constant value                        3
-        sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
+        # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self.sampwidth)]  # 1 2 4 8
         self.constants = [f'int{self.sampwidth * 8}',
                           downsample,
                           0,
                           ((2 ** (self.sampwidth * 8 - 1) - 1) / 1.225)]
         self.threads = []
         try:
-            self.database = pd.read_pickle(Process.DATABASE_PATH)
+            self.database = pd.read_pickle(Process.DATABASE_PATH, compression='xz')
         except:
-            self.database = pd.DataFrame(columns=['Noise', 'Frame Rate', 'o', 'Sample Width'])
+            self.database = pd.DataFrame(columns=['Noise', 'Frame Rate', 'o', 'Sample Width', 'nchannels'])
 
-        self.local_database = pd.DataFrame(columns=['Noise', 'Frame Rate', 'o', 'Sample Width'])
+        self.local_database = pd.DataFrame(columns=['Noise', 'Frame Rate', 'o', 'Sample Width', 'nchannels'])
 
         try:
             self.semaphore = [threading.Semaphore()]
@@ -91,6 +101,21 @@ class Process():
             for i in range(len(self.functions)):
                 self.threads.append(threading.Thread(target=self.run, daemon=True, args=(len(self.threads),)))
                 self.queue.put(i)
+
+            if mono_mode:
+                self.upfirdn = lambda h, x, const: upfirdn(h, x, down=const)
+                self.lfilter = lambda h, x: lfilter(h, [1.0], x).astype(self.constants[0])
+            else:
+                # 2d mode
+                self.upfirdn = np.vectorize(lambda h, x, const: upfirdn(h, x, down=const),
+                             signature='(n),(m),()->(c)')
+
+                # 3d mode
+                self.lfilter = np.vectorize(lambda h, x: lfilter(h, [1.0], x).astype(self.constants[0]),
+                             signature='(n),(m)->(m)')
+
+
+
             print('Initialization completed!')
 
         except:
@@ -131,9 +156,10 @@ class Process():
 
     def stream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
 
-        in_data = self.to_mono(np.fromstring(in_data, self.constants[0]))
+        in_data = Process.get_channels(np.fromstring(in_data, self.constants[0]))
+        # in_data = np.fromstring(in_data, self.constants[0])
         if self.primary_filter.isSet():
-            in_data = upfirdn(self.filters[0], in_data, down=self.constants[1])
+            in_data = self.upfirdn(self.filters[0], in_data, self.constants[1])
         try:
             self.dataq.put_nowait(in_data.astype(self.constants[0]))
         except queue.Full:
@@ -145,7 +171,7 @@ class Process():
     def play(self, thread_id):
         stream_out = self.paudio.open(
             format=pyaudio.get_format_from_width(self.sampwidth),
-            channels=1,
+            channels=self.process_nchannel,
             rate=self.frame_rate[1], input=False, output=True)
         stream_out.start_stream()
         flag = self.primary_filter.isSet()
@@ -153,10 +179,17 @@ class Process():
         while 1:
             self.echo.wait()
             # check primary filter state
-            stream_out.write(self.dataq.get().tostring())
+            data = self.dataq.get()
+            if not self.mono_mode:
+                data = Process.shuffle2d_channels(data)
+            # data = data.T.reshape(np.prod(data.shape))
+
+            stream_out.write(data.tostring())
+
+            # stream_out.write(self.dataq.get().tostring())
             if not self.primary_filter.isSet() == flag or not self.frame_rate[1] == framerate:
                 flag = self.primary_filter.isSet()
-                print('yes')
+
                 # close current stream
                 stream_out.close()
                 # create new stream
@@ -167,13 +200,13 @@ class Process():
 
                 stream_out = self.paudio.open(
                     format=pyaudio.get_format_from_width(self.sampwidth),
-                    channels=1,
+                    channels=self.process_nchannel,
                     rate=rate, input=False, output=True)
                 stream_out.start_stream()
                 self.dataq.queue.clear()
 
     # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
-    def speaker_recognition(self, thread_id):
+    def process(self, thread_id):
         while 1:
             try:
                 self.speaker_recognition_ev.wait()
@@ -269,7 +302,7 @@ class Process():
                         else:
                             raise Error('Please enter valid statement')
 
-                        self.database.to_pickle(Process.DATABASE_PATH)
+                        self.database.to_pickle(Process.DATABASE_PATH, compression='xz')
                         print('^^^^^^^^^^^^^^^^Saved successfully!^^^^^^^^^^^^^^^^')
 
                     except KeyError:
@@ -300,12 +333,13 @@ class Process():
                     else:
                         if len(self.local_database):
                             try:
-                                self.safe_print(self.local_database.loc[inp][['Noise', 'Frame Rate', 'Sample Width']])
+                                self.safe_print(
+                                    self.local_database.loc[inp][['Noise', 'Frame Rate', 'Sample Width', 'nchannels']])
                                 if self.safe_input('Play sound? "yes"').strip().lower() == 'yes':
-
                                     play(self.local_database.loc[inp]['o'], inp_format='array',
-                                               sampwidth=self.local_database.loc[inp]['Sample Width'], nchannels=1,
-                                               framerate=self.local_database.loc[inp]['Frame Rate'])
+                                         sampwidth=self.local_database.loc[inp]['Sample Width'],
+                                         nchannels=self.local_database.loc[inp]['nchannels'],
+                                         framerate=self.local_database.loc[inp]['Frame Rate'])
                             except KeyError:
                                 raise Error('Please enter valid statement')
                         else:
@@ -393,9 +427,9 @@ class Process():
         if echo:
             self.echo.clear()
 
-        sample = self.dataq.get()
+        sample = [self.dataq.get()]
         for i in range(duration):
-            sample = np.vstack((sample, self.dataq.get()))
+            sample = np.vstack((sample, [self.dataq.get()]))
             progress.update(step)
 
         if echo:
@@ -425,9 +459,9 @@ class Process():
                 if echo:
                     self.echo.clear()
 
-                sample = self.dataq.get()
+                sample = [self.dataq.get()]
                 for i in range(duration):
-                    sample = np.vstack((sample, self.dataq.get()))
+                    sample = np.vstack((sample, [self.dataq.get()]))
                     progress.update(step)
 
                 # sample preprocessing
@@ -439,6 +473,8 @@ class Process():
                 progress.update(10)
                 progress.refresh()
                 # Waiting for Process processing to be enabled
+                if not self.mono_mode:
+                    sample = self.shuffle3d_channels(sample)
                 framerate = self.audio_play_wrapper(sample)
 
                 if echo:
@@ -456,32 +492,36 @@ class Process():
             return {'o': sample,
                     'Noise': noise,
                     'Frame Rate': framerate,
+                    'nchannels': self.process_nchannel,
                     'Sample Width': self.sampwidth}
 
     # sample must be a 2d array
+    # final_period just worked in mono mode
     def preprocess(self, sample, progress, final_period=0.1, base_period=0.3, noise_base=-1e3):
 
-        assert  sample.shape[0] * base_period > 3
+        assert sample.shape[0] * base_period > 3
         progress.set_description('Processing..')
         # Break into different sections based on period time
-        tmp = sample.shape[1] * sample.shape[0]
-        cols = Tools.near_divisor(tmp, final_period * sample.shape[1] / base_period)
+        tmp = sample.shape[-1] * sample.shape[0]
+        cols = Tools.near_divisor(tmp, final_period * sample.shape[-1] / base_period)
         progress.update(5)
         # Reshaping of arrays based on time period
-        sample = sample.reshape((int(tmp / cols), cols))
+        if self.mono_mode:
+            sample = sample.reshape((int(tmp / cols), cols))
         progress.update(5)
-
         # time filter
         dbu = self.vdbu(sample)
-        sample = sample[dbu > noise_base]
+        if self.mono_mode:
+            sample = sample[dbu > noise_base]
+        else:
+            sample = sample[np.max(dbu, axis=1) > noise_base]
 
-        shape = sample.shape
-        sample = sample.reshape(shape[0] * shape[1])
+        # shape = sample.shape
+        # sample = sample.reshape(shape[0] * shape[1])
         # LPF filter
-        sample = lfilter(self.filters[1], [1.0], sample).astype(self.constants[0]).reshape(shape)
-        # sample = upfirdn(self.filters[1], sample).astype(self.constants[0])
-        progress.update(5)
+        sample = self.lfilter(self.filters[1], sample)
 
+        progress.update(5)
         # print(sample, sample.shape)
         return sample
 
@@ -491,7 +531,7 @@ class Process():
         else:
             framerate = self.frame_rate[0]
 
-        play(sample, inp_format='array', sampwidth=self.sampwidth, nchannels=1, framerate=framerate)
+        play(sample, inp_format='array', sampwidth=self.sampwidth, nchannels=self.process_nchannel, framerate=framerate)
         return framerate
 
     def refresh(self):
@@ -523,6 +563,22 @@ class Process():
     # signal maps to standard +4 dbu
     def rdbu(self, arr):
         return Tools.dbu(np.max(arr) / self.constants[3])
+
+    # arr format: [[data0:[ch0] [ch1]]  [data1: [ch0] [ch1]], ...]
+    @staticmethod
+    def shuffle3d_channels(arr):
+        arr = Process._shuffle3d_channels(arr)
+        # res = np.array([])
+        # for i in arr:
+        #     res = np.append(res, Process.shuffle2d_channels(i))
+        return arr.reshape(np.prod(arr.shape))
+        # return res
+
+
+    @staticmethod
+    def shuffle2d_channels(arr):
+        return arr.T.reshape(np.prod(arr.shape))
+
 
 class Error(Exception):
     pass
