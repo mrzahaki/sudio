@@ -14,7 +14,14 @@ class Register:
         self.objects.append(obj)
         return obj
 
+def static_vars(**kwargs):
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
 
+    return decorate
 # ___________________________________________________________def your objects here
 class Members:
     sudio = Register()
+    # process = Register()

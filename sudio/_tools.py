@@ -1,6 +1,7 @@
 import numpy as np
-import pandas as pd
-from scipy.signal import upfirdn, firwin, lfilter, correlate
+# import pandas as pd
+# from scipy.signal import upfirdn, firwin, lfilter, correlate
+# from _pipeline import Pipeline
 
 
 class Tools:
@@ -37,6 +38,17 @@ class Tools:
     @staticmethod
     def adbu(dbu):
         return np.sqrt(.6) * 10 ** (dbu/20)
+
+    @staticmethod
+    def push(obj, data):
+        obj.pop()
+        obj.insert(0, data)
+
+    @staticmethod
+    def ipush(obj, data):
+        obj.reverse()
+        Tools.push(obj, data)
+        obj.reverse()
 
 
 

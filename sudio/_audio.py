@@ -266,3 +266,17 @@ def del_channel(wav, ch_index, output='wave', out_wave_name='sound0'):
                              output=output, out_wave_name=out_wave_name)
 
 
+@Mem.sudio.add
+def bark_scale(freq):
+    return 13 * np.atan(freq * 76e-5) + 3.5 * np.atan((freq / 75e2) ** 2)
+
+
+@Mem.sudio.add
+def mel_scale(freq):
+    return 2595 * np.log10(1 + freq / 700)
+
+@Mem.sudio.add
+def erb_scale(freq):
+    return 24.7 * (1 + 4.37 * freq / 1000)
+
+
