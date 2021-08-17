@@ -1,26 +1,44 @@
 echo [on / off]
 
-set [options] [param] [states]
+set [options] [param] [value] [states]
     param 'primary filter':
         states: off, on
         option: --fc
-    param 'speaker recognition':
+
+ //   param 'speaker recognition':
+  //      states: off, on
+
+    param 'pip':
         states: off, on
+        value: name of pipeline
 
-add [param] [value]
-    param 'user':
+
+add [options] [param] [value]
+    param 'record':
         value: name of user
+        options:
+            [[-t] = [value]]: recording duration
+            [-c]: set compressor ON
 
-ls [user name(optional)]
+ls [user name(optional) or special params]
     list name of current user
     with user name: list properties of the [user name]
     Note:
-        user name can be 'database' to show data base contents
 
-save [user name]
+    special params:
+        'pip':
+            value: pipeline name or '.' to show all of the pipelines
+
+        'database':
+            to show data base contents
+
+
+save [user name or special params]
     save local database to stable database.
     note you can use '.' to save all of the saved instances
+    special params:
 
-load [user name]
+load [user name or special params]
     load stable database to local database.
     note you can use '.' to load all of the saved instances
+    special params:

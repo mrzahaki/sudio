@@ -1,22 +1,24 @@
 # the name of allah
-import multiprocessing
+# import multiprocessing
+import threading
 import queue
 import time
 
 
-class Pipeline(multiprocessing.Process):
+class Pipeline(threading.Thread):
     # type LiveProcessing, DeadProcessing or timeout value
     def __init__(self, max_size=None, io_buffer_size=10, pipe_type='LiveProcessing'):
         super(Pipeline, self).__init__(daemon=True)
-        manager = multiprocessing.Manager()
+        # self.manager = threading.Manager()
         # self.namespace = manager.Namespace()
-        self._pipeline = manager.list([])
+        self._pipeline = []
         self.io_buffer_size = io_buffer_size
-        self.input_line = multiprocessing.Queue(maxsize=io_buffer_size)
-        self.output_line = multiprocessing.Queue(maxsize=io_buffer_size)
+        self.input_line = queue.Queue(maxsize=io_buffer_size)
+        self.output_line = queue.Queue(maxsize=io_buffer_size)
         self.max_size = max_size
         self.pipe_type = pipe_type
-
+        self.refresh_ev = threading.Event()
+        self.init_queue = queue.Queue()
         # block value, timeout
         if pipe_type == 'LiveProcessing':
             self._process_type = (False, None)
@@ -31,7 +33,6 @@ class Pipeline(multiprocessing.Process):
         self.get = self.output_line.get
         self.put_nowait = self.input_line.put_nowait
         self.get_nowait = self.output_line.get_nowait
-
     def __call__(self, data):
         self.input_line.put(data, block=self._process_type[0], timeout=self._process_type[1])
 
@@ -45,25 +46,41 @@ class Pipeline(multiprocessing.Process):
         while 1:
             try:
                 while 1:
+                    if self.refresh_ev.is_set():
+                        while not self.init_queue.empty():
+                            #init
+                            self.init_queue.get()(self)
+                        self.refresh_ev.clear()
+                    # call from pipeline
                     ret_val = self._pipeline[0][0](*self._pipeline[0][1:], self.input_line.get_nowait())
                     for i in self._pipeline[1:]:
                         ret_val = i[0](*i[1:], ret_val)
                     self.output_line.put(ret_val, block=self._process_type[0], timeout=self._process_type[1])
 
+
             except IndexError:
                 while not len(self._pipeline):
                     self.output_line.put(self.input_line.get(), block=self._process_type[0], timeout=self._process_type[1])
+                    if self.refresh_ev.is_set():
+                        while not self.init_queue.empty():
+                            #init
+                            self.init_queue.get()(self)
+                        self.refresh_ev.clear()
             except (queue.Full, queue.Empty):
                 pass
 
-    def insert(self, index, func, args=()):
+    def insert(self, index, func, args=(), init=()):
 
         if self.max_size:
             assert len(self._pipeline) + 1 < self.max_size
+        if len(init):
+            self.init_queue.put(init[0])
+            self.refresh_ev.set()
+            while self.refresh_ev.is_set(): pass
         self._pipeline.insert(index, [func, *args])
         return self
 
-    def append(self, *func, args=()):
+    def append(self, *func, args=(), init=()):
         """append new functions to pipeline
 
         Parameters
@@ -72,6 +89,8 @@ class Pipeline(multiprocessing.Process):
             Functions to be added to the pipe
         args: tuple
             Input Arguments of Functions
+        init: tuple
+            Initial functions(access to pipeline shared memory)
 
         Returns
         -------
@@ -91,6 +110,12 @@ class Pipeline(multiprocessing.Process):
         """
         if self.max_size:
             assert len(self._pipeline) + len(func) < self.max_size
+
+        for i in init:
+            if i:
+                self.init_queue.put(i)
+                self.refresh_ev.set()
+            while self.refresh_ev.is_set(): pass
 
         for num, i in enumerate(func):
             try:

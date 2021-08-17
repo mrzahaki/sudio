@@ -1,11 +1,14 @@
 # the name of allah
 from ._register import Members as Mem
+from ._tools import Tools
 import wave
 import pyaudio
 import time
 import numpy as np
 import struct
-
+from scipy.signal import upfirdn, firwin, get_window
+import threading
+import queue
 
 # output can be a 'array','wave' or standard wave 'frame'
 # note:params sampwidth, nchannels, framerate just work in frame and array type
@@ -279,4 +282,136 @@ def mel_scale(freq):
 def erb_scale(freq):
     return 24.7 * (1 + 4.37 * freq / 1000)
 
+@Mem.sudio.add
+def win_parser_mono(window, win_num):
+    return window[win_num]
 
+
+@Mem.sudio.add
+def win_parser(window, win_num, nchannel):
+    return window[nchannel][win_num]
+
+
+@Mem.sudio.add
+class Windowing:
+    def __init__(self, mono_mode, nchannels, window_type, astype, filter_state, main_fs, primary_fc, nperseg, nhop ):
+        self.main_fs = main_fs
+        self.primary_fc = primary_fc
+        self._astype = astype
+        self._nchannels = nchannels
+        self._nhop = nhop
+        self._main_nperseg = self._nperseg = nperseg
+        self._window_type = window_type
+        self.def_filter_state = filter_state
+        self._mono_mode = mono_mode
+
+        self._frame_rate = [self.main_fs, (self.primary_fc * 2)]
+        self._downsample_coef = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
+        self._filter = firwin(30, self.primary_fc, fs=self._frame_rate[0])
+        self._window = get_window(self._window_type, self._nperseg)
+        self._nchannels_range = range(self._nchannels)
+
+        self.refresh_ev = threading.Event()
+        self.refresh_queue = queue.Queue(maxsize=2)
+        self._filter_state = threading.Event()
+
+        if self.def_filter_state:
+            self._filter_state.set()
+
+        if self._mono_mode:
+            self._upfirdn = lambda h, x, const: upfirdn(h, x, down=const)
+            self._win_buffer = [np.zeros(self._nperseg), np.zeros(self._nperseg)]
+        else:
+            self._upfirdn = np.vectorize(lambda h, x, const: upfirdn(h, x, down=const),
+                                         signature='(n),(m),()->(c)')
+            self._win_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self._nchannels)]
+
+    def init(self, other):
+        pass
+
+        # self.manager = other.manager
+        # self.refresh_ev = self.manager.Event()
+        # self.refresh_queue = self.manager.Queue(maxsize=2)
+        # self._filter_state = self.manager.Event()
+
+
+
+
+    def win_mono(self, data):
+        # plt.plot(data, label='data')
+        # plt.legend()
+        # plt.show()
+        if self.refresh_ev.is_set():
+            self.refresh()
+        if self._filter_state.is_set():
+            data = self._upfirdn(self._filter, data, self._downsample_coef).astype(self._astype)
+
+        # Tools.push(self.data_tst_buffer, data)
+            # Tools.push(self.data_tst_buffer, data)
+        retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
+                                                            self._win_buffer[0][:self._nhop])))) * self._window
+        Tools.push(self._win_buffer, data)
+        return retval
+
+    def win_nd(self, data):
+        # print(data.shape)
+        # brief: Windowing data
+        # Param 'data' shape depends on number of input channels(e.g. for two channel stream, each chunk of
+        # data must be with the shape of (2, chunk_size))
+
+        # retval frame consists of two window
+        # that each window have the shape same as 'data' param shape(e.g. for two channel stream:(2, 2, chunk_size))
+        # note when primary_filter is enabled retval retval shape changes depend on upfirdn filter.
+        # In general form retval shape is
+        # (number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
+        if self.refresh_ev.is_set():
+            self.refresh()
+        if self._filter_state.is_set():
+            data = self._upfirdn(self._filter, data, self._downsample_coef).astype(self._astype)
+
+        final = []
+        # Channel 0
+        # final.append(np.vstack((self._win_buffer[0][1], np.hstack(
+        #     (self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
+        # Tools.push(self._win_buffer[0], data[0])
+
+        # range(self._nchannels)[1:]
+        for i in self._nchannels_range:
+            final.append(np.vstack((self._win_buffer[i][1], np.hstack(
+                (self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
+            Tools.push(self._win_buffer[i], data[i])
+        # for 2 channel win must be an 2, 2, self._data_chunk(e.g. 256)
+        # reshaping may create some errors
+        # return data
+        return np.array(final)
+
+    def refresh(self):
+        primary_fc = self.refresh_queue.get()
+        # filetr state
+        if self.refresh_queue.get():
+            self._filter_state.set()
+
+            self._frame_rate[1] = (primary_fc * 2)
+            self._downsample_coef = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
+            self._frame_rate[1] = int(self._frame_rate[0] / self._downsample_coef)  # human voice high frequency
+            self._nperseg = int(np.ceil(((self._main_nperseg - 1) * 1 + len(self._filter)) / self._downsample_coef))
+            self._nhop = int(self._nhop / self._main_nperseg * self._nperseg)
+
+        elif self._filter_state.is_set():
+            self._filter_state.clear()
+            self._frame_rate[1] = self._frame_rate[0]
+            self._nhop = int(self._nhop / self._nperseg * self._main_nperseg)
+            self._nperseg = self._main_nperseg
+
+        self._window = get_window(self._window_type, self._nperseg)
+        if self._mono_mode:
+            self._win_buffer = [np.zeros(self._nperseg), np.zeros(self._nperseg)]
+        else:
+            self._win_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self._nchannels)]
+
+        self.refresh_ev.clear()
+
+    def update(self, primary_fc, filter_state):
+        self.refresh_queue.put(primary_fc)
+        self.refresh_queue.put(filter_state)
+        self.refresh_ev.set()

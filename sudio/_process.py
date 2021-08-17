@@ -1,5 +1,8 @@
+# the name of Allah
+
 from ._register import Members as Mem
 from ._register import static_vars
+import multiprocessing
 from ._tools import Tools
 from ._audio import *
 from ._pipeline import Pipeline
@@ -9,7 +12,9 @@ import threading
 import queue
 import pandas as pd
 import pyaudio
+import matplotlib.pyplot as plt
 import numpy as np
+import pickle
 
 
 # @Mem._process.parent
@@ -24,7 +29,14 @@ class Process():
     _shuffle3d_channels = np.vectorize(lambda x: x.T.reshape(np.prod(x.shape)),
                                        signature='(m,n)->(c)')
 
-    def __init__(self, input_dev_id=None, frame_rate=48000, nchannels=2,
+    formatFloat32 = pyaudio.paFloat32
+    formatInt32 = pyaudio.paInt32
+    formatInt24 = pyaudio.paInt24
+    formatInt16 = pyaudio.paInt16
+    formatInt8 = pyaudio.paInt8
+    formatUInt8 = pyaudio.paInt8
+
+    def __init__(self, std_input_dev_id=None, frame_rate=48000, nchannels=2,
                  data_format=pyaudio.paInt16,
                  mono_mode=True,
                  optimum_mono=False,
@@ -32,33 +44,152 @@ class Process():
                  nperseg=256,
                  noverlap=None,
                  window='hann',
-                 NOLA_check=True):
+                 NOLA_check=True,
+                 IO_mode="stdInput2stdOutput",
+                 input_dev_callback=None,
+                 output_dev_callback=None):
+        '''
 
-        self._pipe_database = []
-        self._functions = []
-        self._functions = [self._main]
-        self._functions.append(self._process)
-        self._functions.append(self._play)
+        :param IO_mode:  Input/Output processing mode can be:
+                        "stdInput2stdOutput":
+                            default mode; standard input stream (system audio or any
+                             other windows defined streams) to standard defined output stream (system speakers)
+
+                        "usrInput2usrOutput":
+                            user defined input stream (callback function defined with input_dev_callback)
+                            to  user defined output stream (callback function defined with output_dev_callback)
+
+                        "usrInput2stdOutput":
+                            user defined input stream (callback function defined with input_dev_callback)
+                            to  user defined output stream (callback function defined with output_dev_callback)
+
+                        "stdInput2usrOutput":
+                            standard input stream (system audio or any other windows defined streams)
+                            to  user defined output stream (callback function defined with output_dev_callback)
+
+        :param input_dev_callback:
+                        callback function; default None;
+
+                        :inputs:    None
+                        :outputs:   Numpy N-channel data frame in  (Number of channels, Number of data per segment)
+                                    dimensions.
+                        :note: In 1 channel mode data frame have  (Number of data per segment, ) shape
+
+                        can be used to define user input callback
+                        this function used in "usrInput2usrOutput" and "usrInput2usrOutput" IO modes
+                        and called by core every 1/frame_rate second and must returns frame data
+                        in (Number of channels, Number of data per segment) dimensions numpy array.
+                        each data must be in special format that defined in data_format section.
+
+        :param output_dev_callback:
+                        callback function; default None;
+
+                        :inputs:    Numpy N-channel data frame in  (Number of channels, Number of data per segment)
+                                    dimensions.
+                        :outputs:
+                        :note: In 1 channel mode data frame have  (Number of data per segment, ) shape
+
+                        can be used to define user input callback
+                        this function used in "usrInput2usrOutput" and "usrInput2usrOutput" IO modes
+                        and called by core every 1/frame_rate second and must returns frame data
+                        in (Number of channels, Number of data per segment) dimensions numpy array.
+                        each data must be in special format that defined in data_format section.
+
+        :param std_input_dev_id: Unsigned Integer
+                        In standard input IO mode, the std_input_dev_id used to define that which windows standard
+                        streams used by the core of processor.
+
+                        :Note:  None argument can be used when ui mode is enabled to select input device id
+                                in user interface mode simply.
+
+        :param frame_rate:  Unsigned Integer; sample rate
+        :param nchannels: Unsigned Integer; number of input channels
+        :param data_format: Object: supported data format:
+                        formatFloat32, formatInt32, formatInt24, formatInt16, formatInt8, formatUInt8
+        :param mono_mode: Enabe mono mode
+        :param optimum_mono:  Enabe optimized mono mode
+        :param ui_mode: Enabe user interface mode(In recording)
+        :param nperseg: number of samples per each data frame(in one channel)
+        :param noverlap: number of overlap between defined windows
+        :param window:  String;
+                        boxcar, triang , blackman, hamming, hann, bartlett, flattop, parzen, bohman, blackmanharris
+                        nuttall, barthann, cosine, exponential, tukey, taylor, kaiser (needs beta),
+                        gaussian (needs standard deviation), general_cosine (needs weighting coefficients),
+                        general_gaussian (needs power, width), general_hamming (needs window coefficient),
+                        dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
+        :param NOLA_check: NOLA check for window definition
+
+        ""
+            :Note main user interface instructions:
+                echo [on / off]
+
+            set [options] [param] [value] [states]
+                param 'primary filter':
+                    states: off, on
+                    option: --fc
+
+                param 'pip':
+                    states: off, on
+                    value: name of pipeline
+
+
+            add [options] [param] [value]
+                param 'record':
+                    value: name of user
+                    options:
+                        [[-t] = [value]]: recording duration
+                        [-c]: set compressor ON
+
+            ls [user name(optional) or special params]
+                list name of current user
+                with user name: list properties of the [user name]
+                Note:
+
+                special params:
+                    'pip':
+                        value: pipeline name or '.' to show all of the pipelines
+
+                    'database':
+                        to show data base contents
+
+
+            save [user name or special params]
+                save local database to stable database.
+                note you can use '.' to save all of the saved instances
+                special params:
+
+            load [user name or special params]
+                load stable database to local database.
+                note you can use '.' to load all of the saved instances
+                special params:
+        ""
+        '''
+        # _______________________________________________________First Initialization
+        print('Initialization...')
         self._ui_mode = ui_mode
-        self._def_window = lambda length: get_window(window, length)
+        self._window_type = window
 
         # check _win arguments
         if noverlap is None:
             noverlap = nperseg // 2
         if type(window) == str:
             window = get_window(window, nperseg)
+
         if NOLA_check:
             # assert check_COLA(window, nperseg, noverlap)
             assert check_NOLA(window, nperseg, noverlap)
-        # post, pre
-        self._nhop = nperseg - noverlap
-        self._noverlap = noverlap
-        self._window = window
 
+        self.io_mode = IO_mode
+        self.input_dev_callback = input_dev_callback
+        self.output_dev_callback = output_dev_callback
+
+
+
+        # _______________________________________________________UI mode std_input_dev_id calculator
         record_period = nperseg / frame_rate
         self._record_period = record_period
         self._mono_mode = mono_mode
-        if input_dev_id is None and self._ui_mode:
+        if std_input_dev_id is None and self._ui_mode:
 
             rec = record(output='array', _ui_mode=False)
             self._nchannels = rec['nchannels']
@@ -70,9 +201,12 @@ class Process():
             self._frame_rate = [frame_rate]
             self._sampwidth = pyaudio.get_sample_size(data_format)
             self._nchannels = nchannels
-            self._input_dev_id = input_dev_id
-        # Vectorized dbu calculator
+            self._input_dev_id = std_input_dev_id
+
+        # ______________________________________________________________Vectorized dbu calculator
         self._vdbu = np.vectorize(self.rdbu, signature='(m)->()')
+
+        # ______________________________________________________________channels type and number processing
         if mono_mode:
             if optimum_mono:
                 get_channels = np.vectorize(np.mean, signature='(m)->()')
@@ -80,18 +214,20 @@ class Process():
             else:
                 Process.get_channels = lambda x: x[::self._nchannels]
         else:
-            Process.get_channels = lambda x: np.append(*[[x[i::self._nchannels]] for i in range(self._nchannels)], axis=0)
+            Process.get_channels = lambda x: np.append(*[[x[i::self._nchannels]] for i in range(self._nchannels)],
+                                                       axis=0)
 
         if mono_mode:
             self._process_nchannel = 1
         else:
             self._process_nchannel = self._nchannels
 
+        # ______________________________________________________________sample rate and pre filter processing
         self._frame_rate.append(Process.HUMAN_VOICE_FREQ * 2)
         downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
         self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
         self._filters = [firwin(30, Process.HUMAN_VOICE_FREQ, fs=self._frame_rate[0]),
-                        firwin(30, int(self._frame_rate[1] / 2 - 1e-6), fs=self._frame_rate[1])]
+                         firwin(30, int(self._frame_rate[1] / 2 - 1e-6), fs=self._frame_rate[1])]
         self._data_chunk = nperseg
         # data type of buffer                       0
         # used in callback method(down sampling)    1
@@ -99,11 +235,11 @@ class Process():
         # rms constant value                        3
         # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
         self._constants = [f'int{self._sampwidth * 8}',
-                          downsample,
-                          range(self._nchannels)[1:],
-                          ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225)]
+                           downsample,
+                           range(self._nchannels)[1:],
+                           ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225)]
         self._threads = []
-        # _______________________________________________________user _database section
+        # _______________________________________________________user _database define
         try:
             self._database = pd.read_pickle(Process.USER_PATH, compression='xz')
         except:
@@ -112,7 +248,7 @@ class Process():
         self._local_database = pd.DataFrame(
             columns=['Noise', 'Frame Rate', 'o', 'Sample Width', 'nchannels', 'Duraion', 'Base Period'])
 
-        # _______________________________________________________pipeline _database section
+        # _______________________________________________________pipeline _database and other definitions section
 
         try:
             self._semaphore = [threading.Semaphore()]
@@ -124,37 +260,65 @@ class Process():
             self._echo = threading.Event()
             self._primary_filter = threading.Event()
             # self._primary_filter.set()
-
+            self._pipe_database = []
             self._pipeline_ev = threading.Event()
+            #_______________________________________threading management
+            self._functions = []
+            self._functions = [self._main]
+            # self._functions.append(self._process)
+            self._functions.append(self.__post_process)
 
-            # create threads and queues
             for i in range(len(self._functions)):
                 self._threads.append(threading.Thread(target=self._run, daemon=True, args=(len(self._threads),)))
                 self._queue.put(i)
 
-            if mono_mode:
-                self._iwin_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
-                self._win_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
+            # ____________________________________________________windowing object define and initialization
+            # post, pre
+            self._nhop = nperseg - noverlap
+            self._window = window
 
-                self._win = self._win_mono
+            self.windowing = Windowing(self._mono_mode,
+                                       self._nchannels,
+                                       self._window_type,
+                                       f'int{self._sampwidth * 8}',
+                                       self._primary_filter.is_set(),
+                                       *self._frame_rate, self._data_chunk, self._nhop)
+
+            # self._win_frame_rate = [self.main_fs, (self.primary_fc * 2)]
+            # self._win_downsample_coef = int(np.round(self._win_frame_rate[0] / self._win_frame_rate[1]))
+            # self._win_filter = firwin(30, self.primary_fc, fs=self._win_frame_rate[0])
+            # self._win_window = get_window(self._window_type, self._nperseg)
+            # self._win_nchannels_range = range(self._nchannels)
+            #
+            # if self._primary_filter.is_set():
+            #     self._win_filter_state.set()
+
+            if mono_mode:
+                self._iwin_buffer = [np.zeros(nperseg)]
+                self._win_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
+                self._win = self.windowing.win_mono
                 self._iwin = self._iwin_mono
                 self._upfirdn = lambda h, x, const: upfirdn(h, x, down=const)
                 self._lfilter = lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0])
             else:
-                self._iwin_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
+                self._iwin_buffer = [np.zeros(nperseg) for i in range(self._nchannels)]
                 self._win_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
 
                 # 2d mode
                 self._upfirdn = np.vectorize(lambda h, x, const: upfirdn(h, x, down=const),
-                                            signature='(n),(m),()->(c)')
+                                             signature='(n),(m),()->(c)')
                 self._iwin = self._iwin_nd
-                self._win = self._win_nd
+                self._win = self.windowing.win_nd
                 # 3d mode
                 self._lfilter = np.vectorize(lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0]),
-                                            signature='(n),(m)->(c)')
+                                             signature='(n),(m)->(c)')
 
             self._normal_stream = Process._Stream(self, dataq, mode='other')
             self._main_stream = Process._Stream(self, dataq, mode='other')
+
+            # self.data_tst_buffer = [i for i in range(5)]
+            # self.iwin_tst_buffer = [i for i in range(5)]
+            self._refresh_ev = threading.Event()
 
             print('Initialization completed!')
 
@@ -163,14 +327,21 @@ class Process():
             raise
 
     def start(self):
+
+        # stdInput2stdOutput mode
+        stream_callback = self._stream_callback
+        # user input mode
+        if self.io_mode.startswith("usr"):
+            stream_callback = self._ustream_callback
+
         try:
             self._pystream = self._paudio.open(format=pyaudio.get_format_from_width(self._sampwidth),
-                                           channels=self._nchannels,
-                                           rate=self._frame_rate[0],
-                                           frames_per_buffer=self._data_chunk,
-                                           input_device_index=self._input_dev_id,
-                                           input=True,
-                                           stream_callback=self._stream_callback)
+                                               channels=self._nchannels,
+                                               rate=self._frame_rate[0],
+                                               frames_per_buffer=self._data_chunk,
+                                               input_device_index=self._input_dev_id,
+                                               input=True,
+                                               stream_callback=stream_callback)
             for i in self._threads:
                 i.start()
 
@@ -194,22 +365,56 @@ class Process():
         # (meaning that a task_done() call was received for every item that had been put() into the queue).
         self._queue.task_done()
 
+
+    # stdInput2stdOutput
     def _stream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
 
-        in_data = Process.get_channels(np.fromstring(in_data, self._constants[0]))
+
+        in_data = np.fromstring(in_data, self._constants[0])
+        in_data = Process.get_channels(in_data)
+        # print(in_data.shape)
         # in_data = np.fromstring(in_data, self._constants[0])
         try:
             self._main_stream.put(in_data.astype(self._constants[0]))
         except queue.Full:
-            self._main_stream.get()
+            self._main_stream.sget()
+
         # print(f't={a0- time.perf_counter()}, tlo={self.a1 - a0}')
         # self.a1 = time.perf_counter()
         return None, pyaudio.paContinue
 
+
+    # user Input mode
+    def _ustream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
+
+        in_data = self.input_dev_callback()
+        # in_data = np.fromstring(in_data, self._constants[0])
+        try:
+            self._main_stream.put(in_data.astype(self._constants[0]))
+        except queue.Full:
+            self._main_stream.sget()
+
+        # print(f't={a0- time.perf_counter()}, tlo={self.a1 - a0}')
+        # self.a1 = time.perf_counter()
+        return None, pyaudio.paContinue
+
+
     def _win_mono(self, data):
-        pass
+        # plt.plot(data, label='data')
+        # plt.legend()
+        # plt.show()
+
+        if self._primary_filter.is_set():
+            data = upfirdn(self._filters[0], data, down=self._constants[1]).astype(self._constants[0])
+
+        # Tools.push(self.data_tst_buffer, data)
+        retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
+                                                            self._win_buffer[0][:self._nhop])))) * self._window
+        Tools.push(self._win_buffer, data)
+        return retval
 
     def _win_nd(self, data):
+
         # brief: Windowing data
         # Param 'data' shape depends on number of input channels(e.g. for two channel stream, each chunk of
         # data must be with the shape of (2, chunk_size))
@@ -218,18 +423,20 @@ class Process():
         # that each window have the shape same as 'data' param shape(e.g. for two channel stream:(2, 2, chunk_size))
         # note when primary_filter is enabled retval retval shape changes depend on upfirdn filter.
         # In general form retval shape is
-        # (number of windows(2), number of channels, size of data chunk depend on primary_filter activity).
-        if self._primary_filter.isSet():
-            data = self._upfirdn(self._filters[0], data, self._constants[1])
+        # (number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
+        if self._primary_filter.is_set():
+            data = self._upfirdn(self._filters[0], data, self._constants[1]).astype(self._constants[0])
 
         final = []
         # Channel 0
-        final.append(np.vstack((self._win_buffer[0][1], np.hstack((self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
+        final.append(np.vstack((self._win_buffer[0][1], np.hstack(
+            (self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
         Tools.push(self._win_buffer[0], data[0])
 
         # range(self._nchannels)[1:]
         for i in self._constants[2]:
-            final.append(np.vstack((self._win_buffer[i][1], np.hstack((self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
+            final.append(np.vstack((self._win_buffer[i][1], np.hstack(
+                (self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
             Tools.push(self._win_buffer[i], data[i])
         # for 2 channel win must be an 2, 2, self._data_chunk(e.g. 256)
         # reshaping may create some errors
@@ -237,51 +444,66 @@ class Process():
         return np.array(final)
 
     def _iwin_mono(self, win):
-        pass
+        retval = np.hstack((self._iwin_buffer[0][self._nhop:], win[1][:self._nhop])) + win[0]
+        self._iwin_buffer[0] = win[1]
+        # return data
+        # plt.plot(retval, label='iwin')
+        # plt.legend()
+        # plt.show()
+        return retval.astype(self._constants[0])
 
     # start from index1 data
     def _iwin_nd(self, win):
+        # win.shape =>(number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
+        # _iwin_buffer => [buffer 0, buffer1, buffer(number of channels)]
         # for 2 channel win must be an 2[two ], 2, self._data_chunk(e.g. 256)
         # pre post, data,
         # 2 window per frame
-        final = []
-        for n_win in [0, 1]:
-            retval = np.hstack((self._iwin_buffer[0][1][self._nhop:], win[n_win][0][:self._nhop])) + \
-                     self._iwin_buffer[0][0]
 
-            Tools.push(self._iwin_buffer[0], win[n_win][0])
+        # retval = np.hstack((win[n-1][self._nhop:], current_win[n+1][:self._nhop])) + current_win[n]
+        # win[n-1] =  current_win[n+1]
+        retval = np.hstack((self._iwin_buffer[0][self._nhop:], win_parser(win, 1, 0)[:self._nhop])) + \
+                 win_parser(win, 0, 0)
+        self._iwin_buffer[0] = win_parser(win, 1, 0)
 
-            for i in self._constants[2]:
-                tmp = np.hstack((self._iwin_buffer[i][1][self._nhop:], win[n_win][i][:self._nhop])) + \
-                      self._iwin_buffer[i][0]
+        for i in self._constants[2]:
+            tmp = np.hstack((self._iwin_buffer[i][self._nhop:], win_parser(win, 1, i)[:self._nhop])) + \
+                  win_parser(win, 0, i)
+            retval = np.vstack((retval, tmp))
+            self._iwin_buffer[i] = win_parser(win, 1, i)
 
-                retval = np.vstack((retval, tmp))
-                Tools.push(self._iwin_buffer[i], win[n_win][i])
-            final.append(retval)
+        return retval.astype(self._constants[0])
 
-        return np.array(final)
-
-    def _play(self, thread_id):
+    def __post_process(self, thread_id):
         stream_out = self._paudio.open(
             format=pyaudio.get_format_from_width(self._sampwidth),
             channels=self._process_nchannel,
             rate=self._frame_rate[0], input=False, output=True)
         stream_out.start_stream()
-        flag = self._primary_filter.isSet()
-        framerate = self._frame_rate[1]
+        # flag = self._primary_filter.is_set()
+        # framerate = self._frame_rate[1]
+        not_user_mode = not "usr" in self.io_mode[4:]
         while 1:
-            self._echo.wait()
+
             # check primary filter state
             data = self._iwin(self._main_stream.get())
+            # Tools.push(self.iwin_tst_buffer, data)
+
             if not self._mono_mode:
                 data = Process.shuffle2d_channels(data)
             # data = data.T.reshape(np.prod(data.shape))
+            # print(data.shape)
+            if not_user_mode:
+                self._echo.wait()
+                stream_out.write(data.tostring())
+            else:
+                if self._echo.isSet():
+                    stream_out.write(data.tostring())
+                self.output_dev_callback(data)
 
-            stream_out.write(data.tostring())
-
-            if not self._primary_filter.isSet() == flag or not self._frame_rate[1] == framerate:
-                flag = self._primary_filter.isSet()
-
+            if self._refresh_ev.is_set():
+                flag = self._primary_filter.is_set()
+                self._refresh_ev.clear()
                 # close current stream
                 stream_out.close()
                 # create new stream
@@ -297,31 +519,31 @@ class Process():
                 stream_out.start_stream()
                 self._main_stream.clear()
 
-    # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
-    def _process(self, thread_id):
-        while 1:
-            time.sleep(1)
-            # try:
-            #     self.speaker_recognition_ev.wait()
-            #     a = 20 * np.log10(np.max(
-            #         correlate(self._main_stream.get(), self._local_database.loc['hussein']['o'][1:4, :].reshape(4830),
-            #                   mode='valid')))
-            #
-            # except KeyError:
-            #     while not len(self._local_database): pass
-
-        # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
-        # # data len int(self._data_chunk/self._constants[1]) + 10
-        # format = f'<{int(self._data_chunk / self._constants[1]) + 10}{sampwidth}'
-        # # print(format)
-        # while 1:
-        #     self._semaphore[1].acquire()
-        #     if not len(self.recognized):
-        #         self.dataq.get()
-        #         continue
-        #
-        #     ding_data = struct.pack(format, *self.dataq.get().tolist())
-        #     self._semaphore[1].release()
+    # # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
+    # def _process(self, thread_id):
+    #     while 1:
+    #         time.sleep(1)
+    #         # try:
+    #         #     self.speaker_recognition_ev.wait()
+    #         #     a = 20 * np.log10(np.max(
+    #         #         correlate(self._main_stream.get(), self._local_database.loc['hussein']['o'][1:4, :].reshape(4830),
+    #         #                   mode='valid')))
+    #         #
+    #         # except KeyError:
+    #         #     while not len(self._local_database): pass
+    #
+    #     # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
+    #     # # data len int(self._data_chunk/self._constants[1]) + 10
+    #     # format = f'<{int(self._data_chunk / self._constants[1]) + 10}{sampwidth}'
+    #     # # print(format)
+    #     # while 1:
+    #     #     self._semaphore[1].acquire()
+    #     #     if not len(self.recognized):
+    #     #         self.dataq.get()
+    #     #         continue
+    #     #
+    #     #     ding_data = struct.pack(format, *self.dataq.get().tolist())
+    #     #     self._semaphore[1].release()
 
     def _main(self, thread_id):
         while 1:
@@ -473,7 +695,7 @@ class Process():
                             raise Error('Please enter valid statement')
                         # print(inp)
                         if 'on' in inp:
-                            if self._primary_filter.isSet():
+                            if self._primary_filter.is_set():
                                 raise Error('Already activated!')
                             self._primary_filter.set()
                             inp = inp.replace('on', '', 1).strip()
@@ -555,7 +777,6 @@ class Process():
         # Waiting for Process processing to be disabled
 
         if enable_ui: progress.update(5)
-
 
         # start _main _process
         # record sample for  SAMPLE_CATCH_TIME duration
@@ -674,12 +895,13 @@ class Process():
         return sample
 
     def _audio_play_wrapper(self, sample):
-        if self._primary_filter.isSet():
+        if self._primary_filter.is_set():
             framerate = self._frame_rate[1]
         else:
             framerate = self._frame_rate[0]
 
-        play(sample, inp_format='array', sampwidth=self._sampwidth, nchannels=self._process_nchannel, framerate=framerate)
+        play(sample, inp_format='array', sampwidth=self._sampwidth, nchannels=self._process_nchannel,
+             framerate=framerate)
         return framerate
 
     def _refresh(self):
@@ -688,19 +910,25 @@ class Process():
         self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
         self._filters[1] = firwin(30, int(self._frame_rate[1] / 2 - 1e-6), fs=self._frame_rate[1])
 
-        self._data_chunk = int(self._frame_rate[0] * self._record_period)
+        # self._data_chunk = int(self._frame_rate[0] * self._record_period)
         # data type of buffer                       0
         # used in callback method(down sampling)    1
         self._constants[1] = downsample
 
-        win_len = np.ceil(((self._data_chunk - 1) * 1 + len(self._filters[0])) / downsample)
-        self._window = self._def_window(win_len)
-        self._win_buffer = np.zeros(win_len)
-        self._iwin_buffer = [np.zeros(win_len), np.zeros(win_len)]
+        win_len = int(np.ceil(((self._data_chunk - 1) * 1 + len(self._filters[0])) / downsample))
+        self._nhop = int(self._nhop / self._data_chunk * win_len)
+        self._window = get_window(self._window_type, win_len)
+        if self._mono_mode:
+            self._iwin_buffer = [np.zeros(win_len)]
+            self._win_buffer = [np.zeros(win_len), np.zeros(win_len)]
+        else:
+            self._iwin_buffer = [np.zeros(win_len) for i in range(self._nchannels)]
+            self._win_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self._nchannels)]
         # format specifier used in struct.unpack    2
         # rms constant value                        3
         sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
-
+        self.windowing.update(Process.HUMAN_VOICE_FREQ, self._primary_filter.is_set())
+        self._refresh_ev.set()
 
     def _safe_input(self, *args, **kwargs):
         self._semaphore[0].acquire()
@@ -719,20 +947,18 @@ class Process():
         return Tools.dbu(np.max(arr) / self._constants[3])
 
     def add_pipeline(self, name, pip):
-        self._pipe_database.append(Process._Stream(self, pip, name, 'multiprocessing'))
+        self._pipe_database.append(Process._Stream(self, pip, name, 'multithreading'))
 
     def set_pipeline(self, name, enable=True):
         if not enable:
             self._main_stream.clear()
             self._main_stream.set(self._normal_stream)
             return
-
         for obj in self._pipe_database:
             if name == obj.name:
                 if obj.pip.is_alive():
                     self._main_stream.clear()
                     self._main_stream.set(obj)
-
                 else:
                     raise Error(f'Error: {name} pipeline dont alive!')
 
@@ -751,11 +977,11 @@ class Process():
             raise ValueError
 
         self._local_database.loc[name] = self.recorder(enable_compressor=enable_compressor,
-                                                      noise_sampling_duration=noise_sampling_duration,
-                                                      record_duration=record_duration,
-                                                      enable_ui=enable_ui,
-                                                      play_recorded=play_recorded,
-                                                      catching_precision=catching_precision)
+                                                       noise_sampling_duration=noise_sampling_duration,
+                                                       record_duration=record_duration,
+                                                       enable_ui=enable_ui,
+                                                       play_recorded=play_recorded,
+                                                       catching_precision=catching_precision)
 
     def echo(self, enable=True):
         if enable:
@@ -792,6 +1018,21 @@ class Process():
         else:
             return list(self._database.index)
 
+    def primary_filter(self, enable=False, fc=None):
+        # if fc == None dont change
+        if enable:
+            if self._primary_filter.is_set() and fc == Process.HUMAN_VOICE_FREQ:
+                return
+            elif fc:
+                assert fc < (self._frame_rate[0] / 2)
+                Process.HUMAN_VOICE_FREQ = fc
+            self._primary_filter.set()
+
+        elif self._primary_filter.is_set():
+            self._primary_filter.clear()
+        else:
+            return
+        self._refresh()
 
     # arr format: [[data0:[ch0] [ch1]]  [data1: [ch0] [ch1]], ...]
     @staticmethod
@@ -810,18 +1051,21 @@ class Process():
     class _Stream:
         def __init__(self, other, obj, name=None, mode='multiprocessing'):
             self.mode = mode
-            if mode == 'multiprocessing':
-                obj.insert(0, other._win)
+            if mode == 'multithreading':
+                # obj.insert(0, np.vectorize(other._win, signature=''))
+                # pickle.dumps(obj._config['authkey'])
+                obj.insert(0, other._win, init=(other.windowing.init, ))
                 self.put = obj.put
                 self.clear = obj.clear
-                self.get = obj.get
+                self.sget = obj.get
                 self.pip = obj
                 self.name = name
-
+                self.get = obj.get
             else:
                 self.put = obj.put_nowait
                 self.clear = obj.queue.clear
                 self.get = lambda: other._win(obj.get())
+                self.sget = obj.get
 
         def set(self, other):
             if isinstance(other, self.__class__):
