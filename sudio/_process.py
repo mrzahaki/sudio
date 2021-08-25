@@ -22,19 +22,14 @@ import pickle
 class Process():
     USER_PATH = './user.sufile'
     HUMAN_VOICE_FREQ = int(8e3)  # Hz
-    SOUND_BUFFER_SIZE = 500
+    SOUND_BUFFER_SIZE = 1000
     SAMPLE_CATCH_TIME = 10  # s
     SAMPLE_CATCH_PRECISION = 0.1  # s
     SPEAK_LEVEL_GAP = 10  # dbu
     _shuffle3d_channels = np.vectorize(lambda x: x.T.reshape(np.prod(x.shape)),
                                        signature='(m,n)->(c)')
 
-    formatFloat32 = pyaudio.paFloat32
-    formatInt32 = pyaudio.paInt32
-    formatInt24 = pyaudio.paInt24
-    formatInt16 = pyaudio.paInt16
-    formatInt8 = pyaudio.paInt8
-    formatUInt8 = pyaudio.paInt8
+
 
     def __init__(self, std_input_dev_id=None, frame_rate=48000, nchannels=2,
                  data_format=pyaudio.paInt16,
@@ -165,10 +160,15 @@ class Process():
         ""
         '''
         # _______________________________________________________First Initialization
-        print('Initialization...')
+        if ui_mode:
+            print('Initialization...')
+
+        self.branch_pipe_database_min_key = 0
         self._ui_mode = ui_mode
         self._window_type = window
 
+        self.sample_rate = frame_rate
+        self.nperseg = nperseg
         # check _win arguments
         if noverlap is None:
             noverlap = nperseg // 2
@@ -189,10 +189,10 @@ class Process():
         record_period = nperseg / frame_rate
         self._record_period = record_period
         self._mono_mode = mono_mode
-        if std_input_dev_id is None and self._ui_mode:
+        if std_input_dev_id is None:
 
-            rec = record(output='array', _ui_mode=False)
-            self._nchannels = rec['nchannels']
+            rec = record(output='array', ui_mode=False)
+            self.nchannels = rec['nchannels']
             self._frame_rate = [rec['frame rate']]
             self._sampwidth = rec['sample width']
             self._input_dev_id = rec['dev_id']
@@ -200,7 +200,7 @@ class Process():
         else:
             self._frame_rate = [frame_rate]
             self._sampwidth = pyaudio.get_sample_size(data_format)
-            self._nchannels = nchannels
+            self.nchannels = nchannels
             self._input_dev_id = std_input_dev_id
 
         # ______________________________________________________________Vectorized dbu calculator
@@ -210,17 +210,17 @@ class Process():
         if mono_mode:
             if optimum_mono:
                 get_channels = np.vectorize(np.mean, signature='(m)->()')
-                Process.get_channels = lambda x: get_channels(x.reshape((self._data_chunk, self._nchannels)))
+                Process.get_channels = lambda x: get_channels(x.reshape((self._data_chunk, self.nchannels)))
             else:
-                Process.get_channels = lambda x: x[::self._nchannels]
+                Process.get_channels = lambda x: x[::self.nchannels]
         else:
-            Process.get_channels = lambda x: np.append(*[[x[i::self._nchannels]] for i in range(self._nchannels)],
+            Process.get_channels = lambda x: np.append(*[[x[i::self.nchannels]] for i in range(self.nchannels)],
                                                        axis=0)
 
         if mono_mode:
             self._process_nchannel = 1
         else:
-            self._process_nchannel = self._nchannels
+            self._process_nchannel = self.nchannels
 
         # ______________________________________________________________sample rate and pre filter processing
         self._frame_rate.append(Process.HUMAN_VOICE_FREQ * 2)
@@ -236,7 +236,7 @@ class Process():
         # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
         self._constants = [f'int{self._sampwidth * 8}',
                            downsample,
-                           range(self._nchannels)[1:],
+                           range(self.nchannels)[1:],
                            ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225)]
         self._threads = []
         # _______________________________________________________user _database define
@@ -260,11 +260,13 @@ class Process():
             self._echo = threading.Event()
             self._primary_filter = threading.Event()
             # self._primary_filter.set()
-            self._pipe_database = []
+            self.main_pipe_database = []
+            self.branch_pipe_database = []
             self._pipeline_ev = threading.Event()
             #_______________________________________threading management
             self._functions = []
-            self._functions = [self._main]
+            if self._ui_mode:
+                self._functions.append(self._main)
             # self._functions.append(self._process)
             self._functions.append(self.__post_process)
 
@@ -278,7 +280,7 @@ class Process():
             self._window = window
 
             self.windowing = Windowing(self._mono_mode,
-                                       self._nchannels,
+                                       self.nchannels,
                                        self._window_type,
                                        f'int{self._sampwidth * 8}',
                                        self._primary_filter.is_set(),
@@ -288,7 +290,7 @@ class Process():
             # self._win_downsample_coef = int(np.round(self._win_frame_rate[0] / self._win_frame_rate[1]))
             # self._win_filter = firwin(30, self.primary_fc, fs=self._win_frame_rate[0])
             # self._win_window = get_window(self._window_type, self._nperseg)
-            # self._win_nchannels_range = range(self._nchannels)
+            # self._win_nchannels_range = range(self.nchannels)
             #
             # if self._primary_filter.is_set():
             #     self._win_filter_state.set()
@@ -301,8 +303,8 @@ class Process():
                 self._upfirdn = lambda h, x, const: upfirdn(h, x, down=const)
                 self._lfilter = lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0])
             else:
-                self._iwin_buffer = [np.zeros(nperseg) for i in range(self._nchannels)]
-                self._win_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
+                self._iwin_buffer = [np.zeros(nperseg) for i in range(self.nchannels)]
+                self._win_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self.nchannels)]
 
                 # 2d mode
                 self._upfirdn = np.vectorize(lambda h, x, const: upfirdn(h, x, down=const),
@@ -313,21 +315,20 @@ class Process():
                 self._lfilter = np.vectorize(lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0]),
                                              signature='(n),(m)->(c)')
 
-            self._normal_stream = Process._Stream(self, dataq, mode='other')
-            self._main_stream = Process._Stream(self, dataq, mode='other')
+            self._normal_stream = Process._Stream(self, dataq, process_type='queue')
+            self._main_stream = Process._Stream(self, dataq, process_type='queue')
 
             # self.data_tst_buffer = [i for i in range(5)]
             # self.iwin_tst_buffer = [i for i in range(5)]
             self._refresh_ev = threading.Event()
-
-            print('Initialization completed!')
+            if self._ui_mode:
+                print('Initialization completed!')
 
         except:
             print('Initialization error!')
             raise
 
     def start(self):
-
         # stdInput2stdOutput mode
         stream_callback = self._stream_callback
         # user input mode
@@ -336,7 +337,7 @@ class Process():
 
         try:
             self._pystream = self._paudio.open(format=pyaudio.get_format_from_width(self._sampwidth),
-                                               channels=self._nchannels,
+                                               channels=self.nchannels,
                                                rate=self._frame_rate[0],
                                                frames_per_buffer=self._data_chunk,
                                                input_device_index=self._input_dev_id,
@@ -347,7 +348,7 @@ class Process():
 
             # The server blocks all active threads
             # del self._threads[:]
-            self._queue.join()
+            # self._queue.join()
 
         except:
             print('failed to start!')
@@ -398,12 +399,7 @@ class Process():
         # self.a1 = time.perf_counter()
         return None, pyaudio.paContinue
 
-
     def _win_mono(self, data):
-        # plt.plot(data, label='data')
-        # plt.legend()
-        # plt.show()
-
         if self._primary_filter.is_set():
             data = upfirdn(self._filters[0], data, down=self._constants[1]).astype(self._constants[0])
 
@@ -433,7 +429,7 @@ class Process():
             (self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
         Tools.push(self._win_buffer[0], data[0])
 
-        # range(self._nchannels)[1:]
+        # range(self.nchannels)[1:]
         for i in self._constants[2]:
             final.append(np.vstack((self._win_buffer[i][1], np.hstack(
                 (self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
@@ -486,7 +482,7 @@ class Process():
         while 1:
 
             # check primary filter state
-            data = self._iwin(self._main_stream.get())
+            data = self._main_stream.get()
             # Tools.push(self.iwin_tst_buffer, data)
 
             if not self._mono_mode:
@@ -548,7 +544,7 @@ class Process():
     def _main(self, thread_id):
         while 1:
             try:
-                inp = input('\n_main>> ').strip().lower()
+                inp = self._safe_input('\n_main>> ').strip().lower()
 
                 # _________________________________________________________________add instruction
                 if not inp.find('add '):
@@ -649,10 +645,10 @@ class Process():
                             raise Error('^^^^^^^^^^^^^^^^^^^^^^Buffer is Empty ^^^^^^^^^^^^^^^^^^^^^^')
 
                     elif not inp.find('pip'):
-                        if len(self._pipe_database):
+                        if len(self.main_pipe_database):
                             inp = inp.replace('pip', '', 1).strip()
                             if not inp:
-                                for inx, i in enumerate(self._pipe_database):
+                                for inx, i in enumerate(self.main_pipe_database):
                                     print(
                                         f'{inx}: {i.name}, State: {(i.pip.is_alive() and "Streamed") or (not i.pip.is_alive()) and "Stopped"}',
                                         f' Number of Stages: {len(i.pip)}')
@@ -762,7 +758,7 @@ class Process():
                     raise Error('Please enter valid statement')
 
             except Error as msg:
-                print('Error:! ', msg)
+                self._safe_print('Error:! ', msg)
 
     def recorder(self, enable_compressor=True,
                  noise_sampling_duration=10,
@@ -791,9 +787,9 @@ class Process():
             # disable echo
             self.echo(enable=False)
 
-        sample = [self._iwin(self._main_stream.get())]
+        sample = [self._main_stream.get()]
         for i in range(duration):
-            sample = np.vstack((sample, [self._iwin(self._main_stream.get())]))
+            sample = np.vstack((sample, [self._main_stream.get()]))
             if enable_ui: progress.update(step)
 
         if echo:
@@ -828,9 +824,9 @@ class Process():
             if echo:
                 self.echo(enable=False)
 
-            sample = [self._iwin(self._main_stream.get())]
+            sample = [self._main_stream.get()]
             for i in range(duration):
-                sample = np.vstack((sample, [self._iwin(self._main_stream.get())]))
+                sample = np.vstack((sample, [self._main_stream.get()]))
                 if enable_ui:  progress.update(step)
 
             # sample preprocessing
@@ -922,8 +918,8 @@ class Process():
             self._iwin_buffer = [np.zeros(win_len)]
             self._win_buffer = [np.zeros(win_len), np.zeros(win_len)]
         else:
-            self._iwin_buffer = [np.zeros(win_len) for i in range(self._nchannels)]
-            self._win_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self._nchannels)]
+            self._iwin_buffer = [np.zeros(win_len) for i in range(self.nchannels)]
+            self._win_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self.nchannels)]
         # format specifier used in struct.unpack    2
         # rms constant value                        3
         sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
@@ -946,21 +942,61 @@ class Process():
     def rdbu(self, arr):
         return Tools.dbu(np.max(arr) / self._constants[3])
 
-    def add_pipeline(self, name, pip):
-        self._pipe_database.append(Process._Stream(self, pip, name, 'multithreading'))
+    # ____________________________________________________ pipe line
+    def add_pipeline(self, name, pip, process_type='main', channel=None, stream_type='multithreading'):
+        '''
+        :param name: string; Indicates the name of the pipeline
+        :param pip: obj; Pipeline object/s
+                    Note:   In the multi_stream process type, pip argument must be an array of defined pipelines.
+                            the size of the array must be same as the number of input channels.
+        :param process_type: string; 'main', 'branch', 'multi_stream'
+            The DSP core process input data and pass it to all of the activated pipelines[if exist] and then
+            takes output from the main pipeline/s[multi_stream pipeline mode]
+
+        :param channel: obj; None or [0 to self.nchannel]
+            The input  data passed to pipeline can be an numpy array in
+            (self.nchannel, 2[2 windows in 1 frame], self.nperseg) dimension [None]
+            or mono (2, self.nperseg) dimension.
+            Note in mono mode[self.nchannel = 1 or mono mode activated] channel must have None value.
+
+        :param stream_type: string; 'multithreading'(used in next versions)
+
+        :note:  multi_stream pipeline mode: If the process_type has a value of  'multi_stream', then multi_stream pipeline
+                mode must be activated. In this mode there's most be self.nchannel pipelines
+                as an array in the pip argument.
+
+
+        :return: the pipeline must process data and return it to the core with the  dimensions as same as the input.
+        '''
+        stream_type = 'multithreading'
+
+
+        # n-dim main pip
+        if process_type == 'main' or process_type == 'multi_stream':
+            self.main_pipe_database.append(Process._Stream(self, pip, name, stream_type=stream_type, process_type=process_type))
+
+        elif process_type == 'branch':
+            self.branch_pipe_database.append(Process._Stream(self, pip, name, stream_type=stream_type, channel=channel, process_type=process_type))
+
+        # reserved for the next versions
+        else:
+            pass
+
 
     def set_pipeline(self, name, enable=True):
         if not enable:
             self._main_stream.clear()
             self._main_stream.set(self._normal_stream)
             return
-        for obj in self._pipe_database:
+        for obj in self.main_pipe_database:
             if name == obj.name:
-                if obj.pip.is_alive():
-                    self._main_stream.clear()
-                    self._main_stream.set(obj)
-                else:
-                    raise Error(f'Error: {name} pipeline dont alive!')
+                assert obj.process_type == 'main' or obj.process_type == 'multi_stream'
+                if obj.process_type == 'multi_stream':
+                    for i in obj.pip:
+                        assert i.is_alive(), f'Error: {name} pipeline dont alive!'
+                self._main_stream.clear()
+                self._main_stream.set(obj)
+
 
     def add_record(self, name,
                    enable_compressor=True,
@@ -1049,27 +1085,160 @@ class Process():
         return arr.T.reshape(np.prod(arr.shape))
 
     class _Stream:
-        def __init__(self, other, obj, name=None, mode='multiprocessing'):
-            self.mode = mode
-            if mode == 'multithreading':
+
+        def __init__(self, other, obj, name=None, stream_type='multithreading', channel=None,  process_type='main'):
+
+            self.stream_type = stream_type
+            self.process_obj = other
+            self.process_type = process_type
+            self.pip = obj
+            self.channel = channel
+            self.name = name
+            self._data_indexer = lambda data: data[channel]
+
+            if process_type == 'main' and type(obj) == list and len(obj) == other.nchannels and channel is None:
+                self.process_type = 'multi_stream'
+
+            if process_type == 'multi_stream':
+                if not channel is None:
+                    raise Error('In multi_stream  mode channel value must have None value(see documentation)')
+                elif not type(obj) == list or not len(obj) == other.nchannels:
+                    raise Error('In multi_stream  mode pip argument must be a'
+                                ' list with length of number of data channels')
+                elif other.nchannels < 2 or other._mono_mode:
+                    raise Error('The multi_stream mode just works when the number of input channels '
+                                'is set to be more than 1')
+
+            elif process_type == 'main':
+                if not channel is None and not(type(channel) is int and channel <= other.nchannels):
+                    raise Error('Control channel value')
+
+
+            if stream_type == 'multithreading':
+                if process_type == 'main':
+                    # obj.insert(0, other._win, init=(other.windowing.init, ))
+                    self.put = self._main_put
+                    self.clear = obj.clear
+                    self.sget = self._main_get
+                    self.get = self._main_get
+
+                elif process_type == 'multi_stream':
+                    self.put = self._multi_main_put
+                    self.clear = self._multi_main_clear
+                    self.sget = self._multi_main_get
+                    self.get = self._multi_main_get
+
+                elif process_type == 'branch':
+                    self.put = obj.put
+                    self.clear = obj.clear
+                    self.sget = obj.get
+                    self.get = obj.get
+
+                elif process_type == 'queue':
+                    self.put = self._main_put
+                    self.clear = obj.queue.clear
+                    self.sget = self._main_get
+                    self.get = self._main_get
+
+                if channel is None or self.process_obj._mono_mode or (self.process_obj.nchannels == 1):
+                    self._data_indexer = lambda data: data
+            else:
+                pass
                 # obj.insert(0, np.vectorize(other._win, signature=''))
                 # pickle.dumps(obj._config['authkey'])
-                obj.insert(0, other._win, init=(other.windowing.init, ))
-                self.put = obj.put
-                self.clear = obj.clear
-                self.sget = obj.get
-                self.pip = obj
-                self.name = name
-                self.get = obj.get
-            else:
-                self.put = obj.put_nowait
-                self.clear = obj.queue.clear
-                self.get = lambda: other._win(obj.get())
-                self.sget = obj.get
+                # reserved for next versions
+                # self.put = obj.put_nowait
+                # self.clear = obj.queue.clear
+                # self.get = lambda: other._win(obj.get())
+                # self.sget = obj.get
+
+        def _main_put(self, data):
+            data = self.process_obj._win(data)
+            for branch in self.process_obj.branch_pipe_database:
+                branch.put(branch._data_indexer(data))
+            # print(self.process_obj.branch_pipe_database)
+            self.pip.put(data)
+
+        def _main_get(self, *args):
+            return self.process_obj._iwin(self.pip.get(*args))
+
+        def _multi_main_put(self, data):
+
+            if self.process_obj._primary_filter.is_set():
+                data = self.process_obj._upfirdn(self.process_obj._filters[0], data, self.process_obj._constants[1]).astype(self.process_obj._constants[0])
+
+            final = []
+            # Channel 0
+            win = np.vstack((self.process_obj._win_buffer[0][1], np.hstack(
+                (self.process_obj._win_buffer[0][1][self.process_obj._nhop:], self.process_obj._win_buffer[0][0][:self.process_obj._nhop])))) * self.process_obj._window
+
+            Tools.push(self.process_obj._win_buffer[0], data[0])
+            self.pip[0].put(win)
+            final.append(win)
+            # range(self.process_obj.nchannels)[1:]
+            for i in self.process_obj._constants[2]:
+                win = np.vstack((self.process_obj._win_buffer[i][1], np.hstack(
+                    (self.process_obj._win_buffer[i][1][self.process_obj._nhop:], self.process_obj._win_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
+
+                Tools.push(self.process_obj._win_buffer[i], data[i])
+                self.pip[i].put(win)
+                final.append(win)
+            # for 2 channel win must be an 2, 2, self.process_obj._data_chunk(e.g. 256)
+            # reshaping may create some errors
+            # return data
+            for branch in self.process_obj.branch_pipe_database:
+                branch.put(branch._data_indexer(final))
+            
+
+        def _multi_main_get(self, *args):
+            # channel 0
+            win = self.pip[0].get(*args)
+            retval = np.hstack((self.process_obj._iwin_buffer[0][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
+                     win[0]
+            self.process_obj._iwin_buffer[0] = win[1]
+
+            for i in self.process_obj._constants[2]:
+                win = self.pip[i].get(*args)
+                tmp = np.hstack((self.process_obj._iwin_buffer[i][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
+                      win[0]
+                retval = np.vstack((retval, tmp))
+                self.process_obj._iwin_buffer[i] = win[1]
+
+            return retval.astype(self.process_obj._constants[0])
+        
+        def _multi_main_clear(self):
+            for i in self.pip:
+                i.clear()
 
         def set(self, other):
             if isinstance(other, self.__class__):
-                (self.put, self.clear, self.get) = (other.put, other.clear, other.get)
+                assert  ('main' in self.process_type or\
+                         'multi_stream' in self.process_type or\
+                         'queue' in self.process_type)\
+                        and\
+                        ('main' in other.process_type or\
+                         'multi_stream' in other.process_type or\
+                         'queue' in other.process_type),\
+                        'set is enabled only for "main or multi_stream" modes'
+                (self.put,
+                 self.clear,
+                 self.get,
+                 self.sget,
+                 self.stream_type,
+                 self.process_obj,
+                 self.process_type,
+                 self.pip,
+                 self.channel,
+                 self.name) = ( other.put,
+                                        other.clear,
+                                        other.get,
+                                        other.sget,
+                                        other.stream_type,
+                                        other.process_obj,
+                                        other.process_type,
+                                        other.pip,
+                                        other.channel,
+                                        other.name)
 
         def __eq__(self, other):
             if isinstance(other, self.__class__):
@@ -1080,7 +1249,7 @@ class Process():
             return not self.__eq__(other)
 
         def type(self):
-            return self.mode
+            return self.process_type
 
 
 class Error(Exception):

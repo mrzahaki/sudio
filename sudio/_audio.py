@@ -220,6 +220,7 @@ def record(dev_id=None,
 
     # Initialize array to store frames
     frames = stream.read(data_chunk)
+
     # Store data in chunks for 3 seconds
     for i in range(1, int(rate / data_chunk * record_time)):
         frames += stream.read(data_chunk)
@@ -233,7 +234,7 @@ def record(dev_id=None,
     if ui_mode:
         print('Finished recording')
 
-    frames = b''.join(frames)
+    # frames = b''.join(frames)
     sample_width = p.get_sample_size(data_format)
 
     if output == 'frame':

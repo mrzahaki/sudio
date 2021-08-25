@@ -1,0 +1,115 @@
+<Gfft>:
+    freq_move_knob:freq_move_knob
+    freq_span_knob:freq_span_knob
+
+    canvas:
+        Color:
+            rgba: .8, .8, .8, 1
+        Line:
+            points: self.points
+
+        Color:
+            rgba: .8, .8, .8, .4
+        Line:
+            width: 1.
+            rectangle: (self.xpos_start, self.y_pos_start, self.xpos_end - self.xpos_start, self.y_pos_end - self.y_pos_start )
+        Line:
+            width: 1.
+            rectangle: (self.xpos_start-self.outline_border, self.y_pos_start-self.outline_border, self.xpos_end - self.xpos_start + self.outline_border, self.y_pos_end - self.y_pos_start + self.outline_border)
+
+
+    GridLayout:
+        rows: 2
+        size: self.minimum_size
+        size_hint: None, None
+        GridLayout:
+            cols: 4
+            size_hint: 1, None
+            size: self.minimum_size
+
+            Label:
+                size_hint:None,None
+                size: 50, 40
+                font_size: '11sp'
+                text: 'X opacity'
+            Slider:
+                value: .2
+                on_value: root.xaxis_color.a = float(args[1])
+
+                value_track:True
+                size_hint:None,None
+                size: 160, 40
+                value_track_color: .4, .4, .4, .2
+                background_width: 12
+                min: 0
+                max: 1
+                step: .02
+                cursor_size: 15, 15
+
+            Label:
+                size_hint:None,None
+                size: 50, 40
+                font_size: '11sp'
+                text: 'Y opacity'
+            Slider:
+                value: .2
+                on_value: root.waxis_color.a = float(args[1])
+
+                value_track:True
+                size_hint:None,None
+                size: 160, 40
+                value_track_color: .4, .4, .4, .2
+                background_width: 12
+                min: 0
+                max: 1
+                step: .02
+                cursor_size: 15, 15
+
+        GridLayout:
+            cols: 4
+            size_hint: 1, None
+            size: self.minimum_size
+            padding: [5, 5]
+            ToggleButton:
+                size_hint: None, None
+                size: 100, 25
+                text: 'Start/Pause'
+                on_state: root.fft_gui_start(self.state == 'down')
+
+            Button:
+                size_hint: None, None
+                size: 100, 25
+                text: 'Clear'
+                on_press: root.points = root.points2 = []
+    FloatLayout:
+        pos:(0, 0)
+        GridLayout:
+            cols: 2
+            size_hint: 1, None
+            size: self.minimum_size
+            spacing: 400
+            padding: [550, 5]
+
+            Knob:
+                id:freq_span_knob
+                size: 70, 70
+                min:1
+                max:101
+                value: 0
+                show_marker: True
+                knobimg_source: "img/knob_metal.png"
+                marker_img: "img/bline2_off.png"
+                markeroff_color: 0.4, 0.4, .4, 1
+                on_value: root.knob_update(root.freq_span_knob, float(args[1]))
+            Knob:
+                id:freq_move_knob
+                size: 70, 70
+                min:1
+                max:101
+                value: 0
+                show_marker: True
+                knobimg_source: "img/knob_black.png"
+                marker_img: "img/bline2_off.png"
+                markeroff_color: 0.4, 0.4, .4, 1
+                on_value: root.knob_update(root.freq_move_knob, float(args[1]))
+
