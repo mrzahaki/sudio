@@ -2,26 +2,22 @@
 
 from ._register import Members as Mem
 from ._register import static_vars
-import multiprocessing
 from ._tools import Tools
 from ._audio import *
 from ._pipeline import Pipeline
 import tqdm
-from scipy.signal import upfirdn, firwin, lfilter, check_COLA, get_window, check_NOLA
+from scipy.signal import upfirdn, firwin, lfilter, get_window, check_NOLA
 import threading
 import queue
 import pandas as pd
 import pyaudio
-import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 
 
 # @Mem._process.parent
 @Mem.sudio.add
 class Process():
     USER_PATH = './user.sufile'
-    HUMAN_VOICE_FREQ = int(8e3)  # Hz
     SOUND_BUFFER_SIZE = 1000
     SAMPLE_CATCH_TIME = 10  # s
     SAMPLE_CATCH_PRECISION = 0.1  # s
@@ -31,7 +27,11 @@ class Process():
 
 
 
-    def __init__(self, std_input_dev_id=None, frame_rate=48000, nchannels=2,
+    def __init__(self,
+                 std_input_dev_id=None,
+                 std_output_dev_id=None,
+                 frame_rate=48000,
+                 nchannels=2,
                  data_format=pyaudio.paInt16,
                  mono_mode=True,
                  optimum_mono=False,
@@ -44,7 +44,7 @@ class Process():
                  input_dev_callback=None,
                  output_dev_callback=None):
         '''
-
+        :param std_input_dev_id: Unsigned Integer(None to default)
         :param IO_mode:  Input/Output processing mode can be:
                         "stdInput2stdOutput":
                             default mode; standard input stream (system audio or any
@@ -113,55 +113,12 @@ class Process():
                         general_gaussian (needs power, width), general_hamming (needs window coefficient),
                         dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
         :param NOLA_check: NOLA check for window definition
-
-        ""
-            :Note main user interface instructions:
-                echo [on / off]
-
-            set [options] [param] [value] [states]
-                param 'primary filter':
-                    states: off, on
-                    option: --fc
-
-                param 'pip':
-                    states: off, on
-                    value: name of pipeline
-
-
-            add [options] [param] [value]
-                param 'record':
-                    value: name of user
-                    options:
-                        [[-t] = [value]]: recording duration
-                        [-c]: set compressor ON
-
-            ls [user name(optional) or special params]
-                list name of current user
-                with user name: list properties of the [user name]
-                Note:
-
-                special params:
-                    'pip':
-                        value: pipeline name or '.' to show all of the pipelines
-
-                    'database':
-                        to show data base contents
-
-
-            save [user name or special params]
-                save local database to stable database.
-                note you can use '.' to save all of the saved instances
-                special params:
-
-            load [user name or special params]
-                load stable database to local database.
-                note you can use '.' to load all of the saved instances
-                special params:
-        ""
         '''
         # _______________________________________________________First Initialization
         if ui_mode:
             print('Initialization...')
+        np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+        np.warnings.filterwarnings('ignore', category=RuntimeWarning)
 
         self.branch_pipe_database_min_key = 0
         self._ui_mode = ui_mode
@@ -176,10 +133,10 @@ class Process():
             window = get_window(window, nperseg)
 
         if NOLA_check:
-            # assert check_COLA(window, nperseg, noverlap)
             assert check_NOLA(window, nperseg, noverlap)
 
         self.io_mode = IO_mode
+
         self.input_dev_callback = input_dev_callback
         self.output_dev_callback = output_dev_callback
 
@@ -189,19 +146,84 @@ class Process():
         record_period = nperseg / frame_rate
         self._record_period = record_period
         self._mono_mode = mono_mode
-        if std_input_dev_id is None:
 
-            rec = record(output='array', ui_mode=False)
-            self.nchannels = rec['nchannels']
-            self._frame_rate = [rec['frame rate']]
-            self._sampwidth = rec['sample width']
-            self._input_dev_id = rec['dev_id']
+        self._output_device_index = None
+        p = self._paudio = pyaudio.PyAudio()  # Create an interface to PortAudio
+        if std_input_dev_id is None:
+            if ui_mode:
+                dev = []
+
+                for i in range(p.get_device_count()):
+                    tmp = p.get_device_info_by_index(i)
+                    if tmp['maxInputChannels'] > 0:
+                        dev.append(tmp)
+                assert len(dev) > 0
+                print('\nplease choose input device from index :\n')
+                default_dev = p.get_default_input_device_info()['index']
+                for idx, j in enumerate(dev):
+                    msg = f'Index {idx}: '\
+                        f' Name: {j["name"]},'\
+                        f' Input Channels:{j["maxInputChannels"]},'\
+                        f' Sample Rate:{j["defaultSampleRate"]},'\
+                        f' Host Api:{j["hostApi"]}'
+                    if default_dev == idx:
+                        msg += '  <<default>>'
+                    print(msg)
+
+                while 1:
+                    try:
+                        dev_id = int(input('index for input dev: '))
+                        break
+                    except:
+                        print('please enter valid index!')
+
+                self._frame_rate = [int(dev[dev_id]['defaultSampleRate'])]
+                self.nchannels = dev[dev_id]['maxInputChannels']
+                self._input_dev_id = dev_id
+
+            else:
+                dev = p.get_default_input_device_info()
+                self._frame_rate = [int(dev['defaultSampleRate'])]
+                self.nchannels = dev['maxInputChannels']
+                self._input_dev_id = dev['index']
 
         else:
             self._frame_rate = [frame_rate]
-            self._sampwidth = pyaudio.get_sample_size(data_format)
             self.nchannels = nchannels
             self._input_dev_id = std_input_dev_id
+
+        self._sampwidth = pyaudio.get_sample_size(data_format)
+        # self._sampwidth = data_format
+        if self.io_mode.endswith("stdOutput"):
+            if std_output_dev_id is None and ui_mode:
+                dev = []
+
+                for i in range(p.get_device_count()):
+                    tmp = p.get_device_info_by_index(i)
+                    if tmp['maxOutputChannels'] > 0:
+                        dev.append(tmp)
+                assert len(dev) > 0
+                print('\nplease choose output device from index :\n')
+                default_dev = p.get_default_output_device_info()['index']
+                for idx, j in enumerate(dev):
+                    msg = f'Index {idx}:'\
+                        f'  Name: {j["name"]},'\
+                        f' Channels:{j["maxOutputChannels"]},'\
+                        f' Sample Rate:{j["defaultSampleRate"]},'\
+                        f' Host Api:{j["hostApi"]}'
+                    if default_dev == idx:
+                        msg += '  <<default>>'
+                    print(msg)
+
+                while 1:
+                    try:
+                        self._output_device_index = int(input('index for output dev: '))
+                        break
+                    except:
+                        print('please enter valid index!')
+
+            else:
+                self._output_device_index = std_output_dev_id
 
         # ______________________________________________________________Vectorized dbu calculator
         self._vdbu = np.vectorize(self.rdbu, signature='(m)->()')
@@ -223,21 +245,23 @@ class Process():
             self._process_nchannel = self.nchannels
 
         # ______________________________________________________________sample rate and pre filter processing
-        self._frame_rate.append(Process.HUMAN_VOICE_FREQ * 2)
+        self.prim_filter_cutoff = int(8e3)  # Hz
+        self._frame_rate.append(self.prim_filter_cutoff * 2)
         downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
         self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
-        self._filters = [firwin(30, Process.HUMAN_VOICE_FREQ, fs=self._frame_rate[0]),
-                         firwin(30, int(self._frame_rate[1] / 2 - 1e-6), fs=self._frame_rate[1])]
+        self._filters = [firwin(5, self.prim_filter_cutoff, fs=self._frame_rate[0])]
         self._data_chunk = nperseg
         # data type of buffer                       0
         # used in callback method(down sampling)    1
         # used in _win_nd                           2
         # rms constant value                        3
+        #                                           4
         # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
         self._constants = [f'int{self._sampwidth * 8}',
                            downsample,
                            range(self.nchannels)[1:],
-                           ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225)]
+                           ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225),
+                           range(self.nchannels)]
         self._threads = []
         # _______________________________________________________user _database define
         try:
@@ -253,8 +277,8 @@ class Process():
         try:
             self._semaphore = [threading.Semaphore()]
 
-            self._paudio = pyaudio.PyAudio()  # Create an interface to PortAudio
             dataq = queue.Queue(maxsize=Process.SOUND_BUFFER_SIZE)
+            self._recordq = [threading.Event(), queue.Queue(maxsize=Process.SOUND_BUFFER_SIZE)]
             self._queue = queue.Queue()
 
             self._echo = threading.Event()
@@ -265,8 +289,6 @@ class Process():
             self._pipeline_ev = threading.Event()
             #_______________________________________threading management
             self._functions = []
-            if self._ui_mode:
-                self._functions.append(self._main)
             # self._functions.append(self._process)
             self._functions.append(self.__post_process)
 
@@ -277,28 +299,18 @@ class Process():
             # ____________________________________________________windowing object define and initialization
             # post, pre
             self._nhop = nperseg - noverlap
+            self._noverlap = noverlap
             self._window = window
-
-            self.windowing = Windowing(self._mono_mode,
-                                       self.nchannels,
-                                       self._window_type,
-                                       f'int{self._sampwidth * 8}',
-                                       self._primary_filter.is_set(),
-                                       *self._frame_rate, self._data_chunk, self._nhop)
-
             # self._win_frame_rate = [self.main_fs, (self.primary_fc * 2)]
             # self._win_downsample_coef = int(np.round(self._win_frame_rate[0] / self._win_frame_rate[1]))
             # self._win_filter = firwin(30, self.primary_fc, fs=self._win_frame_rate[0])
             # self._win_window = get_window(self._window_type, self._nperseg)
             # self._win_nchannels_range = range(self.nchannels)
-            #
-            # if self._primary_filter.is_set():
-            #     self._win_filter_state.set()
 
             if mono_mode:
                 self._iwin_buffer = [np.zeros(nperseg)]
                 self._win_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
-                self._win = self.windowing.win_mono
+                self._win = self._win_mono
                 self._iwin = self._iwin_mono
                 self._upfirdn = lambda h, x, const: upfirdn(h, x, down=const)
                 self._lfilter = lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0])
@@ -310,7 +322,7 @@ class Process():
                 self._upfirdn = np.vectorize(lambda h, x, const: upfirdn(h, x, down=const),
                                              signature='(n),(m),()->(c)')
                 self._iwin = self._iwin_nd
-                self._win = self.windowing.win_nd
+                self._win = self._win_nd
                 # 3d mode
                 self._lfilter = np.vectorize(lambda h, x: lfilter(h, [1.0], x).astype(self._constants[0]),
                                              signature='(n),(m)->(c)')
@@ -375,6 +387,7 @@ class Process():
         in_data = Process.get_channels(in_data)
         # print(in_data.shape)
         # in_data = np.fromstring(in_data, self._constants[0])
+        # print(in_data.shape)
         try:
             self._main_stream.put(in_data.astype(self._constants[0]))
         except queue.Full:
@@ -400,6 +413,7 @@ class Process():
         return None, pyaudio.paContinue
 
     def _win_mono(self, data):
+
         if self._primary_filter.is_set():
             data = upfirdn(self._filters[0], data, down=self._constants[1]).astype(self._constants[0])
 
@@ -407,6 +421,8 @@ class Process():
         retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
                                                             self._win_buffer[0][:self._nhop])))) * self._window
         Tools.push(self._win_buffer, data)
+
+
         return retval
 
     def _win_nd(self, data):
@@ -414,30 +430,32 @@ class Process():
         # brief: Windowing data
         # Param 'data' shape depends on number of input channels(e.g. for two channel stream, each chunk of
         # data must be with the shape of (2, chunk_size))
+        if self._primary_filter.is_set():
+            data = self._upfirdn(self._filters[0], data, self._constants[1]).astype(self._constants[0])
 
         # retval frame consists of two window
         # that each window have the shape same as 'data' param shape(e.g. for two channel stream:(2, 2, chunk_size))
         # note when primary_filter is enabled retval retval shape changes depend on upfirdn filter.
         # In general form retval shape is
         # (number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
-        if self._primary_filter.is_set():
-            data = self._upfirdn(self._filters[0], data, self._constants[1]).astype(self._constants[0])
 
         final = []
         # Channel 0
-        final.append(np.vstack((self._win_buffer[0][1], np.hstack(
-            (self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
-        Tools.push(self._win_buffer[0], data[0])
+        # final.append(np.vstack((self._win_buffer[0][1], np.hstack(
+        #     (self._win_buffer[0][1][self._nhop:], self._win_buffer[0][0][:self._nhop])))) * self._window)
+        # Tools.push(self._win_buffer[0], data[0])
 
         # range(self.nchannels)[1:]
-        for i in self._constants[2]:
+        for i in self._constants[4]:
             final.append(np.vstack((self._win_buffer[i][1], np.hstack(
                 (self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
             Tools.push(self._win_buffer[i], data[i])
         # for 2 channel win must be an 2, 2, self._data_chunk(e.g. 256)
         # reshaping may create some errors
         # return data
-        return np.array(final)
+        final = np.array(final)
+
+        return final
 
     def _iwin_mono(self, win):
         retval = np.hstack((self._iwin_buffer[0][self._nhop:], win[1][:self._nhop])) + win[0]
@@ -474,27 +492,30 @@ class Process():
         stream_out = self._paudio.open(
             format=pyaudio.get_format_from_width(self._sampwidth),
             channels=self._process_nchannel,
+            output_device_index=self._output_device_index,
             rate=self._frame_rate[0], input=False, output=True)
         stream_out.start_stream()
         # flag = self._primary_filter.is_set()
         # framerate = self._frame_rate[1]
-        not_user_mode = not "usr" in self.io_mode[4:]
+        user_mode = "usr" in self.io_mode[4:]
+        rec_ev, rec_queue = self._recordq
         while 1:
 
             # check primary filter state
             data = self._main_stream.get()
             # Tools.push(self.iwin_tst_buffer, data)
 
+            if rec_ev.isSet():
+                rec_queue.put_nowait(data)
+
             if not self._mono_mode:
                 data = Process.shuffle2d_channels(data)
             # data = data.T.reshape(np.prod(data.shape))
             # print(data.shape)
-            if not_user_mode:
-                self._echo.wait()
+            if self._echo.isSet():
                 stream_out.write(data.tostring())
-            else:
-                if self._echo.isSet():
-                    stream_out.write(data.tostring())
+
+            if user_mode:
                 self.output_dev_callback(data)
 
             if self._refresh_ev.is_set():
@@ -504,10 +525,10 @@ class Process():
                 stream_out.close()
                 # create new stream
                 if flag:
-                    framerate = rate = self._frame_rate[1]
+                    rate = self._frame_rate[1]
                 else:
                     rate = self._frame_rate[0]
-
+                # print(rate)
                 stream_out = self._paudio.open(
                     format=pyaudio.get_format_from_width(self._sampwidth),
                     channels=self._process_nchannel,
@@ -515,295 +536,58 @@ class Process():
                 stream_out.start_stream()
                 self._main_stream.clear()
 
-    # # working in two mode: 'recognition'->'r' mode and 'new-user'->'n' mode
-    # def _process(self, thread_id):
-    #     while 1:
-    #         time.sleep(1)
-    #         # try:
-    #         #     self.speaker_recognition_ev.wait()
-    #         #     a = 20 * np.log10(np.max(
-    #         #         correlate(self._main_stream.get(), self._local_database.loc['hussein']['o'][1:4, :].reshape(4830),
-    #         #                   mode='valid')))
-    #         #
-    #         # except KeyError:
-    #         #     while not len(self._local_database): pass
-    #
-    #     # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
-    #     # # data len int(self._data_chunk/self._constants[1]) + 10
-    #     # format = f'<{int(self._data_chunk / self._constants[1]) + 10}{sampwidth}'
-    #     # # print(format)
-    #     # while 1:
-    #     #     self._semaphore[1].acquire()
-    #     #     if not len(self.recognized):
-    #     #         self.dataq.get()
-    #     #         continue
-    #     #
-    #     #     ding_data = struct.pack(format, *self.dataq.get().tolist())
-    #     #     self._semaphore[1].release()
-
-    def _main(self, thread_id):
-        while 1:
-            try:
-                inp = self._safe_input('\n_main>> ').strip().lower()
-
-                # _________________________________________________________________add instruction
-                if not inp.find('add '):
-                    inp = inp.replace('add ', '', 1).strip()
-
-                    if 'record ' in inp:
-                        self._safe_print('^^^^^^^^^^Please Wait...^^^^^^^^^^^^^^')
-                        enable_compressor = False
-                        record_duration = Process.SAMPLE_CATCH_TIME
-                        if '-t' in inp:
-                            tmp = inp.split('-t')[1].strip().split(' ')
-                            if not '=' == tmp[0]:
-                                raise Error('Please enter valid statement')
-                            record_duration = int(tmp[1].strip())
-                        if '-c' in inp:
-                            enable_compressor = True
-                        self.add_record(inp.split('record ')[1],
-                                        enable_compressor=enable_compressor,
-                                        noise_sampling_duration=Process.SAMPLE_CATCH_TIME,
-                                        record_duration=record_duration,
-                                        catching_precision=Process.SAMPLE_CATCH_TIME)
-
-                    else:
-                        raise Error('Please enter valid statement')
-                    continue
-
-                # _________________________________________________________________echo mode
-                if not inp.find('echo '):
-                    inp = inp.replace('echo ', '', 1).strip()
-                    if inp == 'on':
-                        self.echo()
-                        self._safe_print('^^^^^^^^^^^^^^^^Echo mode is active!^^^^^^^^^^^^^^^^')
-
-                    elif inp == 'off':
-                        self.echo(enable=False)
-
-                    else:
-                        raise Error('Please enter valid statement')
-                    continue
-                # _________________________________________________________________load instruction
-                if not inp.find('load '):
-                    inp = inp.replace('load ', '', 1).strip()
-                    try:
-                        if inp == '.':
-                            load_all = True
-                        elif inp:
-                            load_all = False
-                        else:
-                            raise Error('Please enter valid statement')
-                        self.load(inp, load_all=load_all)
-                        print('^^^^^^^^^^^^^^^^Loaded successfully!^^^^^^^^^^^^^^^^')
-
-                    except KeyError:
-                        raise Error('Please enter valid statement.')
-                    except ValueError:
-                        raise Error('The entered name is already registered in the _database.')
-
-                    continue
-                # _________________________________________________________________save instruction
-                # Set/Change current settings
-                if not inp.find('save '):
-                    inp = inp.replace('save ', '', 1).strip().lower()
-                    try:
-                        if inp == '.':
-                            save_all = True
-                        elif inp:
-                            save_all = False
-                        else:
-                            raise Error('Please enter valid statement')
-                        self.save(inp, save_all=save_all)
-
-                        print('^^^^^^^^^^^^^^^^Saved successfully!^^^^^^^^^^^^^^^^')
-
-                    except KeyError:
-                        raise Error('Please enter valid statement.')
-                    except ValueError:
-                        raise Error('The entered name is already registered in the database.')
-
-                    continue
-
-                # _________________________________________________________________ls instruction
-                # Set/Change current settings
-                if not inp.find('ls'):
-
-                    inp = inp.replace('ls', '', 1).strip()
-                    if not inp:
-                        if len(self._local_database):
-                            for inx, i in enumerate(self._local_database.index):
-                                print(f'{inx}: {i}')
-                        else:
-                            raise Error('^^^^^^^^^^^^^^^^^^^^^^Buffer is Empty ^^^^^^^^^^^^^^^^^^^^^^')
-
-                    elif inp == 'database':
-                        if len(self._database):
-                            for inx, i in enumerate(self._database.index):
-                                print(f'{inx}: {i}')
-                        else:
-                            raise Error('^^^^^^^^^^^^^^^^^^^^^^Buffer is Empty ^^^^^^^^^^^^^^^^^^^^^^')
-
-                    elif not inp.find('pip'):
-                        if len(self.main_pipe_database):
-                            inp = inp.replace('pip', '', 1).strip()
-                            if not inp:
-                                for inx, i in enumerate(self.main_pipe_database):
-                                    print(
-                                        f'{inx}: {i.name}, State: {(i.pip.is_alive() and "Streamed") or (not i.pip.is_alive()) and "Stopped"}',
-                                        f' Number of Stages: {len(i.pip)}')
-                            else:
-                                for i in self.pipe_databases:
-                                    if inp == i[0]:
-                                        print(
-                                            f'{i.name}, State: {(i.pip.is_alive() and "Streamed") or (not i.pip.is_alive()) and "Stopped"}',
-                                            f' Number of Stages: {len(i.pip)}')
-                        else:
-                            raise Error('^^^^^^^^^^^^^^^^^^^^^^Pipeline is Empty ^^^^^^^^^^^^^^^^^^^^^^')
-
-                    else:
-                        if len(self._local_database):
-                            try:
-                                self._safe_print(
-                                    self._local_database.loc[inp][['Noise', 'Frame Rate', 'Sample Width', 'nchannels']])
-                                if self._safe_input('Play sound? "yes"').strip().lower() == 'yes':
-                                    play(self._local_database.loc[inp]['o'], inp_format='array',
-                                         sampwidth=self._local_database.loc[inp]['Sample Width'],
-                                         nchannels=self._local_database.loc[inp]['nchannels'],
-                                         framerate=self._local_database.loc[inp]['Frame Rate'])
-                            except KeyError:
-                                raise Error('Please enter valid statement')
-                        else:
-                            raise Error('^^^^^^^^^^^^^^^^^^^^^^Buffer is Empty ^^^^^^^^^^^^^^^^^^^^^^')
-                    continue
-                # _________________________________________________________________set instruction
-                # Set/Change current settings
-                if not inp.find('set '):
-
-                    inp = inp.replace('set ', '', 1).strip()
-                    if not inp:
-                        raise Error('Please enter valid statement')
-                    # print(inp)
-                    # Activate the primary filter
-                    if 'primary filter' in inp:
-                        inp = inp.replace('primary filter', '', 1).strip()
-                        if not inp:
-                            raise Error('Please enter valid statement')
-                        # print(inp)
-                        if 'on' in inp:
-                            if self._primary_filter.is_set():
-                                raise Error('Already activated!')
-                            self._primary_filter.set()
-                            inp = inp.replace('on', '', 1).strip()
-                            # print(inp)
-                            if '--fc' in inp:
-                                # print(inp)
-                                inp = inp.replace('--fc', '', 1).strip()
-                                if inp.find('='):
-                                    raise Error('Please enter valid statement')
-                                inp = int(inp.split('=')[1].strip())
-                                # print(inp)
-                                assert inp < (self._frame_rate[0] / 2)
-                                Process.HUMAN_VOICE_FREQ = inp
-                            self._refresh()
-
-                            self._safe_print('Ok')
-
-                        elif 'off' in inp:
-                            self._primary_filter.clear()
-                            print('Ok')
-                        else:
-                            raise Error('Please enter valid statement')
-
-                    elif 'pip' in inp:
-                        inp = inp.replace('pip', '', 1).strip()
-                        if not inp:
-                            raise Error('Please enter valid statement')
-                        # print(inp)
-                        if 'on' in inp:
-
-                            inp = inp.replace('on', '', 1).strip()
-                            # print(inp)
-                            if not inp:
-                                raise Error('Please enter valid statement')
-                            # name of pipeline
-                            self.set_pipeline(inp)
-                            self._safe_print('Ok')
-
-                        elif 'off' in inp:
-                            self.set_pipeline('', enable=False)
-                            print('Ok')
-                        else:
-                            raise Error('Please enter valid statement')
-
-                    # elif 'speaker recognition' in inp:
-                    #     inp = inp.replace('speaker recognition', '', 1).strip()
-                    #     if not inp:
-                    #         raise Error('Please enter valid statement')
-                    #
-                    #     if 'on' in inp:
-                    #         self.speaker_recognition_ev.set()
-                    #         # inp = inp.replace('on', '', 1).strip()
-                    #         self._safe_print('Ok')
-                    #
-                    #     elif 'off' in inp:
-                    #         self.speaker_recognition_ev.clear()
-                    #         print('Ok')
-                    #     else:
-                    #         raise Error('Please enter valid statement')
-                    else:
-                        raise Error('Please enter valid statement')
-                    continue
-                else:
-                    raise Error('Please enter valid statement')
-
-            except Error as msg:
-                self._safe_print('Error:! ', msg)
-
     def recorder(self, enable_compressor=True,
                  noise_sampling_duration=10,
                  record_duration=10,
                  enable_ui=True,
                  play_recorded=True,
-                 catching_precision=0.1):
+                 catching_precision=0.1,
+                 echo_mode=False,
+                 rec_start_callback=None):
         # clear data queue
         self._main_stream.clear()
-
-        if enable_ui: progress = tqdm.tqdm(range(100), f"Processing.. ")
-        # Waiting for Process processing to be disabled
-
-        if enable_ui: progress.update(5)
-
-        # start _main _process
-        # record sample for  SAMPLE_CATCH_TIME duration
-        duration = int(np.round(noise_sampling_duration / self._record_period)) - 1
-
+        rec_ev, rec_queue = self._recordq
+        progress = None
         if enable_ui:
-            step = 40 / duration
-            progress.set_description('Processing environment')
+            progress = tqdm.tqdm(range(100), f"Processing.. ")
+            # Waiting for Process processing to be disabled
+            progress.update(5)
+        if enable_compressor:
+            duration = int(np.round(noise_sampling_duration / self._record_period)) - 1
+            if enable_ui:
+                # start _main _process
+                # record sample for  SAMPLE_CATCH_TIME duration
+                step = 40 / duration
+                progress.set_description('Processing environment')
+        elif enable_ui:
+            step = 40
 
         echo = self._echo.isSet()
-        if echo:
-            # disable echo
-            self.echo(enable=False)
+        if enable_compressor:
+            if echo and not echo_mode:
+                self.echo(enable=False)
+            rec_ev.set()
+            sample = [rec_queue.get()]
+            for i in range(duration):
+                sample = np.vstack((sample, [rec_queue.get()]))
+                if enable_ui: progress.update(step)
+            rec_ev.clear()
 
-        sample = [self._main_stream.get()]
-        for i in range(duration):
-            sample = np.vstack((sample, [self._main_stream.get()]))
-            if enable_ui: progress.update(step)
-
-        if echo:
-            self.echo()
-        noise = np.mean(self._vdbu(sample))
-
-        flag = False
-        if enable_ui:
-            self._safe_print(
-                f'\n^^^^^^^^^^Ready to record for  {record_duration} seconds^^^^^^^^^^^^^^')
-            if not self._safe_input(f'Are you ready? enter "yes"\nNoise Level: {noise} dbu').strip().lower() == 'yes':
-                # record sample for  SAMPLE_CATCH_TIME duration
-                # free input_data_stream before _process
-                return None
+            if echo and not echo_mode:
+                self.echo()
+            # if not self._mono_mode:
+            #     sample = self.shuffle3d_channels(sample)
+            vdbu = self._vdbu(sample)
+            vdbu = vdbu[np.abs(vdbu) < np.inf]
+            noise = np.mean(vdbu)
+            # print(self._vdbu(sample))
+            if enable_ui :
+                self._safe_print(
+                    f'\n^^^^^^^^^^Ready to record for  {record_duration} seconds^^^^^^^^^^^^^^')
+                if not self._safe_input(f'Are you ready? enter "yes"\nNoise Level: {noise} dbu').strip().lower() == 'yes':
+                    # record sample for  SAMPLE_CATCH_TIME duration
+                    # free input_data_stream before _process
+                    return None
 
         while 1:
             if enable_ui:
@@ -821,72 +605,100 @@ class Process():
             if enable_ui:
                 step = 30 / duration
                 progress.set_description('Recording the conversation..')
-            if echo:
-                self.echo(enable=False)
 
-            sample = [self._main_stream.get()]
+            if echo and not echo_mode:
+                self.echo(enable=False)
+            if callable(rec_start_callback) :
+                if enable_compressor:
+                    tmp = rec_start_callback(self, {'noise':noise})
+                else:
+                    tmp = rec_start_callback(self)
+
+                if not tmp:
+                    return None
+            rec_ev.set()
+            sample = [rec_queue.get()]
             for i in range(duration):
-                sample = np.vstack((sample, [self._main_stream.get()]))
+                sample = np.vstack((sample, [rec_queue.get()]))
                 if enable_ui:  progress.update(step)
+            rec_ev.clear()
 
             # sample preprocessing
             if enable_compressor:
-                sample = self.compressor(sample,
+                sample = self._compressor(sample,
                                          progress,
                                          noise_base=noise + Process.SPEAK_LEVEL_GAP,
                                          final_period=catching_precision,
                                          base_period=self._record_period)
-            if enable_ui: progress.update(10)
-            # Waiting for Process processing to be enabled
+
+            if enable_ui:
+                progress.update(10)
+                # Waiting for Process processing to be enabled
+                progress.close()
+
+            if not self._mono_mode:
+                sample = self.shuffle3d_channels(sample)
+
             if play_recorded:
-                if not self._mono_mode:
-                    sample = self.shuffle3d_channels(sample)
                 framerate = self._audio_play_wrapper(sample)
 
-            if echo:
+            if echo and not echo_mode:
                 self.echo()
 
             if enable_ui:
                 if self._safe_input('\nTry again? "yes"').strip().lower() == 'yes':
                     continue
-                progress.close()
-                self._safe_print('Added successfully!')
-
-            return {'o': sample,
-                    'Noise': noise,
+                self._safe_print('Recorded successfully!')
+            retval = {'o': sample,
                     'Frame Rate': framerate,
-                    'nchannels': self._process_nchannel,
+                    'channels': self.nchannels,
                     'Sample Width': self._sampwidth,
                     'Base Period': self._record_period,
                     'Duraion': record_duration}
+            if enable_compressor:
+                retval['Noise'] = noise
+            return retval
 
     # sample must be a 2d array
     # final_period just worked in mono mode
-    def compressor(self, sample, progress, final_period=0.1, base_period=0.3, noise_base=-1e3):
+    def _compressor(self, sample, progress, final_period=0.1, base_period=0.3, noise_base=-1e3):
 
         assert sample.shape[0] * base_period > 3
-        progress.set_description('Processing..')
+        if progress:
+            progress.set_description('Processing..')
         # Break into different sections based on period time
         tmp = sample.shape[-1] * sample.shape[0]
         cols = Tools.near_divisor(tmp, final_period * sample.shape[-1] / base_period)
-        progress.update(5)
+        if progress:
+            progress.update(5)
         # Reshaping of arrays based on time period
         if self._mono_mode and final_period < base_period:
             sample = sample.reshape((int(tmp / cols), cols))
-        progress.update(5)
+        if progress:
+            progress.update(5)
         # time filter
         dbu = self._vdbu(sample)
+        # tmp = sample.shape
+        # if self._mono_mode or final_period < base_period or self.nchannels < 2:
+        #     sample = sample[dbu > noise_base]
+        # else:
+        #     sample = (sample.reshape(np.prod(tmp[:2]), tmp[2])[dbu > noise_base])
+        #     if sample.shape[0] % 2:
+        #         sample = sample[:-1 * (sample.shape[0] % 2)]
+        #     sample = sample.reshape(int(np.prod(sample.shape) / np.prod(tmp[1:])), *tmp[1:])
         if self._mono_mode and final_period < base_period:
+            dbu = dbu[np.abs(dbu) < np.inf]
             sample = sample[dbu > noise_base]
         else:
+            # dbu = dbu[np.absolute(dbu, axis=1) < np.inf]
             sample = sample[np.max(dbu, axis=1) > noise_base]
 
         # shape = sample.shape
         # sample = sample.reshape(shape[0] * shape[1])
         # LPF filter
-        sample = self._lfilter(self._filters[1], sample)
-
-        progress.update(5)
+        # sample = self._lfilter(self._filters[1], sample)
+        if progress:
+            progress.update(5)
         # print(sample, sample.shape)
         return sample
 
@@ -895,24 +707,32 @@ class Process():
             framerate = self._frame_rate[1]
         else:
             framerate = self._frame_rate[0]
-
+        # print(sample.shape)
         play(sample, inp_format='array', sampwidth=self._sampwidth, nchannels=self._process_nchannel,
              framerate=framerate)
         return framerate
 
-    def _refresh(self):
-        self._frame_rate[1] = (Process.HUMAN_VOICE_FREQ * 2)
-        downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
-        self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
-        self._filters[1] = firwin(30, int(self._frame_rate[1] / 2 - 1e-6), fs=self._frame_rate[1])
+    def _refresh(self, arg=None):
 
-        # self._data_chunk = int(self._frame_rate[0] * self._record_period)
-        # data type of buffer                       0
-        # used in callback method(down sampling)    1
-        self._constants[1] = downsample
+        if type(arg) is str:
+            if arg == 'p_f_d':
+                win_len = self.nperseg
+                self._nhop = win_len - self._noverlap
 
-        win_len = int(np.ceil(((self._data_chunk - 1) * 1 + len(self._filters[0])) / downsample))
-        self._nhop = int(self._nhop / self._data_chunk * win_len)
+        else:
+            self._frame_rate[1] = (self.prim_filter_cutoff * 2)
+            downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
+            self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
+            self._filters = [firwin(5, self.prim_filter_cutoff, fs=self._frame_rate[0])]
+            # self._data_chunk = int(self._frame_rate[0] * self._record_period)
+            # data type of buffer                       0
+            # used in callback method(down sampling)    1
+            self._constants[1] = downsample
+
+            win_len = int(np.ceil(((self._data_chunk - 1) * 1 + len(self._filters[0])) / downsample))
+            self._nhop = self.nperseg - self._noverlap
+            self._nhop = int(self._nhop / self._data_chunk * win_len)
+
         self._window = get_window(self._window_type, win_len)
         if self._mono_mode:
             self._iwin_buffer = [np.zeros(win_len)]
@@ -922,9 +742,9 @@ class Process():
             self._win_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self.nchannels)]
         # format specifier used in struct.unpack    2
         # rms constant value                        3
-        sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
-        self.windowing.update(Process.HUMAN_VOICE_FREQ, self._primary_filter.is_set())
+        # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
         self._refresh_ev.set()
+        self._main_stream.clear()
 
     def _safe_input(self, *args, **kwargs):
         self._semaphore[0].acquire()
@@ -1004,7 +824,9 @@ class Process():
                    record_duration=10,
                    enable_ui=True,
                    play_recorded=True,
-                   catching_precision=0.1):
+                   catching_precision=0.1,
+                   echo_mode=False,
+                   rec_start_callback=None):
 
         if name in self._local_database.index:
             name = self._safe_input(
@@ -1017,27 +839,49 @@ class Process():
                                                        record_duration=record_duration,
                                                        enable_ui=enable_ui,
                                                        play_recorded=play_recorded,
-                                                       catching_precision=catching_precision)
+                                                       catching_precision=catching_precision,
+                                                       echo_mode=echo_mode,
+                                                       rec_start_callback=rec_start_callback)
 
-    def echo(self, enable=True):
-        if enable:
-            self._main_stream.clear()
-            self._echo.set()
-        else:
-            self._echo.clear()
 
-    # load the name from database if defined
-    def load(self, name, load_all=False):
+    def echo(self, record=None, enable=True, main_output_enable=False):
 
+        # Enable echo to system's default output or echo an pre recorded data from local or external database
+        if record is None:
+            if enable:
+                self._main_stream.clear()
+                self._echo.set()
+            else:
+                self._echo.clear()
+
+        elif type(record) is str:
+            record = self.load_record(record)
+            flg = False
+            # assert self.nchannels == record['nchannels'] and self._sampwidth == record['Sample Width']
+            if not main_output_enable and self._echo.is_set():
+                flg = True
+                self._echo.clear()
+            print(record['nchannels'])
+            self._audio_play_wrapper(record['o'])
+
+            if flg:
+                self._echo.set()
+
+    # load the name from stable database to local if defined
+    def load_record(self, name, load_all=False):
         if load_all:
             self._local_database = self._local_database.append(self._database, verify_integrity=True)
         else:
-            if name in self._local_database.index and not (name in self._database.index):
-                raise ValueError
-            self._local_database.loc[name] = self._database.loc[name]
+            if name in self._local_database.index:
+                return self._local_database.loc[name]
+            elif not (name in self._database.index):
+                raise ValueError('name not in self._database.index')
+            rec = self._database.loc[name]
+            self._local_database.loc[name] = rec
+            return rec
 
-    # save from local _database to stable memory
-    def save(self, name, save_all=False):
+            # save from local _database to stable memory
+    def save_record(self, name, save_all=False):
         if save_all:
             self._database = self._database.append(self._local_database, verify_integrity=True)
         else:
@@ -1054,21 +898,24 @@ class Process():
         else:
             return list(self._database.index)
 
-    def primary_filter(self, enable=False, fc=None):
+    def filter(self, enable=False, fc=None):
         # if fc == None dont change
         if enable:
-            if self._primary_filter.is_set() and fc == Process.HUMAN_VOICE_FREQ:
+            if self._primary_filter.is_set() and fc == self.prim_filter_cutoff:
                 return
             elif fc:
                 assert fc < (self._frame_rate[0] / 2)
-                Process.HUMAN_VOICE_FREQ = fc
+                self.prim_filter_cutoff = fc
             self._primary_filter.set()
-
+            self._refresh()
         elif self._primary_filter.is_set():
             self._primary_filter.clear()
+            # self.prim_filter_cutoff = self._frame_rate[0] / 2 - 1e-6
+            self._refresh('p_f_d')
+
         else:
             return
-        self._refresh()
+
 
     # arr format: [[data0:[ch0] [ch1]]  [data1: [ch0] [ch1]], ...]
     @staticmethod
@@ -1116,7 +963,6 @@ class Process():
 
             if stream_type == 'multithreading':
                 if process_type == 'main':
-                    # obj.insert(0, other._win, init=(other.windowing.init, ))
                     self.put = self._main_put
                     self.clear = obj.clear
                     self.sget = self._main_get
@@ -1154,14 +1000,16 @@ class Process():
 
         def _main_put(self, data):
             data = self.process_obj._win(data)
+            # print(data.shape)
             for branch in self.process_obj.branch_pipe_database:
                 branch.put(branch._data_indexer(data))
             # print(self.process_obj.branch_pipe_database)
             self.pip.put(data)
 
         def _main_get(self, *args):
-            return self.process_obj._iwin(self.pip.get(*args))
-
+            data = self.process_obj._iwin(self.pip.get(*args))
+            # print(data.shape)
+            return data
         def _multi_main_put(self, data):
 
             if self.process_obj._primary_filter.is_set():

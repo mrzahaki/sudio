@@ -2,12 +2,12 @@
 # import multiprocessing
 import threading
 import queue
-import time
+# import time
 
 
 class Pipeline(threading.Thread):
     # type LiveProcessing, DeadProcessing or timeout value
-    def __init__(self, max_size=0, io_buffer_size=10, pipe_type='LiveProcessing'):
+    def __init__(self, max_size=0, io_buffer_size=10, pipe_type='LiveProcessing', list_dispatch=False):
         super(Pipeline, self).__init__(daemon=True)
         # self.manager = threading.Manager()
         # self.namespace = manager.Namespace()
@@ -22,6 +22,7 @@ class Pipeline(threading.Thread):
         self.pipe_type = pipe_type
         self.refresh_ev = threading.Event()
         self.init_queue = queue.Queue()
+        self._list_dispatch = list_dispatch
         # block value, timeout
         if pipe_type == 'LiveProcessing':
             self._process_type = (False, None)
@@ -47,26 +48,41 @@ class Pipeline(threading.Thread):
             self.output_line.get()
 
     def run(self):
+        data = None
         while 1:
             try:
-                while 1:
-                    self.refresh()
-                    # call from pipeline
-                    ret_val = self._pipeline[0][0](*self._pipeline[0][1:], self.input_line.get(timeout=self._timeout))
-                    for i in self._pipeline[1:]:
-                        ret_val = i[0](*i[1:], ret_val)
-                    self.output_line.put(ret_val, block=self._process_type[0], timeout=self._timeout)
+                if self._list_dispatch:
+                    while 1:
+                        # print('data')
+                        self.refresh()
+                        # call from pipeline
+                        # print(data)
+                        ret_val = self._pipeline[0][0](*self._pipeline[0][1:], *self.input_line.get(timeout=self._timeout))
+                        for i in self._pipeline[1:]:
+                            ret_val = i[0](*i[1:], *ret_val)
+                        self.output_line.put(ret_val, block=self._process_type[0], timeout=self._timeout)
+                else:
+                    while 1:
+                        self.refresh()
+                        # call from pipeline
+                        ret_val = self._pipeline[0][0](*self._pipeline[0][1:], self.input_line.get(timeout=self._timeout))
+                        for i in self._pipeline[1:]:
+                            ret_val = i[0](*i[1:], ret_val)
+                        self.output_line.put(ret_val, block=self._process_type[0], timeout=self._timeout)
 
 
             except IndexError:
+                if data:
+                    self.output_line.put(data, timeout=self._timeout)
                 while not len(self._pipeline):
                     try:
                         self.output_line.put(self.input_line.get_nowait(), timeout=self._timeout)
                     except queue.Empty:
                         pass
                     self.refresh()
-
+                # raise
             except (queue.Full, queue.Empty):
+                # raise
                 pass
 
     def refresh(self):
@@ -96,7 +112,6 @@ class Pipeline(threading.Thread):
                     elif args[0] == 'del':
                         self.input_line.empty()
                         del self._pipeline[args[1]]
-
             self.refresh_ev.clear()
 
     def insert(self, index:int, *func, args=(), init=()):

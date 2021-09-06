@@ -10,11 +10,12 @@ setuptools.setup(
     packages=['sudio',],
     author="hussein zahaki",
     author_email="hussein.zahaki.mansoor@gmail.com",
-    description="Digital Signal Processing Platform",
+    description="Real-Time Audio Processing Platform",
     long_description=long_description,
     install_requires=[
             'scipy',
             'tqdm',
+            'lameenc',
             'numpy',
             'pyaudio',
             'pandas',
