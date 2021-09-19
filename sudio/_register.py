@@ -21,7 +21,10 @@ def static_vars(**kwargs):
         return func
 
     return decorate
+
+
 # ___________________________________________________________def your objects here
 class Members:
     sudio = Register()
-    # process = Register()
+    process = Register()
+    process_slave = Register()
