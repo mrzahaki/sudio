@@ -1,12 +1,62 @@
+"""
+with the name of ALLAH:
+ SUDIO (https://github.com/MrZahaki/sudio)
+
+ audio processing platform
+
+ Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
+
+ Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+"""
+
+import time
 import numpy as np
-import pyaudio
-import wave
+# import pyaudio
+# import wave
 # import pandas as pd
 # from scipy.signal import upfirdn, firwin, lfilter, correlate
 # from _pipeline import Pipeline
 
 
 class Tools:
+    @staticmethod
+    def _str_conv(st):
+        if st.isnumeric():
+            st = int(st)
+        elif st.replace('.', '', 1).isnumeric():
+            st = float(st)
+        elif '{' in st and '}' in st:
+            st = st.strip('{').strip('}')
+            st = Tools.str2dict(st)
+        elif '[' in st and ']' in st:
+            st = st.strip('[').strip(']')
+            st = Tools.str2list(st)
+        return st
+
+    @staticmethod
+    def str2dict(st, dict_eq=':', item_sep=','):
+        if not st: return None
+        buff = {}
+        i = [i.strip().split(dict_eq) for i in st.split(item_sep)]
+        for j in i:
+            if j:
+                value = j[1] if len(j) > 1 else None
+                if value:
+                    value = Tools._str_conv(value)
+                buff[j[0]] = value
+        return buff
+
+    @staticmethod
+    def str2list(st):
+        if not st: return None
+        buff = []
+        i = [i.strip() for i in st.split(',')]
+        for value in i:
+            if value:
+                value = Tools._str_conv(value)
+            buff.append(value)
+        return buff
+
     @staticmethod
     # Find the number closest to num 1 that is divisible by num 2
     def near_divisible(divisible, num1):
@@ -52,103 +102,9 @@ class Tools:
         Tools.push(obj, data)
         obj.reverse()
 
-    # Record in chunks of 1024 samples
-    # Record for record_time seconds(if record_time==0 then it just return one chunk of data)
-    # output/inp can be a 'array','wave' or standard wave 'frame' types
-    # data_format:
-    # pyaudio.paInt16 = 8     16 bit int
-    # pyaudio.paInt24 = 4     24 bit int
-    # pyaudio.paInt32 = 2     32 bit int
-    # pyaudio.paInt8 = 16     8 bit int
-    # if output is equal to 'array' return type is a dictionary that contains signal properties
-    # in fast mode(ui_mode=False) you must enter dev_id(input device id) and nchannels and rate params
     @staticmethod
-    def record(dev_id=None,
-               data_chunk=1024,
-               output='array',
-               record_time=0,
-               filename="output.wav",
-               data_format=8,# 16 bit
-               ui_mode=True,
-               nchannels=2,
-               rate=48000,
-               fast_mode=False):
-
-        p = pyaudio.PyAudio()  # Create an interface to PortAudio
-        dev = []
-        if dev_id is None:
-            for i in range(p.get_device_count()):
-                tmp = p.get_device_info_by_index(i)
-                if tmp['maxInputChannels'] > 0:
-                    dev.append(tmp)
-            assert len(dev) > 0
-            print('please choose input device from index :')
-            for idx, j in enumerate(dev):
-                print(
-                    f'Index {idx}: Name: {j["name"]}, Input Channels:{j["maxInputChannels"]}, Sample Rate:{j["defaultSampleRate"]}, Host Api:{j["hostApi"]}')
-
-            while 1:
-                try:
-                    dev_id = int(input('index for input dev: '))
-                    break
-                except:
-                    print('please enter valid index!')
-
-            rate = int(dev[dev_id]['defaultSampleRate'])
-            nchannels = dev[dev_id]['maxInputChannels']
-
-        if ui_mode:
-            print('Recording...')
-
-        stream = p.open(format=data_format,
-                        channels=nchannels,
-                        rate=rate,
-                        frames_per_buffer=data_chunk,
-                        input_device_index=dev_id,
-                        input=True)
-
-        # Initialize array to store frames
-        frames = stream.read(data_chunk)
-
-        # Store data in chunks for 3 seconds
-        for i in range(1, int(rate / data_chunk * record_time)):
-            frames += stream.read(data_chunk)
-
-        # Stop and close the stream
-        stream.stop_stream()
-        stream.close()
-        # Terminate the PortAudio interface
-        p.terminate()
-
-        if ui_mode:
-            print('Finished recording')
-
-        # frames = b''.join(frames)
-        sample_width = p.get_sample_size(data_format)
-
-        if output == 'frame':
-            return frames
-
-        elif output == 'wave':
-            # Save the recorded data as a WAV file
-            wf = wave.open(filename, 'wb')
-            wf.setnchannels(nchannels)
-            wf.setsampwidth(sample_width)
-            wf.setframerate(rate)
-            wf.writeframes(frames)
-            wf.close()
-            return wave.open(filename, 'r')
-
-        else:  # output == 'array':
-
-            signal = np.fromstring(frames, f'int{sample_width * 8}')
-            if fast_mode:
-                return signal
-            return {'o': signal,
-                    'sample width': sample_width,
-                    'frame rate': rate,
-                    'nchannels': nchannels,
-                    'dev_id': dev_id}
-
-
-
+    def time_name():
+        name = time.gmtime()
+        name = str(name.tm_year) + str(name.tm_mon) + str(name.tm_mday) + '_' + str(name.tm_sec) + str(
+            time.time() % 1)[2:6]
+        return name

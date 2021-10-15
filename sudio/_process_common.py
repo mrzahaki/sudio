@@ -1,18 +1,29 @@
+"""
+with the name of ALLAH:
+ SUDIO (https://github.com/MrZahaki/sudio)
+
+ audio processing platform
+
+ Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
+
+ Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+"""
 from ._register import Members as Mem
 from ._register import static_vars
 from ._tools import Tools
 from ._audio import *
 from ._pipeline import Pipeline
-from scipy.signal import upfirdn, check_NOLA
-from scipy.signal import get_window as scipy_window
+import scipy.signal as scisig
 import numpy as np
+import threading
+import os
 
 
 # ________________________________________________________________________________
 @Mem.process.add
 def _win_mono(self, data):
     if self._primary_filter.is_set():
-        data = self._upfirdn(self._filters[0], data, self._constants[1]).astype(self._constants[0])
+        data = self._upfirdn(self._filters[0], data, self._constants[1])  # .astype(self._constants[0])
     if self._window_type:
         retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
                                                             self._win_buffer[0][:self._nhop])))) * self._window
@@ -28,11 +39,13 @@ def _win_nd(self, data):
     # Param 'data' shape depends on number of input channels(e.g. for two channel stream, each chunk of
     # data must be with the shape of (2, chunk_size))
     if self._primary_filter.is_set():
-        data = self._upfirdn(self._filters[0], data, self._constants[1]).astype(self._constants[0])
+        data = self._upfirdn(self._filters[0], data, self._constants[1])  # .astype(self._constants[0])
+        # data = scisig.lfilter(self._filters[0], 0, data)
+        # data = scisig.resample(data, self._nperseg, axis=1)
     # data = data.astype('float64')
     # retval frame consists of two window
     # that each window have the shape same as 'data' param shape(e.g. for two channel stream:(2, 2, chunk_size))
-    # note when primary_filter is enabled retval retval shape changes depend on upfirdn filter.
+    # note when primary_filter is enabled retval retval shape changes depend on scisig.upfirdn filter.
     # In general form retval shape is
     # (number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
     if self._window_type:
@@ -163,12 +176,12 @@ def set_window(self,
         if type(window) is str or \
                 type(window) is tuple or \
                 type(window) == float:
-            window = scipy_window(window, self.nperseg)
+            window = scisig.get_window(window, self._nperseg)
 
         elif window:
             assert len(window) == self._nperseg, 'control size of window'
             if NOLA_check:
-                assert check_NOLA(window, self._nperseg, noverlap)
+                assert scisig.check_NOLA(window, self._nperseg, noverlap)
 
         elif self._window_type is None:
             window = None
@@ -198,6 +211,17 @@ def get_window(self):
         return None
 
 
+@Mem.process.add
+def disable_std_input(self):
+    self._main_stream.acquire()
+
+
+@Mem.process.add
+def enable_std_input(self):
+    self._main_stream.clear()
+    self._main_stream.release()
+
+
 # arr format: [[data0:[ch0] [ch1]]  [data1: [ch0] [ch1]], ...]
 @Mem.process.add
 def shuffle3d_channels(self, arr):
@@ -215,7 +239,7 @@ def shuffle2d_channels(arr):
 
 
 @Mem.process.add
-def filter(self, enable=False, fc=None):
+def sampler(self, enable=False, fc=None):
     # if fc == None dont change
     if enable:
         if self._primary_filter.is_set() and fc == self.prim_filter_cutoff:
@@ -246,7 +270,7 @@ class _Stream:
         self.channel = channel
         self.name = name
         self._data_indexer = lambda data: data[channel]
-
+        self._lock = threading.Lock()
         if process_type == 'main' and type(obj) == list and len(obj) == other.nchannels and channel is None:
             self.process_type = 'multi_stream'
 
@@ -301,6 +325,15 @@ class _Stream:
             # self.get = lambda: other._win(obj.get())
             # self.sget = obj.get
 
+    def acquire(self):
+        self._lock.acquire()
+
+    def release(self):
+        self._lock.release()
+
+    def locked(self):
+        return self._lock.locked()
+
     def _main_put(self, data):
         data = self.process_obj._win(data)
         # print(data.shape)
@@ -320,7 +353,7 @@ class _Stream:
 
         if self.process_obj._primary_filter.is_set():
             data = self.process_obj._upfirdn(self.process_obj._filters[0], data,
-                                             self.process_obj._constants[1]).astype(self.process_obj._constants[0])
+                                             self.process_obj._constants[1])  # .astype(self.process_obj._constants[0])
         # windowing
         if self.process_obj._window_type:
             final = []
@@ -389,7 +422,7 @@ class _Stream:
                    ('main' in other.process_type or
                     'multi_stream' in other.process_type or
                     'queue' in other.process_type), \
-                    'set is enabled only for "main or multi_stream" modes'
+                'set is enabled only for "main or multi_stream" modes'
             (self.put,
              self.clear,
              self.get,
@@ -421,6 +454,117 @@ class _Stream:
     def type(self):
         return self.process_type
 
+
+class _Time:
+    def __get__(self, instance, owner):
+        assert instance.isready(), PermissionError('current object is not streaming')
+        return instance._itime_calculator(instance._stream_file.tell())
+
+    def __set__(self, instance, tim):
+        assert abs(tim) < instance.duration, OverflowError('input time must be less than the record duration')
+        assert instance.isready(), PermissionError('current object is not streaming')
+        seek = instance._time_calculator(abs(tim))
+        if tim < 0:
+            seek = instance._stream_file_size - seek
+        instance._stream_file.seek(seek, 0)
+
+
+@Mem.process.add
+class StreamControl:
+    time = _Time()
+
+    def __init__(self, other, record, on_stop, loop_mode, stream_mode):
+        '''
+        The StreamControl class is defined to control the mainstream audio playback for special 'record'.
+
+        '''
+        self.other = other
+        self._stream_type = stream_mode
+        self._stream_file = record['o']
+        self._stream_file_size = record['size']
+        self._size_calculator = lambda: (self.other._data_chunk *
+                                         self.other.nchannels *
+                                         self.other._sampwidth)
+        self._stream_data_size = self._size_calculator()
+        self._stream_data_pointer = self._stream_file.tell()
+        self._stream_on_stop = on_stop
+        self._stream_loop_mode = loop_mode
+
+        self.duration = record['duration']
+        self._time_calculator = lambda t: int(self.other.frame_rate *
+                                              self.other.nchannels *
+                                              self.other._sampwidth *
+                                              t)
+
+        self._itime_calculator = lambda byte: byte / (self.other.frame_rate *
+                                                      self.other.nchannels *
+                                                      self.other._sampwidth)
+
+    def _ready(self):
+        assert not self._is_streaming(), PermissionError('Another file is streaming')
+
+        if not self.isready():
+            self.other._exstream_mode.clear()
+            if self.other._stream_file is not None:
+                self.other._stream_file.seek(self._stream_data_pointer, 0)
+
+            self.other._stream_type = self._stream_type
+            self.other._stream_file = self._stream_file
+            self.other._stream_data_size = self._stream_data_size
+            self.other._stream_data_pointer = self._stream_data_pointer
+            self.other._stream_on_stop = self._stream_on_stop
+            self.other._stream_loop_mode = self._stream_loop_mode
+
+    def isready(self):
+        return (self.other._stream_type == self._stream_type and
+                self._stream_file == self.other._stream_file and
+                self._stream_data_size == self.other._stream_data_size and
+                self._stream_on_stop == self.other._stream_on_stop and
+                self._stream_loop_mode == self.other._stream_loop_mode)
+
+    def is_streaming(self):
+        if self.isready():
+            return self.other._exstream_mode.is_set()
+        else:
+            return False
+
+    def _is_streaming(self):
+        return self.other._exstream_mode.is_set()
+
+    def start(self):
+        self._ready()
+        self.other._exstream_mode.set()
+        self.other._main_stream.clear()
+
+    def resume(self):
+        assert self.isready(), PermissionError('Another file is streaming')
+        self.other._exstream_mode.set()
+        self.other._main_stream.clear()
+
+    def stop(self):
+        assert self.isready(), PermissionError('Another file is streaming')
+        assert self._is_streaming(), PermissionError('The stream is empty')
+        self.other._exstream_mode.clear()
+        self.other._stream_file.seek(self._stream_data_pointer, 0)
+        # self.other._main_stream.clear()
+
+    def pause(self):
+        assert self.isready(), PermissionError('Another file is streaming')
+        assert self._is_streaming(), PermissionError('The stream is empty')
+        self.other._exstream_mode.clear()
+        # self.other._main_stream.clear()
+
+    def enable_loop(self):
+        assert self.isready(), PermissionError('Another file is streaming')
+        assert self._is_streaming(), PermissionError('The stream is empty')
+        self.other._stream_loop_mode = True
+        self._stream_loop_mode = True
+
+    def disable_loop(self):
+        assert self.isready(), PermissionError('Another file is streaming')
+        assert self._is_streaming(), PermissionError('The stream is empty')
+        self.other._stream_loop_mode = False
+        self._stream_loop_mode = False
 
 # ________________________________________________________________________________
 class Error(Exception):

@@ -1,9 +1,12 @@
-from ._pipeline import Pipeline
-from ._process import Master
+"""
+with the name of ALLAH:
+ SUDIO (https://github.com/MrZahaki/sudio)
 
-formatFloat32 = 1
-formatInt32 = 2
-formatInt24 = 4
-formatInt16 = 8
-formatInt8 = 16
-formatUInt8 = 32
+ audio processing platform
+
+ Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
+
+ Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+"""
+from ._pipeline import Pipeline
+from ._process import *

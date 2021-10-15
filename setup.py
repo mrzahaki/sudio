@@ -18,6 +18,7 @@ setuptools.setup(
             'numpy',
             'pyaudio',
             'pandas',
+            'miniaudio',
         ],
     long_description_content_type="text/markdown",
     url="https://github.com/MrZahaki/sudio",
