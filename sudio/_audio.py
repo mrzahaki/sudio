@@ -299,7 +299,8 @@ class Wrap:
             self._rec = record
             if type(record['o']) is bytes:
                 f = open(other.__class__.DATA_PATH + record.name + other.__class__.BUFFER_TYPE, 'wb+')
-                f.write(np.array([record['frameRate'],
+                f.write(np.array([record['size'],
+                                  record['frameRate'],
                                   record['sampleFormat'] if record['sampleFormat'] else 0],
                                   record['nchannels'],
                                   dtype='u8').tobytes())
@@ -316,18 +317,18 @@ class Wrap:
         self._file: io.BufferedRandom = self._rec['o']
         self._size = self._rec['size']
         self._duration = record['duration']
-        self.frame_rate = self._rec['frameRate']
+        self._frame_rate = self._rec['frameRate']
         self.nchannels = self._rec['nchannels']
         self.sample_format = self._rec['sampleFormat']
         self._nperseg = self._rec['nperseg']
         self._parent = other
         self._sample_type = self._parent._constants[0]
         self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
-        self._time_calculator = lambda t: int(self.frame_rate *
+        self._time_calculator = lambda t: int(self._frame_rate *
                                               self.nchannels *
                                               self.sample_width *
                                               t)
-        self._itime_calculator = lambda byte: byte / (self.frame_rate *
+        self._itime_calculator = lambda byte: byte / (self._frame_rate *
                                                       self.nchannels *
                                                       self.sample_width)
         self._packed = True
@@ -393,15 +394,6 @@ class Wrap:
                 buffer[None] = []
 
             elif obj_type is str:
-                # start stop    = band pass
-                # start         = High pass
-                #       stop    = low pass
-                # start stop  -1= bandstop
-
-                # freq
-                # item = tuple(map(lambda x: None if x is None else float(x), (item.start, item.stop, item.step)))
-
-
                 # Butterworth: ‘butter’
 
                 # Chebyshev
@@ -451,7 +443,7 @@ class Wrap:
                 # iir = scisig.firwin(50, freq, fs=self.frame_rate)
 
                 # print(btype)
-                iir = scisig.iirfilter(filt['order'], freq, btype=btype, fs=self.frame_rate, output='sos',
+                iir = scisig.iirfilter(filt['order'], freq, btype=btype, fs=self._frame_rate, output='sos',
                                        rs=filt['rs'], rp=filt['rp'], ftype=filt['ftype'])
                 if last_item[0] is None:
                     buffer[None] = []

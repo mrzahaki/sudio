@@ -22,8 +22,6 @@ import os
 # ________________________________________________________________________________
 @Mem.process.add
 def _win_mono(self, data):
-    if self._primary_filter.is_set():
-        data = self._upfirdn(self._filters[0], data, self._constants[1])  # .astype(self._constants[0])
     if self._window_type:
         retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
                                                             self._win_buffer[0][:self._nhop])))) * self._window
@@ -35,13 +33,6 @@ def _win_mono(self, data):
 
 @Mem.process.add
 def _win_nd(self, data):
-    # brief: Windowing data
-    # Param 'data' shape depends on number of input channels(e.g. for two channel stream, each chunk of
-    # data must be with the shape of (2, chunk_size))
-    if self._primary_filter.is_set():
-        data = self._upfirdn(self._filters[0], data, self._constants[1])  # .astype(self._constants[0])
-        # data = scisig.lfilter(self._filters[0], 0, data)
-        # data = scisig.resample(data, self._nperseg, axis=1)
     # data = data.astype('float64')
     # retval frame consists of two window
     # that each window have the shape same as 'data' param shape(e.g. for two channel stream:(2, 2, chunk_size))
@@ -239,26 +230,6 @@ def shuffle2d_channels(arr):
 
 
 @Mem.process.add
-def sampler(self, enable=False, fc=None):
-    # if fc == None dont change
-    if enable:
-        if self._primary_filter.is_set() and fc == self.prim_filter_cutoff:
-            return
-        elif fc:
-            assert fc < (self._frame_rate[0] / 2)
-            self.prim_filter_cutoff = fc
-        self._primary_filter.set()
-        self._refresh()
-    elif self._primary_filter.is_set():
-        self._primary_filter.clear()
-        # self.prim_filter_cutoff = self._frame_rate[0] / 2 - 1e-6
-        self._refresh('p_f_d')
-
-    else:
-        return
-
-
-@Mem.process.add
 class _Stream:
 
     def __init__(self, other, obj, name=None, stream_type='multithreading', channel=None, process_type='main'):
@@ -351,9 +322,6 @@ class _Stream:
 
     def _multi_main_put(self, data):
 
-        if self.process_obj._primary_filter.is_set():
-            data = self.process_obj._upfirdn(self.process_obj._filters[0], data,
-                                             self.process_obj._constants[1])  # .astype(self.process_obj._constants[0])
         # windowing
         if self.process_obj._window_type:
             final = []
@@ -491,12 +459,12 @@ class StreamControl:
         self._stream_loop_mode = loop_mode
 
         self.duration = record['duration']
-        self._time_calculator = lambda t: int(self.other.frame_rate *
+        self._time_calculator = lambda t: int(self.other._frame_rate *
                                               self.other.nchannels *
                                               self.other._sampwidth *
                                               t)
 
-        self._itime_calculator = lambda byte: byte / (self.other.frame_rate *
+        self._itime_calculator = lambda byte: byte / (self.other._frame_rate *
                                                       self.other.nchannels *
                                                       self.other._sampwidth)
 

@@ -42,11 +42,10 @@ class Master:
     DATA_PATH = './data/'
     USER_PATH = DATA_PATH + 'user.sufile'
     SAVE_PATH = DATA_PATH + 'export/'
-    SOUND_BUFFER_SIZE = 100
     SAMPLE_CATCH_TIME = 10  # s
     SAMPLE_CATCH_PRECISION = 0.1  # s
     SPEAK_LEVEL_GAP = 10  # dbu
-    CACHE_INFO = 3 * 8
+    CACHE_INFO = 4 * 8
 
     _shuffle3d_channels = np.vectorize(lambda x: x.T.reshape(np.prod(x.shape)),
                                        signature='(m,n)->(c)')
@@ -61,14 +60,15 @@ class Master:
                  data_format: SampleFormat = SampleFormat.formatInt16,  # 16bit mode
                  mono_mode: bool = True,
                  ui_mode: bool = True,
-                 nperseg: int = 1000,
+                 nperseg: int = 500,
                  noverlap: int = None,
                  window: object = 'hann',
                  NOLA_check: bool = True,
                  IO_mode: str = "stdInput2stdOutput",
                  input_dev_callback: callable = None,
                  output_dev_callback: callable = None,
-                 master_mix_callback: callable = None):
+                 master_mix_callback: callable = None,
+                 buffer_size: int = 30):
         '''
         __init__(self,
                  std_input_dev_id: int = None,
@@ -253,6 +253,7 @@ class Master:
         except:
             pass
 
+        self._sound_buffer_size = buffer_size
         self._stream_type = StreamMode.optimized
         data_format = data_format.value
         self.io_mode = IO_mode
@@ -299,20 +300,17 @@ class Master:
                     except:
                         print('please enter valid index!')
 
-                self._frame_rate = [int(dev[dev_id]['defaultSampleRate'])]
-                frame_rate = self._frame_rate[0]
+                frame_rate = self._frame_rate = int(dev[dev_id]['defaultSampleRate'])
                 self.nchannels = dev[dev_id]['maxInputChannels']
                 self._input_dev_id = dev_id
 
             else:
                 dev = p.get_default_input_device_info()
-                self._frame_rate = [int(dev['defaultSampleRate'])]
-                frame_rate = self._frame_rate[0]
+                frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
                 self.nchannels = dev['maxInputChannels']
                 self._input_dev_id = dev['index']
 
         else:
-            self._frame_rate = [frame_rate]
             self.nchannels = nchannels
             self._input_dev_id = std_input_dev_id
 
@@ -398,15 +396,10 @@ class Master:
             self._process_nchannel = self.nchannels
 
         # ______________________________________________________________sample rate and pre filter processing
-        self.prim_filter_cutoff = int(8e3)  # Hz
-        self._frame_rate.append(self.prim_filter_cutoff * 2)
-        downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
-        self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
-        self._filters = [scisig.firwin(10, self.prim_filter_cutoff, fs=self._frame_rate[0])]
         self._data_chunk = nperseg
-        self.frame_rate = frame_rate
+        self._frame_rate = frame_rate
         # data type of buffer                       0
-        # used in callback method(down sampling)    1
+        # feature reseved                           1
         # used in _win_nd                           2
         # rms constant value                        3
         #                                           4
@@ -415,7 +408,7 @@ class Master:
         # f'<{self.data_chunk * self.nchannels}{sampwidth}'
 
         self._constants = ['<i{}'.format(self._sampwidth),
-                           downsample,
+                           0,
                            range(self.nchannels)[1:],
                            ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225),
                            range(self.nchannels)]
@@ -437,14 +430,12 @@ class Master:
         try:
             self._semaphore = [threading.Semaphore()]
 
-            dataq = queue.Queue(maxsize=Master.SOUND_BUFFER_SIZE)
-            self._recordq = [threading.Event(), queue.Queue(maxsize=Master.SOUND_BUFFER_SIZE)]
+            dataq = queue.Queue(maxsize=self._sound_buffer_size)
+            self._recordq = [threading.Event(), queue.Queue(maxsize=self._sound_buffer_size)]
             self._queue = queue.Queue()
-            self._streamq = [threading.Event(), queue.Queue(maxsize=Master.SOUND_BUFFER_SIZE)]
+            self._streamq = [threading.Event(), queue.Queue(maxsize=self._sound_buffer_size)]
 
             self._echo = threading.Event()
-            self._primary_filter = threading.Event()
-            # self._primary_filter.set()
             self.main_pipe_database = []
             self.branch_pipe_database = []
             # _______________________________________threading management
@@ -520,7 +511,7 @@ class Master:
         try:
             self._pystream = self._paudio.open(format=self._sample_format,
                                                channels=self.nchannels,
-                                               rate=self._frame_rate[0],
+                                               rate=self._frame_rate,
                                                frames_per_buffer=self._data_chunk,
                                                input_device_index=self._input_dev_id,
                                                input=True,
@@ -639,10 +630,8 @@ class Master:
             format=self._sample_format,
             channels=self._process_nchannel,
             output_device_index=self._output_device_index,
-            rate=self._frame_rate[0], input=False, output=True)
+            rate=self._frame_rate, input=False, output=True)
         stream_out.start_stream()
-        # flag = self._primary_filter.is_set()
-        # framerate = self._frame_rate[1]
         user_mode = "usr" in self.io_mode[4:]
         rec_ev, rec_queue = self._recordq
         while 1:
@@ -665,15 +654,12 @@ class Master:
                 self.output_dev_callback(data)
 
             if self._refresh_ev.is_set():
-                flag = self._primary_filter.is_set()
                 self._refresh_ev.clear()
                 # close current stream
                 stream_out.close()
                 # create new stream
-                if flag:
-                    rate = self._frame_rate[1]
-                else:
-                    rate = self._frame_rate[0]
+                rate = self._frame_rate
+
 
                 # print(rate)
                 stream_out = self._paudio.open(
@@ -791,7 +777,7 @@ class Master:
                 play(sample,
                      sample_format=self._sample_format,
                      nchannels=self._process_nchannel,
-                     framerate=self.frame_rate)
+                     framerate=self._frame_rate)
 
             if echo and not echo_mode:
                 self.echo()
@@ -804,7 +790,7 @@ class Master:
 
             retval = {'size':len(sample),
                        'noise': None,
-                      'frameRate': self.frame_rate,
+                      'frameRate': self._frame_rate,
                       'o': sample,
                       'nchannels': ch,
                       'sampleFormat': self._sample_format,
@@ -954,15 +940,15 @@ class Master:
             if path in cache:
 
                 f = record['o']=  open(path, 'rb+')
-                record['size'] = os.path.getsize(path)
                 cache_info = f.read(Master.CACHE_INFO)
 
-                cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
+                csize, cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
                 csample_format = csample_format if csample_format else None
+                record['size'] = csize
 
                 if (cnchannels == self._process_nchannel and
                     csample_format == self._sample_format and
-                    cframe_rate == self.frame_rate):
+                    cframe_rate == self._frame_rate):
                     #print_en
                     # print('path in cache not load add file', cframe_rate, cnchannels, csample_format)
                     record['frameRate'] = cframe_rate
@@ -977,13 +963,13 @@ class Master:
                     f.seek(0, 0)
                     # f = open(path, 'wb+')
                     f.truncate()
-                    fsize = f.write(np.array([record['frameRate'],
+                    f.write(np.array([record['size'],
+                                      record['frameRate'],
                                       record['sampleFormat'] if record['sampleFormat'] else 0,
                                      record['nchannels']],
                                      dtype='u8').tobytes())
-                    fsize += f.write(record['o'])
+                    f.write(record['o'])
                     record['o'] = f
-                    record['size'] = fsize
                 else:
                     raise Error
             else:
@@ -998,7 +984,8 @@ class Master:
                 # print(record['frameRate'])
             f = open(path, 'wb+')
             f.truncate()
-            fsize = f.write(np.array([record['frameRate'],
+            fsize = f.write(np.array([record['size'],
+                                      record['frameRate'],
                               record['sampleFormat'] if record['sampleFormat'] else 0,
                               record['nchannels']],
                               dtype='u8').tobytes())
@@ -1083,7 +1070,8 @@ class Master:
                 f = open(Master.DATA_PATH + name + Master.BUFFER_TYPE, 'wb+')
                 f.truncate()
 
-                newsize = f.write(np.array([record['frameRate'],
+                newsize = f.write(np.array([record['size'],
+                                            record['frameRate'],
                                   record['sampleFormat'] if record['sampleFormat'] else 0,
                                  record['nchannels']],
                                  dtype='u8').tobytes())
@@ -1103,7 +1091,8 @@ class Master:
                 prefile = record['o']
                 prepos = prefile.tell(), 0
                 newfile = record['o'] = open(Master.DATA_PATH + record.name + Master.BUFFER_TYPE, 'wb+')
-                newsize = newfile.write(np.array([record['frameRate'],
+                newsize = newfile.write(np.array([record['size'],
+                                                  record['frameRate'],
                                        record['sampleFormat'] if record['sampleFormat'] else 0,
                                        record['nchannels']],
                                        dtype='u8').tobytes())
@@ -1173,7 +1162,8 @@ class Master:
                               rec_start_callback=rec_start_callback)
         file = open(Master.DATA_PATH + name + Master.BUFFER_TYPE, 'wb+')
         file.truncate()
-        file.write(np.array([data['frameRate'],
+        file.write(np.array([record['size'],
+                             data['frameRate'],
                           data['sampleFormat'] if data['sampleFormat'] else 0,
                           data['nchannels']],
                           dtype='u8').tobytes())
@@ -1326,16 +1316,16 @@ class Master:
             data = np.append(*data, axis=0)
             axis = 1
 
-        if not self.frame_rate == rec['frameRate']:
+        if not self._frame_rate == rec['frameRate']:
             data = scisig.resample(data,
-                                   int((self.frame_rate * data.shape[-1:][0]) / rec['frameRate']),
+                                   int((self._frame_rate * data.shape[-1:][0]) / rec['frameRate']),
                                    axis=axis)
         if rec['nchannels'] > 1:
             data = Master.shuffle2d_channels(data)
 
         rec['nchannels'] = self._process_nchannel
         rec['sampleFormat'] = self._sample_format
-        rec['frameRate'] = self.frame_rate
+        rec['frameRate'] = self._frame_rate
         rec['o'] = data.astype(self._constants[0]).tobytes()
         rec['size'] = len(rec['o'])
         rec['duration'] = rec['size'] / (rec['frameRate'] *
@@ -1365,7 +1355,7 @@ class Master:
 
             if not extern:
                 tmp = list(file.name)
-                tmp.insert(file.name.find(record.name), 'stream_')
+                tmp.insert(file.name.find(file.name), 'stream_')
                 streamfile_name = ''.join(tmp)
                 try:
                     os.remove(streamfile_name)
@@ -1501,14 +1491,13 @@ class Master:
     #                                                 'nperseg': self._nperseg,
     #                                                 'window': self._window,
     #                                                 'window_nhop': self._nhop,
-    #                                                 'filter_state': self._primary_filter.is_set(),
     #                                                 }
 
     def get_nperseg(self):
         return self._nperseg
 
     def get_sample_rate(self):
-        return self.frame_rate
+        return self._frame_rate
 
     def stream(self, record: Union[str, Wrap, pd.Series],
                block_mode: bool=False,
@@ -1602,7 +1591,8 @@ class Master:
             file.seek(file_pos, 0)
             streamfile = open(streamfile_name, 'wb+')
 
-            streamfile.write(np.array([record['frameRate'],
+            streamfile.write(np.array([record['size'],
+                                       record['frameRate'],
                               record['sampleFormat'] if record['sampleFormat'] else 0,
                              record['nchannels']],
                              dtype='u8').tobytes())
@@ -1724,7 +1714,7 @@ class Master:
 
     def join(self, other):
 
-        assert self.frame_rate == other.frame_rate and \
+        assert self._frame_rate == other.frame_rate and \
                self._nperseg == other.nperseg and \
                self._sampwidth == other._sampwidth
 
@@ -1748,7 +1738,6 @@ class Master:
 
         listdir = os.listdir(Master.DATA_PATH)
         listdir = list([Master.DATA_PATH + item for item in listdir if item.endswith('.bin')])
-        print(path, listdir)
         # listdir = [Master.DATA_PATH + item  for item in listdir if not item in path]
         for i in path:
             j = 0
@@ -1778,25 +1767,11 @@ class Master:
         win_len = self._nperseg
 
         if len(args):
-            # primary filter disabled -> pfd
-            if args[0] == 'p_f_d':
-                self._nhop = win_len - self._noverlap
-                self.frame_rate = self._frame_rate[0]
+            pass
         # primary filter frequency change
         else:
-            self._frame_rate[1] = (self.prim_filter_cutoff * 2)
-            downsample = int(np.round(self._frame_rate[0] / self._frame_rate[1]))
-            self._frame_rate[1] = int(self._frame_rate[0] / downsample)  # human voice high frequency
-            self._filters = [scisig.firwin(10, self.prim_filter_cutoff, fs=self._frame_rate[0])]
-            # self._data_chunk = int(self._frame_rate[0] * self._record_period)
-            # data type of buffer                       0
-            # used in callback method(down sampling)    1
-            self._constants[1] = downsample
-            if self._primary_filter.is_set():
-                self.frame_rate = self._frame_rate[1]
 
             if self._window_type:
-                win_len = int(np.ceil(((self._data_chunk - 1) * 1 + len(self._filters[0])) / downsample))
                 self._nhop = self._nperseg - self._noverlap
                 self._nhop = int(self._nhop / self._data_chunk * win_len)
 
@@ -1821,7 +1796,7 @@ class Master:
         # rms constant value                        3
         # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
 
-        self._record_period = self._nperseg / self.frame_rate
+        self._record_period = self._nperseg / self._frame_rate
 
         self._refresh_ev.set()
 
