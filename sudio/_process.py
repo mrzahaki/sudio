@@ -8,6 +8,7 @@ with the name of ALLAH:
 
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
+
 import io
 from ._register import Members as Mem
 from ._register import static_vars
@@ -16,6 +17,8 @@ from ._audio import *
 from ._port import *
 from ._pipeline import Pipeline
 from ._process_common import *
+# from resample import firdn
+import samplerate
 import tqdm
 import scipy.signal as scisig
 import threading
@@ -29,7 +32,6 @@ import gc
 import time
 import os
 from io import BufferedRandom
-
 
 class StreamMode(Enum):
     normal = 0
@@ -87,7 +89,7 @@ class Master:
                  output_dev_callback: callable = None,
                  master_mix_callback: callable = None)
 
-            Creating a Process object.
+            Creating a Master object.
 
             Parameters
             ----------
@@ -945,17 +947,25 @@ class Master:
                 csize, cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
                 csample_format = csample_format if csample_format else None
                 record['size'] = csize
+                to_csize = False
+                if os.path.getsize(path) > csize:
+                    f.seek(csize, 0)
+                    f.truncate()
+                    f.flush()
+                    f.seek(Master.CACHE_INFO, 0)
+
+                record['frameRate'] = cframe_rate
+                record['nchannels'] = cnchannels
+                record['sampleFormat'] = csample_format
 
                 if (cnchannels == self._process_nchannel and
                     csample_format == self._sample_format and
                     cframe_rate == self._frame_rate):
-                    #print_en
-                    # print('path in cache not load add file', cframe_rate, cnchannels, csample_format)
-                    record['frameRate'] = cframe_rate
-                    record['nchannels'] = cnchannels
-                    record['sampleFormat'] = csample_format
+                    pass
 
                 elif safe_load:
+                    # printiooi
+                    # print('noooooo')
                     # print_en
                     # print('path in cache safe load add file')
                     record['o'] = f.read()
@@ -963,6 +973,7 @@ class Master:
                     f.seek(0, 0)
                     # f = open(path, 'wb+')
                     f.truncate()
+                    f.flush()
                     f.write(np.array([record['size'],
                                       record['frameRate'],
                                       record['sampleFormat'] if record['sampleFormat'] else 0,
@@ -979,6 +990,7 @@ class Master:
             # print('new decode add file')
             record['o'] = data = decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
             if safe_load:
+                # printiooi
                 # print(record['frameRate'])
                 record = self._sync_record(record)
                 # print(record['frameRate'])
@@ -993,9 +1005,8 @@ class Master:
             record['o'] = f
             record['size'] = fsize
 
-        f.flush()
         f.seek(Master.CACHE_INFO, 0)
-
+        f.flush()
         record['duration'] = record['size'] / (record['frameRate'] *
                                                record['nchannels'] *
                                                Audio.get_sample_size(record['sampleFormat']))
@@ -1294,6 +1305,23 @@ class Master:
             'name': name,
         }
 
+    @staticmethod
+    def _resample(data: np.ndarray, fir_win, data_rate, output_rate, data_chunk=500000):
+        # 1 dimentional array
+        scale = np.gcd(output_rate, data_rate)
+        up, down = output_rate// scale, data_rate // scale
+        print(up, down)
+        data_size = data.size
+        res = scisig.upfirdn(fir_win, data, up=up, down=down)
+        print(res.shape)
+        # i = 0
+        # res = np.array([])
+        # while i < data_size:
+        #     res = np.append(res, scisig.upfirdn(fir_win, data[i: i + data_chunk], up=up, down=down))
+        #     i += data_chunk
+
+        return res
+
     # save from local _database to stable memory
     def _sync_record(self, rec):
         axis = 0
@@ -1307,6 +1335,7 @@ class Master:
             if self.nchannels > rec['nchannels']:
                 data = np.vstack([data for i in range(self.nchannels)])
                 axis = 1
+                rec['nchannels'] = self.nchannels
         # elif self.nchannels == 1 or self._mono_mode:
         #     data = np.mean(data.reshape(int(data.shape[-1:][0] / rec['nchannels']),
         #                                 rec['nchannels']),
@@ -1317,17 +1346,29 @@ class Master:
             axis = 1
 
         if not self._frame_rate == rec['frameRate']:
-            data = scisig.resample(data,
-                                   int((self._frame_rate * data.shape[-1:][0]) / rec['frameRate']),
-                                   axis=axis)
+            scale = self._frame_rate / rec['frameRate']
+
+            # firwin = scisig.firwin(23, fc)
+            # firdn = lambda firwin, data,  scale: samplerate.resample(data, )
+            if len(data.shape) == 1:
+                # mono
+                data = samplerate.resample(data, scale, converter_type='sinc_fastest')
+            else:
+                # multi channel
+                res = samplerate.resample(data[0], scale, converter_type='sinc_fastest')
+                for i in data[1:]:
+                    res = np.vstack((res,
+                                     samplerate.resample(i, scale, converter_type='sinc_fastest')))
+                data = res
+
         if rec['nchannels'] > 1:
             data = Master.shuffle2d_channels(data)
 
         rec['nchannels'] = self._process_nchannel
         rec['sampleFormat'] = self._sample_format
-        rec['frameRate'] = self._frame_rate
         rec['o'] = data.astype(self._constants[0]).tobytes()
         rec['size'] = len(rec['o'])
+        rec['frameRate'] = self._frame_rate
         rec['duration'] = rec['size'] / (rec['frameRate'] *
                                          rec['nchannels'] *
                                          Audio.get_sample_size(rec['sampleFormat']))
@@ -1495,6 +1536,9 @@ class Master:
 
     def get_nperseg(self):
         return self._nperseg
+
+    def get_nchannels(self):
+        return self.nchannels
 
     def get_sample_rate(self):
         return self._frame_rate

@@ -19,6 +19,7 @@ setuptools.setup(
             'pyaudio',
             'pandas',
             'miniaudio',
+            'samplerate',
         ],
     long_description_content_type="text/markdown",
     url="https://github.com/MrZahaki/sudio",
