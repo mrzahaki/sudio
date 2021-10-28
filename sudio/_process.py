@@ -17,7 +17,6 @@ from ._audio import *
 from ._port import *
 from ._pipeline import Pipeline
 from ._process_common import *
-# from resample import firdn
 import samplerate
 import tqdm
 import scipy.signal as scisig
@@ -41,6 +40,7 @@ class StreamMode(Enum):
 @Mem.process.parent
 @Mem.sudio.add
 class Master:
+
     DATA_PATH = './data/'
     USER_PATH = DATA_PATH + 'user.sufile'
     SAVE_PATH = DATA_PATH + 'export/'
@@ -61,7 +61,7 @@ class Master:
                  nchannels: int = 2,
                  data_format: SampleFormat = SampleFormat.formatInt16,  # 16bit mode
                  mono_mode: bool = True,
-                 ui_mode: bool = True,
+                 ui_mode: bool = False,
                  nperseg: int = 500,
                  noverlap: int = None,
                  window: object = 'hann',
@@ -554,7 +554,7 @@ class Master:
             except ValueError:
                 return
 
-            if not in_data.shape[1] == self._data_chunk:
+            if not in_data.shape[-1] == self._data_chunk:
                 if self._stream_loop_mode:
                     self._stream_file.seek(self._stream_data_pointer, 0)
                 else:
@@ -641,10 +641,8 @@ class Master:
             # check primary filter state
             data = self._main_stream.get()
             # Tools.push(self.iwin_tst_buffer, data)
-
             if rec_ev.isSet():
                 rec_queue.put_nowait(data)
-
             if not self._mono_mode:
                 data = Master.shuffle2d_channels(data)
             # data = data.T.reshape(np.prod(data.shape))
@@ -680,7 +678,7 @@ class Master:
                   echo_mode=False,
                   rec_start_callback=None):
         # clear data queue
-        self._main_stream.clear()
+        # self._main_stream.clear()
         rec_ev, rec_queue = self._recordq
         progress = None
         if enable_ui:
@@ -752,6 +750,7 @@ class Master:
 
                 if not tmp:
                     return None
+
             rec_ev.set()
             sample = [rec_queue.get()]
             for i in range(duration):
@@ -882,7 +881,7 @@ class Master:
         :param sample_rate: sample rate
         :param safe_load: load an audio file and modify it according to the 'Master' attributes.
         (sample rate, sample format, number of channels, etc).
-        :return: Wrap object
+        :return: WrapGenerator object
 
         '''
         info = get_file_info(filename)
@@ -936,80 +935,135 @@ class Master:
                               ' is not same as object channels({ch1})'.format(name=name,
                                                                               ch0=record['nchannels'],
                                                                               ch1=self.nchannels))
-        path = Master.DATA_PATH + name + Master.BUFFER_TYPE
-        cache = self._cache()
-        try:
-            if path in cache:
 
-                f = record['o']=  open(path, 'rb+')
-                cache_info = f.read(Master.CACHE_INFO)
+        decoder = lambda: decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
 
-                csize, cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
-                csample_format = csample_format if csample_format else None
-                record['size'] = csize
-                to_csize = False
-                if os.path.getsize(path) > csize:
-                    f.seek(csize, 0)
-                    f.truncate()
-                    f.flush()
-                    f.seek(Master.CACHE_INFO, 0)
+        record = (
+        smart_cache(record,
+                    Tools.IndexedName(Master.DATA_PATH + name + Master.BUFFER_TYPE,
+                                      start_before=Master.BUFFER_TYPE),
+                    self,
+                    safe_load = safe_load,
+                    decoder=decoder)
+        )
 
-                record['frameRate'] = cframe_rate
-                record['nchannels'] = cnchannels
-                record['sampleFormat'] = csample_format
-
-                if (cnchannels == self._process_nchannel and
-                    csample_format == self._sample_format and
-                    cframe_rate == self._frame_rate):
-                    pass
-
-                elif safe_load:
-                    # printiooi
-                    # print('noooooo')
-                    # print_en
-                    # print('path in cache safe load add file')
-                    record['o'] = f.read()
-                    record = self._sync_record(record)
-                    f.seek(0, 0)
-                    # f = open(path, 'wb+')
-                    f.truncate()
-                    f.flush()
-                    f.write(np.array([record['size'],
-                                      record['frameRate'],
-                                      record['sampleFormat'] if record['sampleFormat'] else 0,
-                                     record['nchannels']],
-                                     dtype='u8').tobytes())
-                    f.write(record['o'])
-                    record['o'] = f
-                else:
-                    raise Error
-            else:
-                raise Error
-        except Error:
-            # print_en
-            # print('new decode add file')
-            record['o'] = data = decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
-            if safe_load:
-                # printiooi
-                # print(record['frameRate'])
-                record = self._sync_record(record)
-                # print(record['frameRate'])
-            f = open(path, 'wb+')
-            f.truncate()
-            fsize = f.write(np.array([record['size'],
-                                      record['frameRate'],
-                              record['sampleFormat'] if record['sampleFormat'] else 0,
-                              record['nchannels']],
-                              dtype='u8').tobytes())
-            fsize += f.write(record['o'])
-            record['o'] = f
-            record['size'] = fsize
-
-        f.seek(Master.CACHE_INFO, 0)
-        f.flush()
-        record['duration'] = record['size'] / (record['frameRate'] *
-                                               record['nchannels'] *
-                                               Audio.get_sample_size(record['sampleFormat']))
+        # path = Master.DATA_PATH + name + Master.BUFFER_TYPE
+        # cache = self._cache()
+        # # print(path, cache)
+        # try:
+        #     if path in cache:
+        #
+        #         try:
+        #             os.rename(path, path)
+        #             f = record['o'] = open(path, 'rb+')
+        #         except OSError:
+        #             indx = 0
+        #             while 1:
+        #                 new_path = path.replace(Master.BUFFER_TYPE, '{}'.format(indx) + Master.BUFFER_TYPE)
+        #                 try:
+        #                     if os.path.exists(new_path):
+        #                         os.rename(new_path, new_path)
+        #                         f = record['o'] = open(new_path, 'rb+')
+        #
+        #                     else:
+        #                         #if data already opened in another process
+        #                         data_chunck = int(1e7)
+        #                         with open(path, 'rb+') as pre_file:
+        #                             f = record['o'] = open(new_path, 'wb+')
+        #                             data = pre_file.read(data_chunck)
+        #                             while data:
+        #                                 f.write(data)
+        #
+        #                                 data = pre_file.read(data_chunck)
+        #                             pre_file.close()
+        #                     break
+        #                 except OSError:
+        #                     indx += 1
+        #                     continue
+        #         f.seek(0, 0)
+        #         cache_info = f.read(Master.CACHE_INFO)
+        #         try:
+        #             csize, cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
+        #         except ValueError:
+        #             # bad cache error
+        #             f.close()
+        #             os.remove(f.name)
+        #             raise Error
+        #
+        #         csample_format = csample_format if csample_format else None
+        #         record['size'] = csize
+        #         to_csize = False
+        #         if os.path.getsize(path) > csize:
+        #             f.seek(csize, 0)
+        #             f.truncate()
+        #             f.flush()
+        #             f.seek(Master.CACHE_INFO, 0)
+        #
+        #         record['frameRate'] = cframe_rate
+        #         record['nchannels'] = cnchannels
+        #         record['sampleFormat'] = csample_format
+        #
+        #         if (cnchannels == self._process_nchannel and
+        #             csample_format == self._sample_format and
+        #             cframe_rate == self._frame_rate):
+        #             pass
+        #
+        #         elif safe_load:
+        #             # printiooi
+        #             # print('noooooo')
+        #             # print_en
+        #             # print('path in cache safe load add file')
+        #
+        #             record['o'] = f.read()
+        #             record = self._sync_record(record)
+        #
+        #             f = record['o'] = (
+        #             cache_write(record['size'],
+        #                         record['frameRate'],
+        #                         record['sampleFormat'] if record['sampleFormat'] else 0,
+        #                         record['nchannels'],
+        #                         buffered_random=f,
+        #                         data=record['o'],
+        #                         pre_seek=(0, 0),
+        #                         pre_truncate=True,
+        #                         pre_flush=True,
+        #                         after_seek=(Master.CACHE_INFO, 0),
+        #                         after_flush=True)
+        #             )
+        #
+        #         else:
+        #             raise Error
+        #     else:
+        #         raise Error
+        #
+        # except Error:
+        #     # print_en
+        #     # print('new decode add file')
+        #     record['o'] = data = decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
+        #     if safe_load:
+        #         # printiooi
+        #         # print(record['frameRate'])
+        #         record = self._sync_record(record)
+        #         # print(record['frameRate'])
+        #
+        #     record['size'] = len(record['o']) + Master.CACHE_INFO
+        #     f = record['o'] = (
+        #         cache_write(record['size'],
+        #                     record['frameRate'],
+        #                     record['sampleFormat'] if record['sampleFormat'] else 0,
+        #                     record['nchannels'],
+        #                     file_name=path,
+        #                     data=record['o'],
+        #                     pre_seek=(0, 0),
+        #                     pre_truncate=True,
+        #                     pre_flush=True,
+        #                     after_seek=(Master.CACHE_INFO, 0),
+        #                     after_flush=True)
+        #     )
+        #
+        # record['duration'] = record['size'] / (record['frameRate'] *
+        #                                        record['nchannels'] *
+        #                                        Audio.get_sample_size(record['sampleFormat']))
         self._local_database.loc[name] = record
         gc.collect()
         return self.load(name)
@@ -1042,7 +1096,7 @@ class Master:
                 if type(rec_name) is str:
                     rec_name = record[1]
 
-            if type(record[0]) is Wrap:
+            if type(record[0]) is WrapGenerator:
                 record = record[0].get_data()
 
             elif type(record[0]) is pd.Series:
@@ -1061,7 +1115,7 @@ class Master:
             # print(record.name)
             return self.add(record, safe_load=safe_load)
 
-        elif name_type is Wrap:
+        elif name_type is Wrap or name_type is WrapGenerator:
             series = record.get_data()
             return self.add(series, safe_load=safe_load)
 
@@ -1074,45 +1128,51 @@ class Master:
                                   ' is not same as object channels({ch1})'.format(name=name,
                                                                                   ch0=record['nchannels'],
                                                                                          ch1=self.nchannels))
-            data = record['o']
-            if type(data) is not BufferedRandom:
+            if type(record['o']) is not BufferedRandom:
+                if  record.name in self._local_database.index or record.name in self._database.index:
+                    record.name = Tools.time_name()
+                    # print('yessssss')
+
                 if safe_load:
                     record = self._sync_record(record)
-                f = open(Master.DATA_PATH + name + Master.BUFFER_TYPE, 'wb+')
-                f.truncate()
 
-                newsize = f.write(np.array([record['size'],
-                                            record['frameRate'],
-                                  record['sampleFormat'] if record['sampleFormat'] else 0,
-                                 record['nchannels']],
-                                 dtype='u8').tobytes())
-                newsize += f.write(record['o'])
-
-                f.flush()
-                f.seek(Master.CACHE_INFO, 0)
+                f, newsize = (
+                    cache_write(record['size'],
+                                record['frameRate'],
+                                record['sampleFormat'] if record['sampleFormat'] else 0,
+                                record['nchannels'],
+                                file_name=Master.DATA_PATH + record.name + Master.BUFFER_TYPE,
+                                data=record['o'],
+                                pre_truncate=True,
+                                after_seek=(Master.CACHE_INFO, 0),
+                                after_flush=True,
+                                sizeon_out=True)
+                )
                 record['o'] = f
                 record['size'] = newsize
 
-            elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) ==  data.name) or \
+            elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) ==  record.name) or \
                     record.name in self._local_database.index or record.name in self._database.index:
                 # new sliced Wrap data
 
                 if  record.name in self._local_database.index or record.name in self._database.index:
                     record.name = Tools.time_name()
+
                 prefile = record['o']
                 prepos = prefile.tell(), 0
-                newfile = record['o'] = open(Master.DATA_PATH + record.name + Master.BUFFER_TYPE, 'wb+')
-                newsize = newfile.write(np.array([record['size'],
-                                                  record['frameRate'],
-                                       record['sampleFormat'] if record['sampleFormat'] else 0,
-                                       record['nchannels']],
-                                       dtype='u8').tobytes())
-                newsize += newfile.write(prefile.read())
 
+                record['o'], newsize = (
+                    cache_write(record['size'],
+                                record['frameRate'],
+                                record['sampleFormat'] if record['sampleFormat'] else 0,
+                                record['nchannels'],
+                                file_name=Master.DATA_PATH + record.name + Master.BUFFER_TYPE,
+                                data=prefile.read(),
+                                after_seek=prepos,
+                                after_flush=True,
+                                sizeon_out=True)
+                )
                 prefile.seek(*prepos)
-                newfile.seek(Master.CACHE_INFO, 0)
-                newfile.flush()
-                record['o'] = newfile
                 record['size'] = newsize
 
             # if record.name  in self._local_database.index or \
@@ -1131,10 +1191,10 @@ class Master:
         gc.collect()
 
     def recorder(self,
+                 record_duration: Union[int, float] = 10,
                  name: str=None,
                  enable_compressor: bool=False,
                  noise_sampling_duration: Union[int, float]=1,
-                 record_duration: Union[int, float]=10,
                  enable_ui: bool=True,
                  play_recorded: bool=True,
                  catching_precision: float=0.1,
@@ -1143,12 +1203,12 @@ class Master:
         """
         record from main stream for a while.
 
+        :param record_duration: determines the time of recording process
         :param name: name of new record (optional)
         :param enable_compressor:   enable to compress the recorded data.(optional)
                                     The compressor deletes part of the signal that has
                                      lower energy than sampled noise.
         :param noise_sampling_duration: optional; noise sampling duration used in compressor.
-        :param record_duration: determines the time of recording process
         :param enable_ui: user inteface mode
         :param play_recorded: Determines whether the recorded file is played after the recording process.
         :param catching_precision: Signal compression accuracy,
@@ -1161,7 +1221,7 @@ class Master:
         if type(name) is str and name in self._local_database.index:
             raise KeyError('The entered name is already registered in the database.')
         if not name:
-            name = Tools.time_name()
+            name = Tools.time_name('record')
 
         data = self._recorder(enable_compressor=enable_compressor,
                               noise_sampling_duration=noise_sampling_duration,
@@ -1171,18 +1231,19 @@ class Master:
                               catching_precision=catching_precision,
                               echo_mode=echo_mode,
                               rec_start_callback=rec_start_callback)
-        file = open(Master.DATA_PATH + name + Master.BUFFER_TYPE, 'wb+')
-        file.truncate()
-        file.write(np.array([record['size'],
-                             data['frameRate'],
-                          data['sampleFormat'] if data['sampleFormat'] else 0,
-                          data['nchannels']],
-                          dtype='u8').tobytes())
 
-        file.write(data['o'])
-        file.flush()
-        file.seek(Master.CACHE_INFO, 0)
-        data['o'] = file
+        data['o'] = (
+            cache_write(record['size'],
+                        record['frameRate'],
+                        record['sampleFormat'] if record['sampleFormat'] else 0,
+                        record['nchannels'],
+                        file_name=Master.DATA_PATH + name + Master.BUFFER_TYPE,
+                        data=data['o'],
+                        pre_truncate=True,
+                        after_seek=(Master.CACHE_INFO, 0),
+                        after_flush=True)
+        )
+
         data['size'] += Master.CACHE_INFO
         self._local_database.loc[name] = data
         return self.wrap(self._local_database.loc[name].copy())
@@ -1205,7 +1266,7 @@ class Master:
 
 
     def load(self, name: str, load_all: bool=False, safe_load: bool=True,
-             series: bool=False) -> Union[Wrap, pd.Series]:
+             series: bool=False) -> Union[WrapGenerator, pd.Series]:
         '''
         This method used to load a predefined recoed from the staable/external database to
          the local database. Trying to load a record that was previously loaded, outputs a wrapped version
@@ -1283,6 +1344,7 @@ class Master:
             'nchannels': rec['nchannels'],
             'nperseg': rec['nperseg'],
             'name': name,
+            'sampleFormat': ISampleFormat[rec['sampleFormat']].name
         }
 
     def get_exrecord_info(self, name: str) -> dict:
@@ -1322,58 +1384,116 @@ class Master:
 
         return res
 
+
+    def _syncable(self,
+                 *target,
+                 nchannels: int = None,
+                 sample_rate: int = None,
+                 sample_format_id: int = None):
+        '''
+         Determines whether the target can be synced with specified properties or not
+
+        :param target: wrapped object\s
+        :param nchannels: number of channels; if the value is None, the target will be compared to the 'self' properties.
+        :param sample_rate: sample rate; if the value is None, the target will be compared to the 'self' properties.
+        :param sample_format_id: if the value is None, the target will be compared to the 'self' properties.
+        :return: returns only objects that need to be synchronized.
+        '''
+        nchannels = nchannels if nchannels else self.nchannels
+        sample_format_id = self._sample_format if sample_format_id is None else sample_format_id
+        sample_rate = sample_rate if sample_rate else self._sample_rate
+
+        buffer = []
+        for rec in target:
+            assert type(rec) is Wrap or type(rec) is WrapGenerator
+            tmp = rec.get_data()
+
+            if (not tmp['nchannels'] == nchannels or
+                not sample_rate == tmp['frameRate'] or
+                not tmp['sampleFormat'] == sample_format_id):
+                buffer.append(True)
+            else:
+                buffer.append(False)
+        if len(buffer) == 1:
+            return buffer[0]
+        return buffer
+
+
+    def syncable(self,
+                 *target,
+                 nchannels: int = None,
+                 sample_rate: int = None,
+                 sample_format: SampleFormat = SampleFormat.formatUnknown):
+        '''
+         Determines whether the target can be synced with specified properties or not
+
+        :param target: wrapped object\s
+        :param nchannels: number of channels; if the value is None, the target will be compared to the 'self' properties.
+        :param sample_rate: sample rate; if the value is None, the target will be compared to the 'self' properties.
+        :param sample_format: if the value is None, the target will be compared to the 'self' properties.
+        :return: returns only objects that need to be synchronized.
+        '''
+        return self._syncable(*target, nchannels=nchannels, sample_rate=sample_rate, sample_format_id=sample_format.value)
+
+
+    def sync(self,
+             *targets,
+             nchannels: int=None,
+             sample_rate: int=None,
+             sample_format: SampleFormat=SampleFormat.formatUnknown,
+             output='wrapped'):
+        '''
+        Synchronizes targets in the Wrap object format with the specified properties
+        :param targets: wrapped object\s
+        :param nchannels: number of channels; if the value is None, the target will be synced to the 'self' properties.
+        :param sample_rate: if the value is None, the target will be synced to the 'self' properties.
+        :param sample_format: if the value is None, the target will be synced to the 'self' properties.
+        :param output: can be 'wrapped', 'series' or 'ndarray_data'
+        :return: returns synchronized objects.
+        '''
+        # syncable = list((self.syncable(*records,
+        #                         nchannels=nchannels,
+        #                         sample_rate=sample_rate,
+        #                         sample_format=sample_format), ))
+
+
+        nchannels = nchannels if nchannels else self.nchannels
+        sample_format = self._sample_format if sample_format == SampleFormat.formatUnknown else sample_format.value
+        sample_rate =  sample_rate if sample_rate else self._sample_rate
+
+        out_type = 'ndarray' if output.startswith('n') else 'byte'
+
+        # targets = list(val.get_data().copy() for idx, val in enumerate(records) if syncable[idx])
+        # buffer = [*list(val.get_data().copy() for idx, val in enumerate(records) if not syncable[idx])]
+        # for record in buffer:
+        #     f = record['o']
+        #     tmp = f.tell, 0
+        #     record['o'] = f.read()
+        #     f.seek(*tmp)
+        #
+        #     if out_type.startswith('n'):
+        #         pass
+
+        buffer = []
+        for record in targets:
+            record: pd.Series = record.get_data().copy()
+            assert type(record) is pd.Series
+            main_file: io.BufferedRandom = record['o']
+            main_seek = main_file.tell(), 0
+            record['o'] = main_file.read()
+            main_file.seek(*main_seek)
+            Master._sync(record, nchannels, sample_rate, sample_format, output_data=out_type)
+            record.name = Tools.time_name(record.name)
+            if output[0] == 'w':
+                buffer.append(self.add(record))
+            else:
+                buffer.append(record)
+        return tuple(buffer)
+
+
     # save from local _database to stable memory
     def _sync_record(self, rec):
-        axis = 0
-        form = Audio.get_sample_size(rec['sampleFormat'])
-        if rec['sampleFormat'] == SampleFormat.formatFloat32.value:
-            form = '<f{}'.format(form)
-        else:
-            form = '<i{}'.format(form)
-        data = np.frombuffer(rec['o'], form)
-        if rec['nchannels'] == 1:
-            if self.nchannels > rec['nchannels']:
-                data = np.vstack([data for i in range(self.nchannels)])
-                axis = 1
-                rec['nchannels'] = self.nchannels
-        # elif self.nchannels == 1 or self._mono_mode:
-        #     data = np.mean(data.reshape(int(data.shape[-1:][0] / rec['nchannels']),
-        #                                 rec['nchannels']),
-        #                    axis=1)
-        else:
-            data = [[data[i::rec['nchannels']]] for i in range(self.nchannels)]
-            data = np.append(*data, axis=0)
-            axis = 1
-
-        if not self._frame_rate == rec['frameRate']:
-            scale = self._frame_rate / rec['frameRate']
-
-            # firwin = scisig.firwin(23, fc)
-            # firdn = lambda firwin, data,  scale: samplerate.resample(data, )
-            if len(data.shape) == 1:
-                # mono
-                data = samplerate.resample(data, scale, converter_type='sinc_fastest')
-            else:
-                # multi channel
-                res = samplerate.resample(data[0], scale, converter_type='sinc_fastest')
-                for i in data[1:]:
-                    res = np.vstack((res,
-                                     samplerate.resample(i, scale, converter_type='sinc_fastest')))
-                data = res
-
-        if rec['nchannels'] > 1:
-            data = Master.shuffle2d_channels(data)
-
-        rec['nchannels'] = self._process_nchannel
-        rec['sampleFormat'] = self._sample_format
-        rec['o'] = data.astype(self._constants[0]).tobytes()
-        rec['size'] = len(rec['o'])
-        rec['frameRate'] = self._frame_rate
-        rec['duration'] = rec['size'] / (rec['frameRate'] *
-                                         rec['nchannels'] *
-                                         Audio.get_sample_size(rec['sampleFormat']))
-
-        return rec
+        return Master._sync(rec, self.nchannels, self._frame_rate, self._sample_format)
 
     def del_record(self, name: str, deep: bool=False):
         '''
@@ -1392,7 +1512,8 @@ class Master:
                                              'local {ex}databases'.format(name=name, ex=ex))
         if local:
             file = self._local_database.loc[name, 'o']
-            file.close()
+            if not file.closed:
+                file.close()
 
             if not extern:
                 tmp = list(file.name)
@@ -1410,6 +1531,8 @@ class Master:
         if extern and deep:
 
             file = self._database.loc[name, 'o']
+            if not file.closed:
+                file.close()
             tmp = list(file.name)
             tmp.insert(file.name.find(record.name), 'stream_')
             streamfile_name = ''.join(tmp)
@@ -1424,7 +1547,7 @@ class Master:
         gc.collect()
 
 
-    def save_as(self, record: Union[str, pd.Series, Wrap], file_path: str=SAVE_PATH):
+    def save_as(self, record: Union[str, pd.Series, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
         '''
         Convert the record to the wav audio format.
         :param record: record can be the name of registered record, a pandas series or an wrap object
@@ -1435,7 +1558,7 @@ class Master:
         rec_type = type(record)
         if rec_type is str:
             record = self.load(record, series=True)
-        elif rec_type is Wrap:
+        elif rec_type is Wrap or rec_type is WrapGenerator:
             record = record.get_data()
         elif rec_type is pd.Series:
             pass
@@ -1543,7 +1666,7 @@ class Master:
     def get_sample_rate(self):
         return self._frame_rate
 
-    def stream(self, record: Union[str, Wrap, pd.Series],
+    def stream(self, record: Union[str, Wrap, pd.Series, WrapGenerator],
                block_mode: bool=False,
                safe_load: bool=False,
                on_stop: callable=None,
@@ -1556,6 +1679,9 @@ class Master:
         Note:
          The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
          meaning that, The audio data storage methods can have different execution times based on the cached files.
+
+        Note:
+        The recorder can only capture normal streams(Non-optimized streams)
 
         :param record: It could be a predefined record name, a wrapped record, or a pandas series.
         :param block_mode: This can be true, in which case the current thread will be
@@ -1574,8 +1700,8 @@ class Master:
         if rec_type is str:
             record = self.load(record, series=True)
         else:
-            if rec_type is Wrap:
-                assert record.is_packed(), BufferError('The {} is not packed!'.format(record))
+            if rec_type is Wrap or rec_type is WrapGenerator:
+                assert rec_type is WrapGenerator or record.is_packed(), BufferError('The {} is not packed!'.format(record))
                 record = record.get_data()
 
             elif rec_type is pd.Series:
@@ -1584,11 +1710,15 @@ class Master:
                 raise TypeError('please control the type of record')
 
 
-            if not self._mono_mode and record['nchannels'] > self.nchannels:
-                raise ImportError('number of channel for the {name}({ch0})'
-                                  ' is not same as object channels({ch1})'.format(name=name,
-                                                                                  ch0=record['nchannels'],
-                                                                                  ch1=self.nchannels))
+        if not self._mono_mode and record['nchannels'] > self.nchannels:
+            raise ImportError('number of channel for the {name}({ch0})'
+                              ' is not same as object channels({ch1})'.format(name=name,
+                                                                              ch0=record['nchannels'],
+                                                                              ch1=self.nchannels))
+
+        elif not self._frame_rate == record['frameRate']:
+            warnings.warn('Warning, frame rate must be same')
+
         assert  type(record['o']) is io.BufferedRandom, TypeError('The record object is not standard')
         file = record['o']
         file_pos = file.tell()
@@ -1633,18 +1763,17 @@ class Master:
             if safe_load:
                 record = self._sync_record(record)
             file.seek(file_pos, 0)
-            streamfile = open(streamfile_name, 'wb+')
 
-            streamfile.write(np.array([record['size'],
-                                       record['frameRate'],
-                              record['sampleFormat'] if record['sampleFormat'] else 0,
-                             record['nchannels']],
-                             dtype='u8').tobytes())
-
-            streamfile.write(record['o'])
-            streamfile.flush()
-            streamfile.seek(Master.CACHE_INFO, 0)
-            record['o'] = streamfile
+            record['o'] = streamfile = (
+                cache_write(record['size'],
+                            record['frameRate'],
+                            record['sampleFormat'] if record['sampleFormat'] else 0,
+                            record['nchannels'],
+                            file_name=streamfile_name,
+                            data=record['o'],
+                            after_seek=(Master.CACHE_INFO, 0),
+                            after_flush=True)
+            )
             file_pos = Master.CACHE_INFO
 
         if block_mode:
@@ -1684,8 +1813,8 @@ class Master:
         return self
 
 
-    def echo(self, record: Union[Wrap, str, pd.Series]=None,
-             enable: bool=None, main_output_enable: bool=False) -> None:
+    def echo(self, record: Union[Wrap, str, pd.Series, WrapGenerator]=None,
+             enable: bool=None, main_output_enable: bool=False):
         """
         Play "Record" on the operating system's default audio output.
 
@@ -1702,7 +1831,7 @@ class Master:
 
         :param main_output_enable:
             when the 'record' is not None, controls the standard output activity of the master
-        :return: None
+        :return: self
         """
         # Enable echo to system's default output or echo an pre recorded data
         # from local or external database
@@ -1719,8 +1848,8 @@ class Master:
             else:
                 self._echo.clear()
         else:
-            if type(record) is Wrap:
-                assert record.is_packed()
+            if type(record) is Wrap or type(record) is WrapGenerator:
+                assert type(record) is WrapGenerator or record.is_packed()
                 record = record.get_data()
             else:
                 if type(record) is str:
@@ -1749,18 +1878,20 @@ class Master:
             if flg:
                 self._echo.set()
 
+        return self
+
     def disable_echo(self):
         '''
         disable the main stream echo mode
-        :return: None
+        :return: self
         '''
-        self.echo(enable=False)
+        return  self.echo(enable=False)
 
-    def join(self, other):
-
-        assert self._frame_rate == other.frame_rate and \
-               self._nperseg == other.nperseg and \
-               self._sampwidth == other._sampwidth
+    # def join(self, other):
+    #
+    #     assert self._frame_rate == other.frame_rate and \
+    #            self._nperseg == other.nperseg and \
+    #            self._sampwidth == other._sampwidth
 
     def wrap(self, record: Union[str, pd.Series]):
         '''
@@ -1768,7 +1899,7 @@ class Master:
         :param record: preloaded record or pandas series
         :return: Wrap object
         '''
-        return Wrap(self, record)
+        return WrapGenerator(self, record)
 
     def _cache(self):
         path = []
@@ -1781,7 +1912,7 @@ class Master:
         path += [i for i in expath if not i in path]
 
         listdir = os.listdir(Master.DATA_PATH)
-        listdir = list([Master.DATA_PATH + item for item in listdir if item.endswith('.bin')])
+        listdir = list([Master.DATA_PATH + item for item in listdir if item.endswith(Master.BUFFER_TYPE)])
         # listdir = [Master.DATA_PATH + item  for item in listdir if not item in path]
         for i in path:
             j = 0
@@ -1800,11 +1931,15 @@ class Master:
          memory usage and improve performance, meaning that, The audio data storage methods
          can have different execution times based on the cached files.
          This function used to clean additional cache files.
-        :return: None
+        :return: self
         '''
         cache = self._cache()
         for i in cache:
-            os.remove(i)
+            try:
+                os.remove(i)
+            except PermissionError:
+                pass
+        return self
 
 
     def _refresh(self, *args):
@@ -1846,6 +1981,7 @@ class Master:
 
         self._main_stream.clear()
         self._main_stream.release()
+
 
 class _Error(Exception):
     pass

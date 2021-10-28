@@ -16,11 +16,20 @@ class Register:
 
     def parent(self, input_class):
         for method in self.objects:
-            setattr(input_class, method.__name__, method)
+            if type(method) is tuple:
+                method = method[0]
+                setattr(input_class, method.__name__, staticmethod(method))
+            else:
+                setattr(input_class, method.__name__, method)
+
         return input_class
 
     def add(self, obj):
         self.objects.append(obj)
+        return obj
+
+    def add_static(self, obj):
+        self.objects.append((obj, ))
         return obj
 
 def static_vars(**kwargs):

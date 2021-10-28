@@ -14,7 +14,7 @@ import sys
 import os
 import array
 from enum import Enum
-from typing import Generator, List, Dict, Set, Optional, Union, Any, Callable
+from typing import Generator, Dict, Set, Optional, Union, Any, Callable
 from _miniaudio import ffi, lib
 import pyaudio
 try:
@@ -168,6 +168,8 @@ SampleMap = {
 ISampleMap = {value : key for (key, value) in SampleMap.items()}
 
 SampleMapValue = {key.value : value for (key, value) in SampleMap.items()}
+
+ISampleFormat = {key.value : key for (key, value) in SampleMap.items()}
 
 class SoundFileInfo:
     """Contains various properties of an audio file."""

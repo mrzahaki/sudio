@@ -103,8 +103,62 @@ class Tools:
         obj.reverse()
 
     @staticmethod
-    def time_name():
+    def time_name(seed=None):
         name = time.gmtime()
-        name = str(name.tm_year) + str(name.tm_mon) + str(name.tm_mday) + '_' + str(name.tm_sec) + str(
-            time.time() % 1)[2:6]
+        if seed:
+            name = str(seed) + str(name.tm_mday) + str(name.tm_sec) + str(time.time() % 1)[2:5]
+        else:
+            name = (str(name.tm_year) + str(name.tm_mon) +
+                    str(name.tm_mday) + '_' + str(name.tm_sec) + str(time.time() % 1)[2:5])
         return name
+
+    class IndexedName:
+        def __init__(self,
+                     string: str,
+                     start_from: int = None,
+                     first_index: int = 0,
+                     start_before: str = None,
+                     max_index: int = None,
+                     seed: str = ''):
+
+            if start_from is not None:
+                index = start_from
+            elif start_before is not None:
+                index = string.index(start_before)
+            else:
+                raise ValueError
+
+            self._count = first_index
+            self._first_index = first_index
+            self._max_index = max_index
+            self._str: list = [(string[:index] + '_' + seed + '_') if seed and (not seed in string) else string[:index] + '_',
+                               '',
+                               string[index:]]
+            self._current_str = ''
+
+        def __call__(self, *args, timed_random: bool = False, timed_regular: bool = False, seed: str = ''):
+            if self._max_index and self._count > self._max_index:
+                raise OverflowError
+
+            self._str[1] = str(self._count) + ''.join(args)
+            self._count += 1
+
+            if seed:
+                self._str[0] += '_' + seed
+
+            if timed_random:
+                self._str[1] += Tools.time_name('_')
+            elif timed_regular:
+                self._str[1] += '_' + Tools.time_name()
+
+            self._current_str = ''.join(self._str)
+            return self._current_str
+
+        def reset(self):
+            self._count = self._first_index
+
+        def get(self):
+            return self._current_str
+
+
+
