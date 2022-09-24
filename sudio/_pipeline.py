@@ -4,18 +4,23 @@ with the name of ALLAH:
 
  audio processing platform
 
- Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
+ Author: hussein zahaki (mrzahaki@gmail.com)
 
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 import threading
 import queue
 import time
+from typing import Union
 
 
 class Pipeline(threading.Thread):
-    # type LiveProcessing, DeadProcessing or timeout value
-    def __init__(self, max_size=0, io_buffer_size=10, pipe_type='LiveProcessing', list_dispatch=False):
+    # type drop, block or {timeout value}
+    def __init__(self, max_size: int = 0,
+                 io_buffer_size: int = 10,
+                 on_busy: Union[float, str] = 'drop',
+                 list_dispatch: bool = False):
+
         super(Pipeline, self).__init__(daemon=True)
         # self.manager = threading.Manager()
         # self.namespace = manager.Namespace()
@@ -28,18 +33,18 @@ class Pipeline(threading.Thread):
         self._pipoutput_queue = queue.Queue(maxsize=max_size)
         self.output_line = queue.Queue(maxsize=io_buffer_size)
         self.max_size = max_size
-        self.pipe_type = pipe_type
+        self.on_busy = on_busy
         self.refresh_ev = threading.Event()
         self.init_queue = queue.Queue()
         self._list_dispatch = list_dispatch
 
         # block value, timeout
-        if pipe_type == 'LiveProcessing':
+        if on_busy == 'drop':
             self._process_type = (False, None)
-        elif pipe_type == 'DeadProcessing':
+        elif on_busy == 'block':
             self._process_type = (True, None)
-        elif type(pipe_type) == float:
-            self._process_type = (True, pipe_type)
+        elif type(on_busy) == float:
+            self._process_type = (True, on_busy)
         else:
             raise ValueError
 
@@ -91,7 +96,6 @@ class Pipeline(threading.Thread):
             except (queue.Full, queue.Empty):
                 pass
 
-
     def _run_dispatched(self):
         # print('data')
         # call from pipeline
@@ -101,11 +105,7 @@ class Pipeline(threading.Thread):
         for i in self._pipeline[1:]:
             ret_val = i[0](*i[1:], *ret_val)
 
-        if self._sync:
-            self._sync.wait()
-        self.output_line.put(ret_val,
-                             block=self._process_type[0],
-                             timeout=self._timeout)
+        self._post_process(ret_val)
 
     def _run_norm(self):
         # call from pipeline
@@ -114,9 +114,13 @@ class Pipeline(threading.Thread):
         for i in self._pipeline[1:]:
             ret_val = i[0](*i[1:], ret_val)
 
+        self._post_process(ret_val)
+
+    def _post_process(self, retval):
+
         if self._sync:
             self._sync.wait()
-        self.output_line.put(ret_val,
+        self.output_line.put(retval,
                              block=self._process_type[0],
                              timeout=self._timeout)
 
@@ -149,7 +153,6 @@ class Pipeline(threading.Thread):
                         del self._pipeline[args[1]]
                     elif args[0] == 'time':
                         self.input_line.empty()
-                        t0 = tdiff = 0
                         if self._list_dispatch:
                             t0 = time.thread_thread_time_ns()
                             self._run_dispatched()
@@ -162,25 +165,42 @@ class Pipeline(threading.Thread):
 
             self.refresh_ev.clear()
 
-    def insert(self, index:int, *func, args=(), init=()):
+    def insert(self,
+               index: int,
+               *func: callable,
+               args: Union[list, tuple, object] = (),
+               init: Union[list, tuple, callable] = ()):
 
         if self.max_size:
             assert self.__len__() + len(func) < self.max_size
-
-        for i in init:
-            if i:
-                self.init_queue.put(i)
+        elif init:
+            if type(init) is callable:
+                self.init_queue.put(init)
+            elif type(init) is tuple or type(init) is list:
+                for i in init:
+                    if i:
+                        self.init_queue.put(i)
 
         for num, i in enumerate(func):
             assert type(i) == type(self.insert), 'TypeError'
             if args:
                 # self._pipeline.append([i, *args[num]])
-                self._pipinput_queue.put([index, [i, *args[num]]])
+                if type(args[num]) is tuple or type(args[num]) is list:
+                    self._pipinput_queue.put([index, [i, *args[num]]])
+                elif type(args) is tuple or type(args) is list:
+                    if not args[num] is None:
+                        self._pipinput_queue.put([index, [i, args[num]]])
+                else:
+                    self._pipinput_queue.put([index, [i, args]])
+
             else:
                 # self._pipeline.append([i])
                 self._pipinput_queue.put([index, [i]])
+
         self.refresh_ev.set()
-        while self.refresh_ev.is_set() and self.is_alive(): pass
+        while self.refresh_ev.is_set() and self.is_alive():
+            pass
+
         return self
 
     # def join(self, *pip, args=(), init=()):
@@ -193,68 +213,29 @@ class Pipeline(threading.Thread):
     #     self._pipeline.insert(index, [func, *args])
     #     return self
 
-    def append(self, *func, args=(), init=()):
-        """append new functions to pipeline
+    def append(self,
+               *func: callable,
+               args: Union[list, tuple, object] = (),
+               init: Union[list, tuple, callable] = ()):
 
-        Parameters
-        ----------
-        func : list or object
-            Functions to be added to the pipe
-        args: tuple
-            Input Arguments of Functions
-        init: tuple
-            Initial functions(access to pipeline shared memory)
+        return self.insert(self.__len__(), *func, args, init)
 
-        Returns
-        -------
-        y : current object
-
-
-        Examples
-        --------
-        Simple operations:
-
-        >>> from scipy.signal import upfirdn
-        >>> h = firwin(30, 8000, fs=72000)
-        >>>
-        >>> def simple_sum(x, y):
-        >>>     return x + y
-        >>> pip = Pipeline().append(upfirdn, simple_sum, args=((h), (2)))
-        """
-        if self.max_size:
-            assert self.__len__() + len(func) < self.max_size
-
-        for i in init:
-            if i:
-                self.init_queue.put(i)
-
-        for num, i in enumerate(func):
-            assert type(i) == type(self.insert), 'TypeError'
-            if args:
-                # self._pipeline.append([i, *args[num]])
-                self._pipinput_queue.put([None, [i, *args[num]]])
-            else:
-                # self._pipeline.append([i])
-                self._pipinput_queue.put([None, [i]])
-        self.refresh_ev.set()
-        # print('o1')
-        while self.refresh_ev.is_set() and self.is_alive(): pass
-
-        return self
-
-    def sync(self, barrier):
+    def sync(self, barrier: threading.Barrier):
         self._sync = barrier
 
     def aasync(self):
         self._sync = None
 
-    def time_us(self):
+    def delay(self):
+
         if not self.__len__():
-            return 0
+            raise EmptyError("Pipeline is empty ")
+
         elif self.is_alive():
             self._pipinput_queue.put(('time', 0))
             self.refresh_ev.set()
-            while self.refresh_ev.is_set(): pass
+            while self.refresh_ev.is_set():
+                pass
 
             while not self._pipoutput_queue.empty():
                 data = self._pipoutput_queue.get()
@@ -262,19 +243,16 @@ class Pipeline(threading.Thread):
                     return data[1]
                 self._pipoutput_queue.put(data)
         else:
-            return len(self._pipeline)
+            raise ConnectionError("Pipeline is not started")
 
-    def set_timeout(self, time):
-        self._timeout = time
+    def set_timeout(self, t: Union[float, int]):
+        self._timeout = t
 
     def get_timeout(self):
         return self._timeout
 
-    def info(self):
-        return {
-            'time us': self.time_us(),
-            'pipe len': self.__len__(),
-        }
+        a = []
+        a.__delitem__()
 
     def __delitem__(self, key):
         if self.is_alive():
@@ -322,6 +300,10 @@ class Pipeline(threading.Thread):
             assert type(key) == slice
             # indices = key.indices(len(self._pipeline))
             return Pipeline(max_size=self.max_size, io_buffer_size=self.io_buffer_size,
-                            pipe_type=self.pipe_type).append(*data)
+                            on_busy=self.on_busy).append(*data)
         except AssertionError:
             return self._pipeline[key]
+
+
+class EmptyError(Exception):
+     pass
