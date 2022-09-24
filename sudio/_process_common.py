@@ -90,7 +90,7 @@ def _iwin_nd(self, win):
 
 # ____________________________________________________ pipe line
 @Mem.process.add
-def add_pipeline(self, name, pip, process_type='main', channel=None, stream_type='multithreading'):
+def add_pipeline(self, name, pip, process_type='main', channel=None):
     '''
     :param name: string; Indicates the name of the pipeline
     :param pip: obj; Pipeline object/s
