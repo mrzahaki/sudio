@@ -1,11 +1,8 @@
 """
-with the name of ALLAH:
+ W.T.A
  SUDIO (https://github.com/MrZahaki/sudio)
-
- audio processing platform
-
- Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
-
+ The Audio Processing Platform
+ Mail: mrzahaki@gmail.com
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 
@@ -18,7 +15,6 @@ from ._port import *
 from ._pipeline import Pipeline
 from ._process_common import *
 import samplerate
-import tqdm
 import scipy.signal as scisig
 import threading
 import queue
@@ -31,6 +27,11 @@ import gc
 import time
 import os
 from io import BufferedRandom
+
+try:
+    import tqdm
+except ModuleNotFoundError:
+    pass
 
 class StreamMode(Enum):
     normal = 0
@@ -351,6 +352,8 @@ class Master:
 
         if self.nchannels == 1:
             mono_mode = True
+
+        self.mute()
 
         self.branch_pipe_database_min_key = 0
         self._ui_mode = ui_mode

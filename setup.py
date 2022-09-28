@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='sudio',
-    version='1.0.8',
+    version='1.0.9',
     packages=['sudio',],
     author="hussein zahaki",
     author_email="hussein.zahaki.mansoor@gmail.com",
@@ -14,7 +14,6 @@ setuptools.setup(
     long_description=long_description,
     install_requires=[
             'scipy',
-            'tqdm',
             'numpy',
             'pyaudio',
             'pandas',

@@ -1,11 +1,8 @@
 """
-with the name of ALLAH:
+ W.T.A
  SUDIO (https://github.com/MrZahaki/sudio)
-
- audio processing platform
-
- Author: hussein zahaki (hossein.zahaki.mansoor@gmail.com)
-
+ The Audio Processing Platform
+ Mail: mrzahaki@gmail.com
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 import io
@@ -391,7 +388,7 @@ class Name:
 @Mem.sudio.add
 class WrapGenerator:
     name = Name()
-    def __init__(self, other, record):
+    def __init__(self, master, record):
 
         rec_type = type(record)
         if rec_type is pd.Series:
@@ -402,18 +399,18 @@ class WrapGenerator:
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
-                                file_name=other.__class__.DATA_PATH + record.name + other.__class__.BUFFER_TYPE,
+                                file_name=master.__class__.DATA_PATH + record.name + master.__class__.BUFFER_TYPE,
                                 data=record['o'],
                                 pre_truncate=True,
-                                after_seek=(other.__class__.CACHE_INFO, 0),
+                                after_seek=(master.__class__.CACHE_INFO, 0),
                                 after_flush=True)
                 )
-                record['size'] += other.__class__.CACHE_INFO
+                record['size'] += master.__class__.CACHE_INFO
 
         elif rec_type is str:
-            self._rec: pd.Series = other.load(record, series=True)
+            self._rec: pd.Series = master.load(record, series=True)
 
-        self._parent = other
+        self._parent = master
         self._file: io.BufferedRandom = self._rec['o']
         self._name = Tools.IndexedName(self._file.name,
                                        seed='wrrapped',
@@ -426,7 +423,6 @@ class WrapGenerator:
         self._nperseg = self._rec['nperseg']
         self._sample_type = self._parent._constants[0]
         self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
-        self._data = b''
         self._seek = 0
 
     def __call__(self,
@@ -452,7 +448,7 @@ class WrapGenerator:
                     record,
                     self)
 
-    def get_data(self):
+    def get_data(self) -> pd.Series:
         return self._rec.copy()
 
     @contextmanager
@@ -471,39 +467,39 @@ class WrapGenerator:
     def set_data(self, data):
         self._data = data
 
-    def get_sample_format(self):
+    def get_sample_format(self) -> SampleFormat:
         return ISampleFormat[self._sample_format]
 
-    def get_sample_width(self):
+    def get_sample_width(self) -> int:
         return self.sample_width
 
     def get_master(self):
         return self._parent
 
-    def get_size(self):
+    def get_size(self) -> int:
         return os.path.getsize(self._file.name) - self._file.tell()
 
-    def get_cache_size(self):
+    def get_cache_size(self) -> int:
         return os.path.getsize(self._file.name)
 
-    def get_frame_rate(self):
+    def get_frame_rate(self) -> int:
         return self._frame_rate
 
-    def get_nchannels(self):
+    def get_nchannels(self) -> int:
         return self._nchannels
 
-    def get_duration(self):
+    def get_duration(self) -> float:
         return self._duration
 
     def join(self,
              *other,
-             sync_sample_format_id: int = None,
+             sync_sample_format: SampleFormat = None,
              sync_nchannels: int = None,
              sync_sample_rate: int = None,
              safe_load: bool = True
              ):
 
-        return (self.__call__(sync_sample_format_id=sync_sample_format_id,
+        return (self.__call__(sync_sample_format_id=sync_sample_format.value,
                              sync_nchannels=sync_nchannels,
                              sync_sample_rate=sync_sample_rate,
                              safe_load=safe_load).join(*other))
@@ -653,25 +649,25 @@ class Wrap:
                                                       self.sample_width)
         self._packed = True
 
-    def get_sample_format(self):
+    def get_sample_format(self) -> SampleFormat:
         return ISampleFormat[self._sample_format]
 
-    def get_sample_width(self):
+    def get_sample_width(self) -> int:
         return self.sample_width
 
     def get_master(self):
         return self._parent
 
-    def get_size(self):
+    def get_size(self) -> int:
         return os.path.getsize(self._file.name)
 
-    def get_frame_rate(self):
+    def get_frame_rate(self) -> int:
         return self._frame_rate
 
-    def get_nchannels(self):
+    def get_nchannels(self) -> int:
         return self._nchannels
 
-    def get_duration(self):
+    def get_duration(self) -> float:
         return self._itime_calculator(self.get_size())
 
     def join(self, *other):
@@ -858,6 +854,9 @@ class Wrap:
         except ValueError:
             # 404 dont found /:
             pass
+        except AssertionError:
+            pass
+
         if os.path.exists(self._file.name):
             os.remove(self._file.name)
 
@@ -886,10 +885,13 @@ class Wrap:
         return self
 
     def __add__(self, other):
-        assert type(other) is float or type(other) is int
-        assert self._packed, AttributeError('The Wrap object must be packed')
-        with self.unpack() as data:
-            self._data = data + other
+
+        if type(other) is float or type(other) is int:
+            assert self._packed, AttributeError('The Wrap object must be packed')
+            with self.unpack() as data:
+                self._data = data + other
+        else:
+            self.join(other)
         return self
 
     def __sub__(self, other):
@@ -912,9 +914,9 @@ class Wrap:
         return data.astype(self._sample_type).tobytes()
 
     @contextmanager
-    def unpack(self, reset=False):
+    def unpack(self, reset=False) -> np.ndarray:
         '''
-        Audio data unpacked from cached files to the dynamic memory by calling unpacker with (flags).
+        Unpack audio data  from cached files to the dynamic memory.
         note:
          All calculations in the unpacked block are performed on the precached
          files (not the original audio data).
@@ -929,7 +931,6 @@ class Wrap:
         >>> with wrap.unpack() as data:
         >>>     wrap.set_data(data * .7)
         >>> master.echo(wrap)
-
         '''
         try:
             self._packed = False
@@ -952,7 +953,7 @@ class Wrap:
 
             self._data = self._file
 
-    def get_data(self):
+    def get_data(self) -> Union[pd.Series, np.ndarray]:
         if self._packed:
             record = self._rec.copy()
             size = record['size'] = os.path.getsize(self._file.name)
@@ -962,7 +963,7 @@ class Wrap:
         else:
             return self._data
 
-    def is_packed(self):
+    def is_packed(self) -> bool:
         return self._packed
 
     @contextmanager

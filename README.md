@@ -1,37 +1,31 @@
 # Sudio
+
  
 `sudio` is a `powerful`, `Open-source`, `fast`, `cross-platform` and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
 
 ## Abstract
 
-Audio processing is a subset of Digital Signal Processing (DSP). 
-Audio signals are captured in digital format and certain properties of the human ear are
-used along with some mathematical techniques to achieve compression in order to store studio quality, 
-high fidelity audio data on small disks or stream the data at lower bit rates.
+Audio signals are captured in digital format and certain properties of the human ear are used along with some mathematical techniques to achieve compression in order to store studio quality, high fidelity audio data on small disks or stream the data at lower bit rates.
 
 #### Real-time audio processing
 
-For live digital audio systems with high-resolution multichannel functionalities, it is desirable to have accurate latency
-control and estimation over all the stages of digital audio processing chain. 
+For live digital audio systems with high-resolution multichannel functionalities, it is desirable to have accurate latency control and estimation over all the stages of digital audio processing chain. 
 
-The sudio is written flexible can used for high level audio processing algorithm 
-and other system factors, which might cause the latency effects. 
-It also can estimate the synchronization and delay of multiple channels.
+The sudio is written flexible can used for high level audio processing algorithm and other system factors, which might cause the latency effects. It also can estimate the synchronization and delay of multiple channels.
 
 #### Non-Realtime processing:
 
-Sudio is a comprehensive library for mixing, editing, 
-and recording audio content.
+Sudio is a comprehensive library for mixing, editing, and recording audio content.
 
 
 #### Audio data maintaining process:
 
-The sudio used additional cached files to reduce dynamic memory usage and 
-improve performance, meaning that audio data storage methods could have 
-different execution times based on the stored files. Thanks to that, 
-Sudo can manage various audio streams from audio files or operating systems 
-without any size limitation.
+The sudio used additional cached files to reduce dynamic memory usage and improve performance, meaning that audio data storage methods could have different execution times based on the stored files. Thanks to that, 
+Sudo can manage various audio streams from audio files or operating systems without any size limitation.
 
+<!--
+<a href="https://www.buymeacoffee.com/mrzahakiU" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+-->
  ---
 
 ##### Table of contents:
@@ -56,10 +50,7 @@ without any size limitation.
           - [HPF 1KHz](#hpf-1khz)
           - [BPF 500Hz - 1KHz](#bpf-500hz---1khz)
         - [Complex Slicing](#complex-slicing)
-    - [Examples and Advanced Usage](#examples-and-advanced-usage)
-        - [STFT](#stft)
-    - [Usage](#usage)
-    - [Prerequisites](#prerequisites)
+      - [Audio Streaming](#audio-streaming)
   - [API Documentation](#api-documentation)
     - [Master](#master)
       - [Parameters](#parameters)
@@ -109,17 +100,14 @@ without any size limitation.
           - [Getter](#getter)
           - [Setter](#setter)
     - [WrapGenerator](#wrapgenerator)
-      - [Parameters](#parameters-1)
       - [Methods](#methods-2)
-        - [get_data](#get_data)
-        - [get](#get)
-        - [set_data](#set_data)
         - [get_sample_format](#get_sample_format)
         - [get_sample_width](#get_sample_width)
         - [get_master](#get_master)
         - [get_size](#get_size)
         - [get_cache_size](#get_cache_size)
         - [get_nchannels](#get_nchannels-1)
+        - [get_frame_rate](#get_frame_rate)
         - [get_duration](#get_duration)
         - [join](#join)
       - [Magic methods](#magic-methods)
@@ -133,38 +121,36 @@ without any size limitation.
         - [sub](#sub)
         - [call](#call)
     - [Wrap](#wrap-1)
-      - [Parameters](#parameters-2)
-      - [Notes](#notes-1)
       - [Methods](#methods-3)
         - [get_sample_format](#get_sample_format-1)
         - [get_sample_width](#get_sample_width-1)
         - [get_master](#get_master-1)
         - [get_size](#get_size-1)
-        - [get_frame_rate](#get_frame_rate)
+        - [get_frame_rate](#get_frame_rate-1)
         - [get_nchannels](#get_nchannels-2)
         - [get_duration](#get_duration-1)
         - [join](#join-1)
         - [unpack](#unpack)
-        - [get_data](#get_data-1)
+        - [get_data](#get_data)
         - [is_packed](#is_packed)
-        - [get](#get-1)
-        - [set_data](#set_data-1)
-        - [getitem](#getitem-1)
+        - [get](#get)
+        - [set_data](#set_data)
       - [Magic methods](#magic-methods-1)
         - [del](#del-1)
         - [str](#str-1)
+        - [getitem](#getitem-1)
         - [mul](#mul-1)
         - [truediv](#truediv-1)
         - [pow](#pow-1)
         - [add](#add-2)
         - [sub](#sub-1)
     - [Pipeline](#pipeline)
-      - [Parameters](#parameters-3)
+      - [Parameters](#parameters-1)
       - [Methods](#methods-4)
         - [clear](#clear)
         - [run](#run)
         - [insert](#insert)
-          - [Parameters](#parameters-4)
+          - [Parameters](#parameters-2)
           - [Reterns](#reterns)
         - [append](#append)
         - [sync](#sync-1)
@@ -173,12 +159,13 @@ without any size limitation.
         - [set_timeout](#set_timeout)
         - [get_timeout](#get_timeout)
         - [put](#put)
-        - [get](#get-2)
+        - [get](#get-1)
       - [Magic methods](#magic-methods-2)
         - [call](#call-1)
         - [delitem](#delitem)
         - [len](#len)
         - [getitem](#getitem-2)
+  - [LICENCE](#licence)
 
 
 ### [Installation](#installation)
@@ -215,7 +202,7 @@ the record with the name of baroon will be played on the stdout audio stream.
 
 ###### simple slicing
 
-The following example is used to play the clipped record in the stdout audio stream.
+The following example is used to play the audio record with the name of baroon from 12 to 27.66 seconds on the stdout audio stream.
 
 ```python
 su = sudio.Master()
@@ -225,13 +212,20 @@ su.echo(baroon[12: 27.66])
 
 ###### slice & merge
 
+
 ```python
 su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[12: 27.66, 65: 90])
+rec = su.add('baroon.mp3')
+
+# method 1
+su.echo(rec[12: 27.66, 65: 90])
+
+# method 2
+su.echo(rec[12: 27.66] + rec[65: 90])
 ```
 
 The audio record is split into two parts, the first one 12-27.66 seconds, and the last one 65-90 seconds, then the sliced records are merged and played in the stream.
+
 
 ##### Frequency domain
 
@@ -267,24 +261,55 @@ baroon = su.add('baroon.mp3')
 su.echo(baroon[5:10, :'1000', 10: 20, '1000': '5000'])
 ```
 
-In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5-10 seconds, then a band-pass filter is applied from 10-20 seconds, and finally they are merged.
+In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5 to 10 seconds, then a band-pass filter is applied from 10 to 20 seconds, and finally they are merged.
 
 
+
+#### Audio Streaming
+
+
+```python
+su = sudio.Master()
+
+# start sudio kernel
+su.start()
+
+record = su.add('baroon.mp3')
+stream = su.stream(record)
+
+# enable stdout
+su.echo()
+
+# start streaming
+stream.start()
+# wait for 10 seconds  
+time.sleep(10)
+
+# resume from 15.65 second
+stream.time = 15.65
+# wait for 10 seconds  
+time.sleep(10)
+# stop streaming
+stream.stop()
+```
+
+<!--
 ### [Examples and Advanced Usage](#examples-and-advanced-usage)
 
 All your files and folders are presented as a tree in the file explorer. You can switch from one to another by clicking a file in the tree.
 ##### [STFT](#examples-stft)
-
+-->
 
 <br />
 
+<!--
 ### [Usage](#usage)
 
 ### Prerequisites
 
 Sudio has written in the python language, you can see the python documentation from this link. 
 This library used scientific computing packages to manipulate data like the numpy and scipy.
-
+-->
 
 ## API Documentation
 
@@ -312,7 +337,8 @@ sudio.Master
     <br />
     
 - **nchannels**: int, optional
-    Number of input channels (inner channels). If std_input_dev_id is selected as None, the value will be selected automatically.
+    The number of audible perspective directions or dimensions.    
+    If std_input_dev_id is selected as None, the value will be selected automatically.
 
     <br />
     
@@ -527,7 +553,7 @@ record from main stream for a while.
     - **name**: optional; name of new record.
     - **enable_compressor**: optional; enable to compress the recorded data. The compressor deletes part of the signal that has lower energy than the sampled noise.
     - **noise_sampling_duration**: optional; noise sampling duration used by the compressor(if enabled).
-    - **enable_ui**: optional; user inteface mode
+    - **enable_ui**: optional; user inteface mode (need to install tqdm module)
     - **play_recorded**: optional; Determines whether the recorded file will be played after the recording process.
     - **catching_precision**: optional; Signal compression accuracy, more accuracy can be achieved with a smaller number (default 0.1).
     - **echo_mode**: It can disable the mainstream's echo mode, when the recorder is online.
@@ -781,7 +807,8 @@ sudio.Master.get_nperseg(self)
 sudio.Master.get_nchannels(self)
 ```
 
-**returns**:  number of input channels for current master object.
+ Returns the number of audible perspective directions or dimensions of the current wrapped record.
+
 
 <br />
 
@@ -827,7 +854,6 @@ sudio.Master.stream(self,
 -  **returns** StreamControl object
     
 
-:memo: **Note:** The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance, meaning that, The audio data storage methods can have different execution times based on the cached files.
 
 :memo: **Note:** The recorder can only capture normal streams(Non-optimized streams)
 
@@ -839,7 +865,7 @@ sudio.Master.stream(self,
 ```py
 sudio.Master.mute(self)
 ```
-mute the mainstream
+mute the stdin stream (default)
 
 
 <br />
@@ -849,7 +875,7 @@ mute the mainstream
 ```py
 sudio.Master.unmute(self)
 ```
-disable mute mode of the mainstream
+disable mute mode of the stdin stream
 
 
 
@@ -1138,104 +1164,126 @@ Set the current time of streamed record.
 ### WrapGenerator
 
 ```py
-sudio.WrapGenerator
+sudio.WrapGenerator(self, master: Master, record: Union[str, pd.Series])
 ```
 
-#### Parameters
+Generates a Wrap object, which wraps the raw record.
 
 
-```py
-__init__(self, other, record)
-```
-
+<br />
 
 #### Methods
 
-##### get_data
 
-```py
-sudio.WrapGenerator.
-```
-
-<br />
-
-##### get
-
-```py
-sudio.WrapGenerator.
-```
-
-<br />
-
-##### set_data
-
-```py
-sudio.WrapGenerator.
-```
-
-<br />
 
 ##### get_sample_format
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_sample_format(self) -> SampleFormat
 ```
+ Returns sample format of the current generator.
 
 <br />
 
 ##### get_sample_width
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_sample_width(self) -> int
 ```
+ Returns sample width of the current wrapped record.
+
 
 <br />
 
 ##### get_master
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_master(self) -> Master
 ```
+
+ Returns the Master object of the current generator.
+
 
 <br />
 
 ##### get_size
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_size(self) -> int
 ```
+
+Returns size of the currently processed record on non-volatile memory.
+
+
+:memo: **Note:** Wrapped objects normally stored statically, so all of the calculations need additional IO read/write time, This decrese dynamic memory usage specically for big audio data.
 
 <br />
 
 ##### get_cache_size
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_cache_size(self) -> int
 ```
+
+Returns size of cached file on non-volatile memory.
+
+
+:memo: **Note:** Wrapped objects normally stored statically, so all of the calculations need additional IO read/write time, This decrese dynamic memory usage specically for big audio data.
 
 <br />
 
 ##### get_nchannels
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_nchannels(self) -> int
 ```
+
+ Returns the number of audible perspective directions or dimensions of the current wrapped record.
+
+<br />
+
+##### get_frame_rate
+
+```py
+sudio.WrapGenerator.get_frame_rate(self) -> int
+```
+
+Returns frame rate of the current warpped record.
 
 <br />
 
 ##### get_duration
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.get_duration(self) -> float
 ```
+
+Returns the duration of the provided audio record.
 
 <br />
 
 ##### join
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.join(self,
+                        *other: Union[Wrap, WrapGenerator],
+                        sync_sample_format: SampleFormat = None,
+                        sync_nchannels: int = None,
+                        sync_sample_rate: int = None,
+                        safe_load: bool = True
+                        ) -> Wrap
 ```
+
+Returns a new wrapped record by joining and synchronizing all the elements of the 'other' iterable (Wrap, WrapGenerator), separated by the given separator.
+
+- **parameters**:
+
+  - **other**: wrapped record\s. 
+  - **sync_nchannels**: number of channels; if the value is None, the target will be synced 
+  - **sync_sample_format**: if the value is None, the target will be synced to the master properties.
+  - **sync_sample_rate**: sample rate; if the value is None, the target will be compared to the master properties.
+  - **safe_load**: load an audio file and modify it according to the 'Master' attributes(like the frame rate, number oof channels, etc).
+-  **returns** new Wrap object.
 
 <br />
 
@@ -1249,76 +1297,179 @@ sudio.WrapGenerator.
 ##### getitem
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__getitem__(self, item) -> Wrap
 ```
+
+**Slicing** : 
+The Wrapped object can be sliced using the standard Python x[start: stop: step] syntax, where x is the wrapped object.
+
+  Slicing the **time domain**:  
+
+  The basic slice syntax is 
+  ```math
+  [i: j: k, i(2): j(2): k(2), i(n): j(n): k(n)] 
+  ```
+  
+  where i is the start time, j is the stop time in integer or float types and k is the step(negative number for inversing).
+  This selects the nXm seconds with index times 
+  ```py
+  i, i+1, i+2, ..., j, i(2), i(2)+1, ..., j(2), i(n), ..., j(n)
+  j where m = j - i (j > i).
+  ```
+
+  :memo: **Note:** for i < j, i is the stop time and j is the start time, means that audio data read inversely.
+
+  **Filtering** (Slicing the frequency domain):  
+
+  The basic slice syntax is 
+  
+  
+  ```py
+  ['i': 'j': 'filtering options', 'i(2)': 'j(2)': 'options(2)', ..., 'i(n)': 'j(n)': 'options(n)']
+  ```
+
+  where i is the starting frequency and j is the stopping frequency with type of string in the same units as fs that fs is 2 half-cycles/sample.
+  This activates n number of iir filters with specified frequencies and options.
+
+  For the slice syntax [x: y: options] we have:
+  - x= None, y= 'j': low pass filter with a cutoff frequency of the j
+  - x= 'i', y= None: high pass filter with a cutoff frequency of the i
+  - x= 'i', y= 'j': bandpass filter with the critical frequencies of the i, j
+  - x= 'i', y= 'j', options='scale=[Any negative number]': bandstop filter with the critical frequencies of the i, j
+
+  **Filtering** options:
+  - ftype: optional; The type of IIR filter to design:\n
+    - Butterworth : ‘butter’(default)
+    - Chebyshev I : ‘cheby1’
+    - Chebyshev II : ‘cheby2’
+    - Cauer/elliptic: ‘ellip’
+    - Bessel/Thomson: ‘bessel’
+  - rs: float, optional:\n
+    For Chebyshev and elliptic filters, provides the minimum attenuation in the stop band. (dB)
+  - rp: float, optional:\n
+    For Chebyshev and elliptic filters, provides the maximum ripple in the passband. (dB)
+  - order: The order of the filter.(default 5)
+  - scale: [float, int] optional; The attenuation or Amplification factor,
+    that in the bandstop filter must be a negative number.
+
+  **Complex** slicing:
+  The basic slice syntax is 
+  
+  ```py
+  [a: b, 'i': 'j': 'filtering options', ..., 'i(n)': 'j(n)': 'options(n)', ..., a(n): b(n), 'i': 'j': 'options', ..., 'i(n)': 'j(n)': 'options(n)'] 
+  ```
+
+  or
+
+  ```py
+  [a: b, [Filter block 1)], a(2): b(2), [Filter block 2]  ... , a(n): b(n), [Filter block n]]
+  ```
+
+  Where i is the starting frequency, j is the stopping frequency, a is the starting time and b is the stopping time in seconds. This activates n number of filter blocks [described in the filtering section] that each of them operates within a predetermined time range.
+
+note:
+  The sliced object is stored statically so calling the original wrapped returns The sliced object.
+
 
 <br />
 
 ##### del
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__del__(self)
 ```
+
+Delete the current object and its dependencies (cached files, etc.)
 
 <br />
 
 ##### str
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__str__(self)
 ```
+
+Returns string representation of the current object
+
 
 <br />
 
 ##### mul
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__mul__(self, scale) -> Wrap
 ```
+
+Returns a new Wrap object, scaling the data of the current record.
 
 <br />
 
 ##### truediv
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__truediv__(self, scale)
 ```
+
+Returns a new Wrap object, dividing the data of the current record.
+
+
 
 <br />
 
 ##### pow
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__pow__(self, power, modulo=None)
 ```
+
+Returns a new Wrap object, scaling the data of the current record.
+
 
 <br />
 
 ##### add
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__add__(self, other:Union[Wrap, WrapGenerator, int, float])
 ```
+
+if the 'other' parameter is a WrapGenerator or a Wrap object this method joins the current object to the other one, otherwise this method used to  Return a new Wrap object, scaling the data of the current record. 
+
 
 <br />
 
 ##### sub
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__sub__(self, other: Union[float, int])
 ```
+Returns a new Wrap object, subtracting the data of the current record. 
+
 
 <br />
 
 ##### call
 
 ```py
-sudio.WrapGenerator.
+sudio.WrapGenerator.__call__(self,
+                            *args,
+                            sync_sample_format_id: int = None,
+                            sync_nchannels: int = None,
+                            sync_sample_rate: int = None,
+                            safe_load: bool = True
+                            ) -> Wrap
 ```
+Synchronize the current object with the master (optional) and create a new Wrap object.
 
-<br />
+- **parameters**:
 
+  - **sync_nchannels**: number of channels; if the value is None, the target will be synced 
+  - **sync_sample_format_id**: if the value is None, the target will be synced to the master properties.
+  - **sync_sample_rate**: sample rate; if the value is None, the target will be compared to the master properties.
+  - **safe_load**: load an audio file and modify it according to the 'Master' attributes(like the frame rate, number oof channels, etc).
+-  **returns** new Wrap object.
 
+:memo: **Note:** Wrapped objects normally stored statically, so all of the calculations need additional IO read/write time, This decrese dynamic memory usage specically for big audio data.
 
 
 <br />
@@ -1327,66 +1478,328 @@ sudio.WrapGenerator.
 ### Wrap
 
 ```py
-sudio.Wrap
+sudio.Wrap(self, master: Master, record: pd.Series, generator: WrapGenerator)
 ```
 
-#### Parameters
-
-
-```py
-__init__(self, other, record, generator)
-```
-
-#### Notes
-
+<br />
 
 
 #### Methods
 
 ##### get_sample_format
 
+```py
+sudio.Wrap.get_sample_format(self) -> SampleFormat
+```
+
+ Returns sample format of the current warpped record.
+
+<br />
+
 ##### get_sample_width
+
+```py
+sudio.Wrap.get_sample_width(self) -> int
+```
+
+ Returns sample width.
+
+<br />
 
 ##### get_master
 
+```py
+sudio.Wrap.get_master(self) -> Master
+```
+
+ Returns the Master object.
+
+<br />
+
 ##### get_size
+
+```py
+sudio.Wrap.get_size(self) -> int
+```
+
+Returns size of the currently processed record on non-volatile memory.
+
+:memo: **Note:** Wrapped objects normally stored statically, so all of the calculations need additional IO read/write time, This decrese dynamic memory usage specically for big audio data.
+
+<br />
 
 ##### get_frame_rate
 
+```py
+sudio.Wrap.get_frame_rate(self) -> int
+```
+
+Returns frame rate of the current warpped record.
+
+
+<br />
+
 ##### get_nchannels
+
+```py
+sudio.Wrap.get_nchannels(self) -> int
+```
+
+ Returns the number of audible perspective directions or dimensions of the current wrapped record.
+
+<br />
 
 ##### get_duration
 
+```py
+sudio.Wrap.get_duration(self) -> float
+```
+
+Returns the duration of the provided audio record.
+
+
+<br />
+
 ##### join
+
+```py
+sudio.Wrap.join(self, *other) -> Wrap
+```
+
+Returns a new wrapped record by joining and synchronizing all the elements of the 'other' iterable (Wrap, WrapGenerator), separated by the given separator.
+
+
+<br />
 
 ##### unpack
 
+```py
+@contextmanager
+sudio.Wrap.unpack(self, reset=False) -> np.ndarray
+```
+
+Unpack audio data  from cached files to the dynamic memory.
+
+:memo: **Note:**  All calculations in the unpacked block are performed on the precached files (not the original audio data).
+
+
+- **parameters**:
+  - **reset**: Reset the audio pointer to time 0 (Equivalent to slice '[:]').
+-  **Returns** audio data in ndarray format with shape of (number of audio channels, block size).
+
+```py
+master = Master()
+wrap = master.add('file.mp3')
+with wrap.unpack() as data:
+    wrap.set_data(data * .7)
+master.echo(wrap)
+```
+<br />
+
 ##### get_data
+
+```py
+sudio.Wrap.get_data(self) -> Union[pd.Series, numpy.ndarray]
+```
+if the current object is unpacked:
+- Returns the audio data in a ndarray format with shape of (number of audio channels, block size).
+
+otherwise:
+- Returns the current record.
+
+
+<br />
 
 ##### is_packed
 
+```py
+sudio.Wrap.is_packed(self) -> bool
+```
+
+Returns true if the Wrap object is packed.
+
+<br />
+
 ##### get
+
+```py
+@contextmanager
+sudio.Wrap.get(self, offset=None, whence=None)
+```
+
+ Returns the audio data as a _io.BufferedRandom IO file.
+
+<br />
 
 ##### set_data
 
-##### getitem
+```py
+sudio.Wrap.set_data(self, data: numpy.ndarray)
+```
+
+Set audio data for current wrapped record (object must be unpacked to the volatile memory).
+
+<br />
+
+
 
 
 #### Magic methods
 
 ##### del
 
+```py
+sudio.Wrap.__del__(self)
+```
+
+Delete the current object and its dependencies (cached files, etc.)
+
+<br />
+
 ##### str
+
+```py
+sudio.Wrap.__str__(self)
+```
+
+Returns string representation of the current object
+
+
+<br />
+
+
+##### getitem
+
+```py
+sudio.Wrap.__getitem__(self, item) -> self
+```
+
+
+**Slicing** : 
+The Wrapped object can be sliced using the standard Python x[start: stop: step] syntax, where x is the wrapped object.
+
+  Slicing the **time domain**:  
+
+  The basic slice syntax is 
+  ```math
+  [i: j: k, i(2): j(2): k(2), i(n): j(n): k(n)] 
+  ```
+  
+  where i is the start time, j is the stop time in integer or float types and k is the step(negative number for inversing).
+  This selects the nXm seconds with index times 
+  ```py
+  i, i+1, i+2, ..., j, i(2), i(2)+1, ..., j(2), i(n), ..., j(n)
+  j where m = j - i (j > i).
+  ```
+
+  :memo: **Note:** for i < j, i is the stop time and j is the start time, means that audio data read inversely.
+
+  **Filtering** (Slicing the frequency domain):  
+
+  The basic slice syntax is 
+  
+  
+  ```py
+  ['i': 'j': 'filtering options', 'i(2)': 'j(2)': 'options(2)', ..., 'i(n)': 'j(n)': 'options(n)']
+  ```
+
+  where i is the starting frequency and j is the stopping frequency with type of string in the same units as fs that fs is 2 half-cycles/sample.
+  This activates n number of iir filters with specified frequencies and options.
+
+  For the slice syntax [x: y: options] we have:
+  - x= None, y= 'j': low pass filter with a cutoff frequency of the j
+  - x= 'i', y= None: high pass filter with a cutoff frequency of the i
+  - x= 'i', y= 'j': bandpass filter with the critical frequencies of the i, j
+  - x= 'i', y= 'j', options='scale=[Any negative number]': bandstop filter with the critical frequencies of the i, j
+
+  **Filtering** options:
+  - ftype: optional; The type of IIR filter to design:\n
+    - Butterworth : ‘butter’(default)
+    - Chebyshev I : ‘cheby1’
+    - Chebyshev II : ‘cheby2’
+    - Cauer/elliptic: ‘ellip’
+    - Bessel/Thomson: ‘bessel’
+  - rs: float, optional:\n
+    For Chebyshev and elliptic filters, provides the minimum attenuation in the stop band. (dB)
+  - rp: float, optional:\n
+    For Chebyshev and elliptic filters, provides the maximum ripple in the passband. (dB)
+  - order: The order of the filter.(default 5)
+  - scale: [float, int] optional; The attenuation or Amplification factor,
+    that in the bandstop filter must be a negative number.
+
+  **Complex** slicing:
+  The basic slice syntax is 
+  
+  ```py
+  [a: b, 'i': 'j': 'filtering options', ..., 'i(n)': 'j(n)': 'options(n)', ..., a(n): b(n), 'i': 'j': 'options', ..., 'i(n)': 'j(n)': 'options(n)'] 
+  ```
+
+  or
+
+  ```py
+  [a: b, [Filter block 1)], a(2): b(2), [Filter block 2]  ... , a(n): b(n), [Filter block n]]
+  ```
+
+  Where i is the starting frequency, j is the stopping frequency, a is the starting time and b is the stopping time in seconds. This activates n number of filter blocks [described in the filtering section] that each of them operates within a predetermined time range.
+
+note:
+  The sliced object is stored statically so calling the original wrapped returns The sliced object.
+
+
+
+<br />
 
 ##### mul
 
+```py
+sudio.Wrap.__mul__(self, scale) -> Wrap
+```
+
+Returns current object, dividing the data of the current record.
+
+
+<br />
+
 ##### truediv
+
+```py
+sudio.Wrap.__truediv__(self, scale)
+```
+
+Returns current object, dividing the data of the current record.
+
+
+<br />
 
 ##### pow
 
+```py
+sudio.Wrap.__pow__(self, power, modulo=None)
+```
+
+Returns a new Wrap object, scaling the data of the current record.
+
+<br />
+
 ##### add
 
+```py
+sudio.Wrap.__add__(self, other:Union[Wrap, WrapGenerator, int, float])
+```
+
+if the 'other' parameter is a WrapGenerator or a Wrap object this method joins the current object to the other one, otherwise this method used to  Return a current object, scaling the data of the current record. 
+
+<br />
+
 ##### sub
+
+```py
+sudio.Wrap.__sub__(self, other: Union[float, int])
+```
+
+Returns current object, subtracting the data of the current record. 
+
+<br />
 
 
 
@@ -1704,7 +2117,10 @@ Return self[key].
 
 
 
+LICENCE
+-------
 
+Open Source (OSI approved): Apache License 2.0
 
 
 
