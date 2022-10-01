@@ -282,13 +282,10 @@ su.echo()
 
 # start streaming
 stream.start()
+
 # wait for 10 seconds  
 time.sleep(10)
 
-# resume from 15.65 second
-stream.time = 15.65
-# wait for 10 seconds  
-time.sleep(10)
 # stop streaming
 stream.stop()
 ```
