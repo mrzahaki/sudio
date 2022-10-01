@@ -5,7 +5,7 @@
 
 ## Abstract
 
-Audio signals are captured in digital format and certain properties of the human ear are used along with some mathematical techniques to achieve compression in order to store studio quality, high fidelity audio data on small disks or stream the data at lower bit rates.
+Audio signal processing is a highly active research field where digital signal processing theory meets human sound perception and real-time programming requirements. It has a wide range of applications in computers, gaming, and music technology, to name a few of the largest areas. Successful applications include for example perceptual audio coding, digital music synthesizers, and music recognition software. 
 
 #### Real-time audio processing
 
