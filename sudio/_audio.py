@@ -213,10 +213,12 @@ def smart_cache(record: Union[pd.Series, dict],
 @Mem.sudio.add
 def play(inp: object, sample_format: int = 2, nchannels: int = 1, framerate: int = 44100):
     audio = Audio()
-    stream_out = audio.open(
-        format=sample_format,
-        channels=nchannels,
-        rate=framerate, input=False, output=True)
+    stream_out = audio.open_stream(
+                        format=int(sample_format),
+                        channels=int(nchannels),
+                        rate=int(framerate),
+                        input=False,
+                        output=True)
     stream_out.start_stream()
     stream_out.write(inp)
 

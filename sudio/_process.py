@@ -514,13 +514,13 @@ class Master:
             stream_callback = self._ustream_callback
 
         try:
-            self._pystream = self._paudio.open(format=self._sample_format,
-                                               channels=self.nchannels,
-                                               rate=self._frame_rate,
-                                               frames_per_buffer=self._data_chunk,
-                                               input_device_index=self._input_dev_id,
-                                               input=True,
-                                               stream_callback=stream_callback)
+            self._pystream = self._paudio.open_stream(format=self._sample_format,
+                                                   channels=self.nchannels,
+                                                   rate=self._frame_rate,
+                                                   frames_per_buffer=self._data_chunk,
+                                                   input_device_index=self._input_dev_id,
+                                                   input=True,
+                                                   stream_callback=stream_callback)
             for i in self._threads:
                 i.start()
 
@@ -631,11 +631,12 @@ class Master:
         return None, 0
 
     def __post_process(self, thread_id):
-        stream_out = self._paudio.open(
-            format=self._sample_format,
-            channels=self._process_nchannel,
-            output_device_index=self._output_device_index,
-            rate=self._frame_rate, input=False, output=True)
+        stream_out = self._paudio.open_stream(
+                            format=self._sample_format,
+                            channels=self._process_nchannel,
+                            output_device_index=self._output_device_index,
+                            rate=self._frame_rate, input=False, output=True)
+
         stream_out.start_stream()
         user_mode = "usr" in self.io_mode[4:]
         rec_ev, rec_queue = self._recordq
@@ -665,10 +666,13 @@ class Master:
 
 
                 # print(rate)
-                stream_out = self._paudio.open(
-                    format=self._sample_format,
-                    channels=self._process_nchannel,
-                    rate=rate, input=False, output=True)
+                stream_out = self._paudio.open_stream(
+                                    format=self._sample_format,
+                                    channels=self._process_nchannel,
+                                    rate=rate,
+                                    input=False,
+                                    output=True)
+
                 stream_out.start_stream()
                 self._main_stream.clear()
 
@@ -917,7 +921,7 @@ class Master:
             'nperseg': self._nperseg,
         }
 
-        p0 = max(filename.rfind('\\'), filename.rfind('/'))
+        p0 = max(filename.rfind('\\'), filename.rfind('/')) + 1
         p1 = filename.rfind('.')
         if p0 < 0:
             p0 = 0

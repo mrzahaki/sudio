@@ -22,7 +22,6 @@ except ImportError:
 lib.init_miniaudio()
 
 
-
 #
 # @Mem.process.add
 # def get_default_input_device_info(self):
@@ -36,15 +35,33 @@ lib.init_miniaudio()
 # @Mem.process.add
 # def get_default_output_device_info(self, filename):
 #     return miniaudio.get_file_info(filename)
-
-
 class Audio(pyaudio.PyAudio):
-    pass
+
+    def open_stream(self,
+                    *args,
+                    **kwargs
+                    ):
+        to_int = Audio.to_int
+        to_int(kwargs, 'format')
+        to_int(kwargs, 'channels')
+        to_int(kwargs, 'rate')
+        to_int(kwargs, 'frames_per_buffer')
+        to_int(kwargs, 'input_device_index')
+        to_int(kwargs, 'output_device_index')
+
+        return self.open(*args, **kwargs)
 
     @staticmethod
     def get_sample_size(format: int):
         return pyaudio.get_sample_size(int(format))
 
+    @staticmethod
+    def to_int(obj, key):
+        try:
+            if not obj[key] is None:
+                obj[key] = int(obj[key])
+        except KeyError:
+            pass
 
 @Mem.process.add
 def get_default_input_device_info(self):
@@ -63,9 +80,9 @@ def get_device_count(self):
 
 
 @Mem.process.add
-def get_device_info_by_index(self, index):
+def get_device_info_by_index(self, index: int):
     au = Audio()
-    data = au.get_device_info_by_index(index)
+    data = au.get_device_info_by_index(int(index))
     au.terminate()
     return data
 
