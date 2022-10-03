@@ -42,8 +42,8 @@ class Audio(pyaudio.PyAudio):
     pass
 
     @staticmethod
-    def get_sample_size(format):
-        return pyaudio.get_sample_size(format)
+    def get_sample_size(format: int):
+        return pyaudio.get_sample_size(int(format))
 
 
 @Mem.process.add

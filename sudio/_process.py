@@ -916,6 +916,7 @@ class Master:
             'duration': info.duration,
             'nperseg': self._nperseg,
         }
+
         p0 = max(filename.rfind('\\'), filename.rfind('/'))
         p1 = filename.rfind('.')
         if p0 < 0:
@@ -1183,6 +1184,7 @@ class Master:
             #     raise KeyError('Record with the name of {}'
             #                    ' already registered in local or external database'.format(name))
             self._local_database.loc[record.name] = record
+
             return self.wrap(record)
 
         elif name_type is str:
