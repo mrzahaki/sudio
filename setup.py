@@ -6,11 +6,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='sudio',
-    version='1.0.9.2',
+    version='1.0.9.3',
     packages=['sudio',],
-    author="hussein zahaki",
-    author_email="hussein.zahaki.mansoor@gmail.com",
-    description="Real-Time Audio Processing Platform",
+    author_email="mrzahaki@gmail.com",
+    description="Audio Processing Platform",
     long_description=long_description,
     install_requires=[
             'scipy>=1.9.1',

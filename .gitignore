@@ -1,6 +1,6 @@
 
 /*
-*/__pycache__/*
+**/__pycache__/*
 sudio/*.jpg
 
 !.gitignore
@@ -9,3 +9,4 @@ sudio/*.jpg
 !README.md
 
 !dist
+!examples

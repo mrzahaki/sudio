@@ -28,10 +28,6 @@ import time
 import os
 from io import BufferedRandom
 
-try:
-    import tqdm
-except ModuleNotFoundError:
-    pass
 
 class StreamMode(Enum):
     normal = 0
@@ -61,7 +57,7 @@ class Master:
                  frame_rate: int = 48000,
                  nchannels: int = 2,
                  data_format: SampleFormat = SampleFormat.formatInt16,  # 16bit mode
-                 mono_mode: bool = True,
+                 mono_mode: bool = False,
                  ui_mode: bool = False,
                  nperseg: int = 500,
                  noverlap: int = None,
@@ -389,7 +385,11 @@ class Master:
             Master.get_channels = lambda x: x
 
         elif mono_mode:
-            Master.get_channels = lambda x: np.mean(x.reshape((self._data_chunk, self.nchannels)),
+            if type(mono_mode) is str:
+                mono_mode = int(mono_mode)
+                Master.get_channels = lambda x: x[mono_mode]
+            else:
+                Master.get_channels = lambda x: np.mean(x.reshape((self._data_chunk, self.nchannels)),
                                                     axis=1)
         else:
             Master.get_channels = lambda x: np.append(*[[x[i::self.nchannels]] for i in range(self.nchannels)],
@@ -497,6 +497,7 @@ class Master:
             self.slave_database = []
             # The _slave_sync just used in the activated slave's main pipelines
             self._slave_sync = None
+            self._pystream = False
 
         except:
             print('Initialization error!')
@@ -507,6 +508,7 @@ class Master:
         start audio streaming process
         :return: self object
         '''
+        assert not self._pystream, 'Master is Already Started'
         # stdInput2stdOutput mode
         stream_callback = self._stream_callback
         # user input mode
@@ -688,6 +690,14 @@ class Master:
         # self._main_stream.clear()
         rec_ev, rec_queue = self._recordq
         progress = None
+
+        if enable_ui:
+            try:
+                import tqdm
+            except ModuleNotFoundError:
+                enable_ui = false
+                warnings.warn('Warning, please install tqdm module for UI mode')
+
         if enable_ui:
             progress = tqdm.tqdm(range(100), f"Processing.. ")
             # Waiting for Process processing to be disabled
@@ -1991,6 +2001,8 @@ class Master:
         self._main_stream.clear()
         self._main_stream.release()
 
+    def is_started(self):
+        return self._pystream and True
 
 class _Error(Exception):
     pass

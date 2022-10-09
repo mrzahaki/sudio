@@ -215,7 +215,10 @@ class Pipeline(threading.Thread):
                args: Union[list, tuple, object] = (),
                init: Union[list, tuple, callable] = ()):
 
-        return self.insert(self.__len__(), *func, args, init)
+        return self.insert(self.__len__(),
+                           *func,
+                           args=args,
+                           init=init)
 
     def sync(self, barrier: threading.Barrier):
         self._sync = barrier

@@ -1,7 +1,7 @@
 # Sudio
 
  
-`sudio` is a `powerful`, `Open-source`, `fast`, `cross-platform` and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
+`sudio` is a `powerful`, `Open-source`, `fast and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
 
 ## Abstract
 
@@ -28,15 +28,15 @@ Sudo can manage various audio streams from audio files or operating systems with
 -->
  ---
 
-##### Table of contents:
+## Table of contents:
 
 - [Sudio](#sudio)
   - [Abstract](#abstract)
       - [Real-time audio processing](#real-time-audio-processing)
       - [Non-Realtime processing:](#non-realtime-processing)
       - [Audio data maintaining process:](#audio-data-maintaining-process)
-        - [Table of contents:](#table-of-contents)
-    - [Installation](#installation)
+  - [Table of contents:](#table-of-contents)
+  - [Installation](#installation)
         - [Latest PyPI stable release](#latest-pypi-stable-release)
         - [Latest development release on GitHub](#latest-development-release-on-github)
   - [Quick start](#quick-start)
@@ -51,6 +51,9 @@ Sudo can manage various audio streams from audio files or operating systems with
           - [BPF 500Hz - 1KHz](#bpf-500hz---1khz)
         - [Complex Slicing](#complex-slicing)
       - [Audio Streaming](#audio-streaming)
+    - [Examples and Advanced Usage](#examples-and-advanced-usage)
+      - [Short-time Fourier transform](#short-time-fourier-transform)
+        - [prerequisites](#prerequisites)
   - [API Documentation](#api-documentation)
     - [Master](#master)
       - [Parameters](#parameters)
@@ -168,14 +171,14 @@ Sudo can manage various audio streams from audio files or operating systems with
   - [LICENCE](#licence)
 
 
-### [Installation](#installation)
+## Installation
 
 
-##### [Latest PyPI stable release](#latest-pypi-stable-release)
+##### Latest PyPI stable release
 
     pip install sudio
 
-##### [Latest development release on GitHub](#github_installation_link)
+##### Latest development release on GitHub
 
 Pull and install pre-release `main` branch:
 
@@ -290,12 +293,27 @@ time.sleep(10)
 stream.stop()
 ```
 
-<!--
+
 ### [Examples and Advanced Usage](#examples-and-advanced-usage)
 
-All your files and folders are presented as a tree in the file explorer. You can switch from one to another by clicking a file in the tree.
-##### [STFT](#examples-stft)
--->
+<br />
+
+#### Short-time Fourier transform
+
+The [Short-time Fourier transform (STFT)](./examples/STFT/), is a Fourier-related transform used to determine the sinusoidal frequency and phase content of local sections of a signal as it changes over time. In practice, the procedure for computing STFTs is to divide a longer time signal into shorter segments of equal length and then compute the Fourier transform separately on each shorter segment. This reveals the Fourier spectrum on each shorter segment. One then usually plots the changing spectra as a function of time, known as a spectrogram or waterfall plot, such as commonly used in Software Defined Radio (SDR) based spectrum displays. 
+
+
+##### prerequisites
+
+```py
+pip install sudio
+pip install kivy
+```
+
+<br />
+
+![Graphical STFT image](./img/stft.png)
+
 
 <br />
 

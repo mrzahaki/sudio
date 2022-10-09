@@ -5,6 +5,8 @@
  Mail: mrzahaki@gmail.com
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
+import queue
+
 from ._register import Members as Mem
 from ._register import static_vars
 from ._tools import Tools
@@ -384,7 +386,10 @@ class _Stream:
         data = self.process_obj._win(data)
         # print(data.shape)
         for branch in self.process_obj.branch_pipe_database:
-            branch.put(branch._data_indexer(data))
+            try:
+                branch.put(branch._data_indexer(data))
+            except queue.Full:
+                pass
         # print(self.process_obj.branch_pipe_database)
         self.pip.put(data)
 
@@ -406,7 +411,12 @@ class _Stream:
                  self.process_obj._win_buffer[0][0][:self.process_obj._nhop])))) * self.process_obj._window
 
             Tools.push(self.process_obj._win_buffer[0], data[0])
-            self.pip[0].put(win)
+
+            try:
+                self.pip[0].put(win)
+            except queue.Full:
+                pass
+
             final.append(win)
             # range(self.process_obj.nchannels)[1:]
             for i in self.process_obj._constants[2]:
@@ -415,12 +425,20 @@ class _Stream:
                      self.process_obj._win_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
 
                 Tools.push(self.process_obj._win_buffer[i], data[i])
-                self.pip[i].put(win)
+
+                try:
+                    self.pip[i].put(win)
+                except queue.Full:
+                    pass
+
                 final.append(win)
         else:
             final = data.astype('float64')
             for i in self.process_obj._constants[4]:
-                self.pip[i].put(final[i])
+                try:
+                    self.pip[i].put(final[i])
+                except queue.Full:
+                    pass
 
         # for 2 channel win must be an 2, 2, self.process_obj._data_chunk(e.g. 256)
         # reshaping may create some errors
