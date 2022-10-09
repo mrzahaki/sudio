@@ -3,10 +3,11 @@
 **/__pycache__/*
 sudio/*.jpg
 
+!examples
 !.gitignore
 !setup.py
 !sudio
 !README.md
 
 !dist
-!examples
+!img
