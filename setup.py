@@ -8,6 +8,7 @@ setuptools.setup(
     name='sudio',
     version='1.0.9.3',
     packages=['sudio',],
+    author="mrzahaki",
     author_email="mrzahaki@gmail.com",
     description="Audio Processing Platform",
     long_description=long_description,
