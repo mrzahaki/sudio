@@ -2,6 +2,7 @@
 /*
 **/__pycache__/*
 sudio/*.jpg
+lab
 
 !examples
 !.gitignore

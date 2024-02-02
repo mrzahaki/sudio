@@ -7,11 +7,11 @@
 """
 import queue
 
-from ._register import Members as Mem
-from ._register import static_vars
-from ._tools import Tools
-from ._audio import *
-from ._pipeline import Pipeline
+from sudio._register import Members as Mem
+from sudio._register import static_vars
+from sudio.extras.arraytool import push
+from sudio._audio import *
+from sudio._pipeline import Pipeline
 import scipy.signal as scisig
 import numpy as np
 import threading
@@ -25,7 +25,7 @@ def _win_mono(self, data):
     if self._window_type:
         retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
                                                             self._win_buffer[0][:self._nhop])))) * self._window
-        Tools.push(self._win_buffer, data)
+        push(self._win_buffer, data)
     else:
         retval = data.astype('float64')
     return retval
@@ -44,7 +44,7 @@ def _win_nd(self, data):
         for i in self._constants[4]:
             final.append(np.vstack((self._win_buffer[i][1], np.hstack(
                 (self._win_buffer[i][1][self._nhop:], self._win_buffer[i][0][:self._nhop])))) * self._window)
-            Tools.push(self._win_buffer[i], data[i])
+            push(self._win_buffer[i], data[i])
         # for 2 channel win must be an 2, 2, self._data_chunk(e.g. 256)
         final = np.array(final)
     else:
@@ -236,7 +236,6 @@ def _sync(rec,
          sample_format_id: int,
           output_data='byte'):
     '''
-
     :param rec:
     :param nchannels:
     :param sample_rate:
@@ -244,7 +243,7 @@ def _sync(rec,
     :param output_data: can be 'byte' or 'ndarray'
     :return:
     '''
-
+    # print(nchannels)
     form = Audio.get_sample_size(rec['sampleFormat'])
     if rec['sampleFormat'] == SampleFormat.formatFloat32.value:
         form = '<f{}'.format(form)
@@ -255,6 +254,7 @@ def _sync(rec,
         if nchannels > rec['nchannels']:
             data = np.vstack([data for i in range(nchannels)])
             rec['nchannels'] = nchannels
+
     # elif nchannels == 1 or _mono_mode:
     #     data = np.mean(data.reshape(int(data.shape[-1:][0] / rec['nchannels']),
     #                                 rec['nchannels']),
@@ -410,7 +410,7 @@ class _Stream:
                 (self.process_obj._win_buffer[0][1][self.process_obj._nhop:],
                  self.process_obj._win_buffer[0][0][:self.process_obj._nhop])))) * self.process_obj._window
 
-            Tools.push(self.process_obj._win_buffer[0], data[0])
+            push(self.process_obj._win_buffer[0], data[0])
 
             try:
                 self.pip[0].put(win)
@@ -424,7 +424,7 @@ class _Stream:
                     (self.process_obj._win_buffer[i][1][self.process_obj._nhop:],
                      self.process_obj._win_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
 
-                Tools.push(self.process_obj._win_buffer[i], data[i])
+                push(self.process_obj._win_buffer[i], data[i])
 
                 try:
                     self.pip[i].put(win)

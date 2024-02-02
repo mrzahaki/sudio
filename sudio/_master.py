@@ -7,13 +7,18 @@
 """
 
 import io
-from ._register import Members as Mem
-from ._register import static_vars
-from ._tools import Tools
-from ._audio import *
-from ._port import *
-from ._pipeline import Pipeline
-from ._process_common import *
+from sudio._register import Members as Mem
+from sudio._register import static_vars
+from sudio._audio import *
+from sudio._port import *
+from sudio._pipeline import Pipeline
+from sudio._process_common import *
+from sudio.types import StreamMode, RefreshError
+from sudio.extras.exmath import find_nearest_divisor
+from sudio.extras.exmath import voltage_to_dBu
+from sudio.extras.strtool import generate_timestamp_name 
+from sudio.extras.timed_indexed_string import TimedIndexedString 
+
 import samplerate
 import scipy.signal as scisig
 import threading
@@ -21,17 +26,12 @@ import queue
 import pandas as pd
 import numpy as np
 from typing import Union
-from enum import Enum
 import warnings
 import gc
 import time
 import os
 from io import BufferedRandom
 
-
-class StreamMode(Enum):
-    normal = 0
-    optimized = 1
 
 
 @Mem.process.parent
@@ -272,6 +272,8 @@ class Master:
         # np.warnings.filterwarnings('ignore', category=RuntimeWarning)
         self._output_device_index = None
         p = self._paudio = Audio()  # Create an interface to PortAudio
+        inchannels = int(1e6)
+
         if std_input_dev_id is None:
             if ui_mode:
                 dev = []
@@ -300,21 +302,25 @@ class Master:
                         print('please enter valid index!')
 
                 frame_rate = self._frame_rate = int(dev[dev_id]['defaultSampleRate'])
-                self.nchannels = dev[dev_id]['maxInputChannels']
+                inchannels = dev[dev_id]['maxInputChannels']
                 self._input_dev_id = dev_id
 
             else:
                 dev = p.get_default_input_device_info()
+                # print(dev)
                 frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
-                self.nchannels = dev['maxInputChannels']
+                inchannels = dev['maxInputChannels']
                 self._input_dev_id = dev['index']
 
         else:
-            self.nchannels = nchannels
+            inchannels = nchannels
             self._input_dev_id = std_input_dev_id
+
 
         self._sampwidth = Audio.get_sample_size(data_format)
         self._sample_format = data_format
+        outchannels = int(1e6)
+
         if self.io_mode.endswith("stdOutput"):
             if std_output_dev_id is None and ui_mode:
                 dev = []
@@ -342,9 +348,17 @@ class Master:
                         break
                     except:
                         print('please enter valid index!')
+                stdout = p.get_device_info_by_index(self._output_device_index)
+                outchannels = stdout['maxOutputChannels']
 
             else:
-                self._output_device_index = std_output_dev_id
+                stdout = p.get_default_output_device_info()
+                self._output_device_index = stdout['index']
+                outchannels = stdout['maxOutputChannels']
+
+        self.nchannels = min(inchannels, outchannels)
+        if self.nchannels == 0:
+            raise ValueError('no input or output device found')
 
         if self.nchannels == 1:
             mono_mode = True
@@ -499,6 +513,7 @@ class Master:
             self._slave_sync = None
             self._pystream = False
 
+            # print(self.nchannels)
         except:
             print('Initialization error!')
             raise
@@ -646,7 +661,7 @@ class Master:
 
             # check primary filter state
             data = self._main_stream.get()
-            # Tools.push(self.iwin_tst_buffer, data)
+
             if rec_ev.isSet():
                 rec_queue.put_nowait(data)
             if not self._mono_mode:
@@ -829,7 +844,7 @@ class Master:
             progress.set_description('Processing..')
         # Break into different sections based on period time
         tmp = sample.shape[-1] * sample.shape[0]
-        cols = Tools.near_divisor(tmp, final_period * sample.shape[-1] / base_period)
+        cols = find_nearest_divisor(tmp, final_period * sample.shape[-1] / base_period)
         if progress:
             progress.update(5)
         # Reshaping of arrays based on time period
@@ -876,7 +891,7 @@ class Master:
     # RMS to dbu
     # signal maps to standard +4 dbu
     def _rdbu(self, arr):
-        return Tools.dbu(np.max(arr) / self._constants[3])
+        return voltage_to_dBu(np.max(arr) / self._constants[3])
 
 
     def add_file(self, filename: str, sample_format: SampleFormat = SampleFormat.formatUnknown,
@@ -931,6 +946,8 @@ class Master:
             'nperseg': self._nperseg,
         }
 
+        # print(record)
+
         p0 = max(filename.rfind('\\'), filename.rfind('/')) + 1
         p1 = filename.rfind('.')
         if p0 < 0:
@@ -958,7 +975,7 @@ class Master:
 
         record = (
         smart_cache(record,
-                    Tools.IndexedName(Master.DATA_PATH + name + Master.BUFFER_TYPE,
+                    TimedIndexedString(Master.DATA_PATH + name + Master.BUFFER_TYPE,
                                       start_before=Master.BUFFER_TYPE),
                     self,
                     safe_load = safe_load,
@@ -1126,7 +1143,7 @@ class Master:
                 record.name = rec_name
 
             elif rec_name is None:
-                record.name = Tools.time_name()
+                record.name = generate_timestamp_name()
 
             else:
                 raise ValueError('second item in the list is the name of the new record')
@@ -1148,7 +1165,7 @@ class Master:
                                                                                          ch1=self.nchannels))
             if type(record['o']) is not BufferedRandom:
                 if  record.name in self._local_database.index or record.name in self._database.index:
-                    record.name = Tools.time_name()
+                    record.name = generate_timestamp_name()
                     # print('yessssss')
 
                 if safe_load:
@@ -1174,8 +1191,8 @@ class Master:
                 # new sliced Wrap data
 
                 if  record.name in self._local_database.index or record.name in self._database.index:
-                    record.name = Tools.time_name()
-
+                    record.name = generate_timestamp_name()
+                
                 prefile = record['o']
                 prepos = prefile.tell(), 0
 
@@ -1193,21 +1210,23 @@ class Master:
                 prefile.seek(*prepos)
                 record['size'] = newsize
 
+            # print(record)
             # if record.name  in self._local_database.index or \
             #     record.name in self._database.index:
             #     raise KeyError('Record with the name of {}'
             #                    ' already registered in local or external database'.format(name))
             self._local_database.loc[record.name] = record
 
+            gc.collect()
             return self.wrap(record)
 
         elif name_type is str:
+           gc.collect()
            return self.add_file(record, safe_load=safe_load)
 
         else:
             raise TypeError('The record must be an audio file, data frame or a Wrap object')
 
-        gc.collect()
 
     def recorder(self,
                  record_duration: Union[int, float] = 10,
@@ -1240,7 +1259,7 @@ class Master:
         if type(name) is str and name in self._local_database.index:
             raise KeyError('The entered name is already registered in the database.')
         if not name:
-            name = Tools.time_name('record')
+            name = generate_timestamp_name('record')
 
         data = self._recorder(enable_compressor=enable_compressor,
                               noise_sampling_duration=noise_sampling_duration,
@@ -1502,7 +1521,7 @@ class Master:
             record['o'] = main_file.read()
             main_file.seek(*main_seek)
             Master._sync(record, nchannels, sample_rate, sample_format, output_data=out_type)
-            record.name = Tools.time_name(record.name)
+            record.name = generate_timestamp_name(record.name)
             if output[0] == 'w':
                 buffer.append(self.add(record))
             else:
@@ -1979,7 +1998,7 @@ class Master:
                     type(self._window_type) == float:
                 self._window = scisig.get_window(self._window_type, win_len)
             else:
-                raise _Error("can't refresh static window")
+                raise RefreshError("can't refresh static window")
             self._nperseg = win_len
 
         self._main_stream.acquire()
@@ -2004,5 +2023,3 @@ class Master:
     def is_started(self):
         return self._pystream and True
 
-class _Error(Exception):
-    pass

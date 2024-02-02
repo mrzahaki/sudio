@@ -11,15 +11,16 @@ from builtins import ValueError
 from contextlib import contextmanager
 import pandas as pd
 
-from ._register import Members as Mem
-from ._tools import Tools
-from ._port import *
+from sudio._register import Members as Mem
+from sudio._port import *
 import wave
 # import pyaudio
 # import time
 import numpy as np
 import struct
 import scipy.signal as scisig
+from sudio.extras.strtool import parse_dictionary_string
+from sudio.extras.timed_indexed_string import TimedIndexedString
 
 
 def cache_write(*head,
@@ -78,7 +79,7 @@ def cache_write(*head,
 
 
 def smart_cache(record: Union[pd.Series, dict],
-                path_server: Tools.IndexedName,
+                path_server: TimedIndexedString,
                 master_obj,
                 decoder: callable = None,
                 sync_sample_format_id: int = None,
@@ -150,7 +151,6 @@ def smart_cache(record: Union[pd.Series, dict],
                 # print('noooooo')
                 # print_en
                 # print('path in cache safe load add file')
-
                 record['o'] = f.read()
                 record = master_obj.__class__._sync(record,
                                                     sync_nchannels,
@@ -414,9 +414,9 @@ class WrapGenerator:
 
         self._parent = master
         self._file: io.BufferedRandom = self._rec['o']
-        self._name = Tools.IndexedName(self._file.name,
-                                       seed='wrrapped',
-                                       start_before=self._parent.__class__.BUFFER_TYPE)
+        self._name = TimedIndexedString(self._file.name,
+                                seed='wrrapped',
+                                start_before=self._parent.__class__.BUFFER_TYPE)
         self._size = self._rec['size']
         self._duration = record['duration']
         self._frame_rate = self._rec['frameRate']
@@ -770,7 +770,7 @@ class Wrap:
                         'scale': None}
 
                 if item.step:
-                    parsed = Tools.str2dict(item.step, item_sep=',', dict_eq='=')
+                    parsed = parse_dictionary_string(item.step, item_sep=',', dict_eq='=')
                     for i in parsed:
                         if i in filt:
                             filt[i] = parsed[i]
