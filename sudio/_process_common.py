@@ -6,21 +6,21 @@
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 import queue
-
-from sudio._register import Members as Mem
-from sudio._register import static_vars
-from sudio.extras.arraytool import push
-from sudio._audio import *
-from sudio._pipeline import Pipeline
 import scipy.signal as scisig
 import numpy as np
 import threading
-import os
 import samplerate
+
+from sudio._register import Members as Mem
+from sudio.extras.arraytool import push
+from sudio._audio import win_parser
+from sudio._port import Audio
+from sudio.types import StreamError, SampleFormat
+
 
 # ________________________________________________________________________________
 
-@Mem.process.add
+@Mem.master.add
 def _win_mono(self, data):
     if self._window_type:
         retval = np.vstack((self._win_buffer[1], np.hstack((self._win_buffer[1][self._nhop:],
@@ -31,7 +31,7 @@ def _win_mono(self, data):
     return retval
 
 
-@Mem.process.add
+@Mem.master.add
 def _win_nd(self, data):
     # data = data.astype('float64')
     # retval frame consists of two window
@@ -52,7 +52,7 @@ def _win_nd(self, data):
     return final
 
 
-@Mem.process.add
+@Mem.master.add
 def _iwin_mono(self, win):
     retval = np.hstack((self._iwin_buffer[0][self._nhop:], win[1][:self._nhop])) + win[0]
     self._iwin_buffer[0] = win[1]
@@ -64,7 +64,7 @@ def _iwin_mono(self, win):
 
 
 # start from index1 data
-@Mem.process.add
+@Mem.master.add
 def _iwin_nd(self, win):
     # win.shape =>(number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
     # _iwin_buffer => [buffer 0, buffer1, buffer(number of channels)]
@@ -88,7 +88,7 @@ def _iwin_nd(self, win):
 
 
 # ____________________________________________________ pipe line
-@Mem.process.add
+@Mem.master.add
 def add_pipeline(self, name, pip, process_type='main', channel=None):
     '''
     :param name: string; Indicates the name of the pipeline
@@ -119,11 +119,11 @@ def add_pipeline(self, name, pip, process_type='main', channel=None):
     # n-dim main pip
     if process_type == 'main' or process_type == 'multi_stream':
         self.main_pipe_database.append(
-            self.__class__._Stream(self, pip, name, stream_type=stream_type, process_type=process_type))
+            self.__class__.Stream(self, pip, name, stream_type=stream_type, process_type=process_type))
 
     elif process_type == 'branch':
         self.branch_pipe_database.append(
-            self.__class__._Stream(self, pip, name, stream_type=stream_type, channel=channel,
+            self.__class__.Stream(self, pip, name, stream_type=stream_type, channel=channel,
                                    process_type=process_type))
 
     # reserved for the next versions
@@ -131,7 +131,7 @@ def add_pipeline(self, name, pip, process_type='main', channel=None):
         pass
 
 
-@Mem.process.add
+@Mem.master.add
 def set_pipeline(self, name, enable=True):
     if not enable:
         self._main_stream.clear()
@@ -152,7 +152,7 @@ def set_pipeline(self, name, enable=True):
             self._main_stream.set(obj)
 
 
-@Mem.process.add
+@Mem.master.add
 def set_window(self,
                window: object = 'hann',
                noverlap: int = None,
@@ -191,7 +191,7 @@ def set_window(self,
     self._main_stream.clear()
 
 
-@Mem.process.add
+@Mem.master.add
 def get_window(self):
     if self._window_type:
         return {'type': self._window_type,
@@ -202,19 +202,19 @@ def get_window(self):
         return None
 
 
-@Mem.process.add
+@Mem.master.add
 def disable_std_input(self):
     self._main_stream.acquire()
 
 
-@Mem.process.add
+@Mem.master.add
 def enable_std_input(self):
     self._main_stream.clear()
     self._main_stream.release()
 
 
 # arr format: [[data0:[ch0] [ch1]]  [data1: [ch0] [ch1]], ...]
-@Mem.process.add
+@Mem.master.add
 def shuffle3d_channels(self, arr):
     arr = self.__class__._shuffle3d_channels(arr)
     # res = np.array([])
@@ -224,12 +224,12 @@ def shuffle3d_channels(self, arr):
     # return res
 
 
-@Mem.process.add
+@Mem.master.add
 def shuffle2d_channels(arr):
     return arr.T.reshape(np.prod(arr.shape))
 
 
-@Mem.process.add_static
+@Mem.master.add_static
 def _sync(rec,
          nchannels: int,
          sample_rate: int,
@@ -306,11 +306,9 @@ def _sync(rec,
     return rec
 
 
-@Mem.process.add
-class _Stream:
-
+@Mem.master.add
+class Stream:
     def __init__(self, other, obj, name=None, stream_type='multithreading', channel=None, process_type='main'):
-
         self.stream_type = stream_type
         self.process_obj = other
         self.process_type = process_type
@@ -319,22 +317,21 @@ class _Stream:
         self.name = name
         self._data_indexer = lambda data: data[channel]
         self._lock = threading.Lock()
+
         if process_type == 'main' and type(obj) == list and len(obj) == other.nchannels and channel is None:
             self.process_type = 'multi_stream'
 
         if process_type == 'multi_stream':
             if not channel is None:
-                raise Error('In multi_stream  mode channel value must have None value(see documentation)')
+                raise StreamError('In multi_stream mode, channel value must have None value (see documentation)')
             elif not type(obj) == list or not len(obj) == other.nchannels:
-                raise Error('In multi_stream  mode pip argument must be a'
-                            ' list with length of number of data channels')
+                raise StreamError('In multi_stream mode, pip argument must be a list with the length of the number of data channels')
             elif other.nchannels < 2 or other._mono_mode:
-                raise Error('The multi_stream mode just works when the number of input channels '
-                            'is set to be more than 1')
+                raise StreamError('The multi_stream mode works only when the number of input channels is set to be more than 1')
 
         elif process_type == 'main':
             if not channel is None and not (type(channel) is int and channel <= other.nchannels):
-                raise Error('Control channel value')
+                raise StreamError('Invalid control channel data')
 
         if stream_type == 'multithreading':
             if process_type == 'main':
@@ -530,7 +527,7 @@ class _Time:
         instance._stream_file.seek(seek, 0)
 
 
-@Mem.process.add
+@Mem.master.add
 class StreamControl:
     time = _Time()
 
@@ -626,7 +623,3 @@ class StreamControl:
         assert self._is_streaming(), PermissionError('The stream is empty')
         self.other._stream_loop_mode = False
         self._stream_loop_mode = False
-
-# ________________________________________________________________________________
-class Error(Exception):
-    pass

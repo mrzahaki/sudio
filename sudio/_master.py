@@ -8,18 +8,20 @@
 
 import io
 from sudio._register import Members as Mem
-from sudio._register import static_vars
-from sudio._audio import *
-from sudio._port import *
-from sudio._pipeline import Pipeline
-from sudio._process_common import *
-from sudio.types import StreamMode, RefreshError
+from sudio._port import get_file_info, decode_file, wav_write_file, Audio
+from sudio._process_common import StreamControl
+from sudio._audio import play, smart_cache, cache_write
+from sudio.types import StreamMode, RefreshError, SampleMap, ISampleMap
+from sudio.types import SampleFormat, SampleMapValue, LibSampleFormat, DitherMode
+from sudio.types import ISampleFormat
+from sudio.wrap.wrapgenerator import WrapGenerator
+from sudio.wrap.wrap import Wrap
 from sudio.extras.exmath import find_nearest_divisor
 from sudio.extras.exmath import voltage_to_dBu
 from sudio.extras.strtool import generate_timestamp_name 
 from sudio.extras.timed_indexed_string import TimedIndexedString 
+from sudio._process_common import Stream
 
-import samplerate
 import scipy.signal as scisig
 import threading
 import queue
@@ -34,7 +36,7 @@ from io import BufferedRandom
 
 
 
-@Mem.process.parent
+@Mem.master.parent
 @Mem.sudio.add
 class Master:
 
@@ -493,8 +495,8 @@ class Master:
                 self._iwin = self._iwin_nd
                 self._win = self._win_nd
 
-            self._normal_stream = Master._Stream(self, dataq, process_type='queue')
-            self._main_stream = Master._Stream(self, dataq, process_type='queue')
+            self._normal_stream = Stream(self, dataq, process_type='queue')
+            self._main_stream = Stream(self, dataq, process_type='queue')
             # self.data_tst_buffer = [i for i in range(5)]
             # self.iwin_tst_buffer = [i for i in range(5)]
             self._refresh_ev = threading.Event()
@@ -710,7 +712,7 @@ class Master:
             try:
                 import tqdm
             except ModuleNotFoundError:
-                enable_ui = false
+                enable_ui = False
                 warnings.warn('Warning, please install tqdm module for UI mode')
 
         if enable_ui:
@@ -1271,10 +1273,10 @@ class Master:
                               rec_start_callback=rec_start_callback)
 
         data['o'] = (
-            cache_write(record['size'],
-                        record['frameRate'],
-                        record['sampleFormat'] if record['sampleFormat'] else 0,
-                        record['nchannels'],
+            cache_write(data['size'],
+                        data['frameRate'],
+                        data['sampleFormat'] if data['sampleFormat'] else 0,
+                        data['nchannels'],
                         file_name=Master.DATA_PATH + name + Master.BUFFER_TYPE,
                         data=data['o'],
                         pre_truncate=True,
@@ -1537,8 +1539,8 @@ class Master:
         '''
         This function is used to delete a record from the internal database.
         :param name str: the name of preloaded record.
-        :param deep bool: deep delete mode is used to remove the record  and its corresponding caches
-         from the external database.
+        :param deep bool: deep delete mode is used to remove the record and its corresponding caches
+        from the external database.
         :return: None
         '''
         local = name in self._local_database.index
@@ -1546,40 +1548,38 @@ class Master:
         ex = ''
         if deep:
             ex = 'and the external '
-        assert local or (extern and deep), ValueError('can not found the {name} in the '
-                                             'local {ex}databases'.format(name=name, ex=ex))
+        assert local or (extern and deep), ValueError(f'can not found the {name} in the '
+                                            f'local {ex}databases'.format(name=name, ex=ex))
         if local:
             file = self._local_database.loc[name, 'o']
             if not file.closed:
                 file.close()
 
-            if not extern:
-                tmp = list(file.name)
-                tmp.insert(file.name.find(file.name), 'stream_')
-                streamfile_name = ''.join(tmp)
-                try:
-                    os.remove(streamfile_name)
-                except FileNotFoundError:
-                    pass
-
-                os.remove(file.name)
-            self._local_database.drop(name, inplace=True)
-
-        # print(self._local_database)
-        if extern and deep:
-
-            file = self._database.loc[name, 'o']
-            if not file.closed:
-                file.close()
             tmp = list(file.name)
-            tmp.insert(file.name.find(record.name), 'stream_')
+            tmp.insert(file.name.find(name), 'stream_')
             streamfile_name = ''.join(tmp)
             try:
                 os.remove(streamfile_name)
             except FileNotFoundError:
                 pass
 
-            os.remove(file)
+            os.remove(file.name)
+            self._local_database.drop(name, inplace=True)
+
+        if extern and deep:
+            file = self._database.loc[name, 'o']
+            if not file.closed:
+                file.close()
+
+            tmp = list(file.name)
+            tmp.insert(file.name.find(name), 'stream_')
+            streamfile_name = ''.join(tmp)
+            try:
+                os.remove(streamfile_name)
+            except FileNotFoundError:
+                pass
+
+            os.remove(file.name)
             self._database.drop(name, inplace=True)
             self._database.to_pickle(Master.USER_PATH, compression='xz')
         gc.collect()
@@ -1750,7 +1750,7 @@ class Master:
 
         if not self._mono_mode and record['nchannels'] > self.nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
-                              ' is not same as object channels({ch1})'.format(name=name,
+                              ' is not same as object channels({ch1})'.format(name=record.name,
                                                                               ch0=record['nchannels'],
                                                                               ch1=self.nchannels))
 

@@ -11,8 +11,9 @@ import sys
 import os
 import array
 from enum import Enum
-from typing import Generator, Dict, Set, Optional, Union, Any, Callable
+from typing import Generator, Optional, Any, Callable
 from _miniaudio import ffi, lib
+from sudio.types import DecodeError, MiniaudioError
 import pyaudio
 try:
     import numpy
@@ -21,18 +22,20 @@ except ImportError:
 
 lib.init_miniaudio()
 
+from sudio.types import FileFormat, LibSampleFormat, DitherMode
+
 
 #
-# @Mem.process.add
+# @Mem.master.add
 # def get_default_input_device_info(self):
 #     return self._paudio.get_default_input_device_info()
 #
 #
-# @Mem.process.add
+# @Mem.master.add
 # def get_default_output_device_info(self):
 #     return self._paudio.get_default_output_device_info()
 #
-# @Mem.process.add
+# @Mem.master.add
 # def get_default_output_device_info(self, filename):
 #     return miniaudio.get_file_info(filename)
 class Audio(pyaudio.PyAudio):
@@ -63,7 +66,7 @@ class Audio(pyaudio.PyAudio):
         except KeyError:
             pass
 
-@Mem.process.add
+@Mem.master.add
 def get_default_input_device_info(self):
     au = Audio()
     data = au.get_default_input_device_info()
@@ -71,7 +74,7 @@ def get_default_input_device_info(self):
     return data
 
 
-@Mem.process.add
+@Mem.master.add
 def get_device_count(self):
     au = Audio()
     data = au.get_device_count()
@@ -79,7 +82,7 @@ def get_device_count(self):
     return data
 
 
-@Mem.process.add
+@Mem.master.add
 def get_device_info_by_index(self, index: int):
     au = Audio()
     data = au.get_device_info_by_index(int(index))
@@ -87,7 +90,7 @@ def get_device_info_by_index(self, index: int):
     return data
 
 
-@Mem.process.add
+@Mem.master.add
 def get_input_devices(self):
     p = Audio()
     dev = {}
@@ -107,7 +110,7 @@ def get_input_devices(self):
     return dev
 
 
-@Mem.process.add
+@Mem.master.add
 def get_output_devices(self):
     p = Audio()
     dev = {}
@@ -127,63 +130,14 @@ def get_output_devices(self):
     return dev
 
 
-# # @Mem.process.add
+# # @Mem.master.add
 # def file(self, file, name=None):
 #     return self._File(self, file, name)
 #
-# # @Mem.process.add
+# # @Mem.master.add
 # class _File:
 #     pass
 
-class SampleFormat(Enum):
-    formatFloat32 = 1
-    formatInt32 = 2
-    # formatInt24 = 4
-    formatInt16 = 8
-    formatInt8 = 16
-    formatUInt8 = 32
-    formatUnknown = None
-
-
-class FileFormat(Enum):
-    """Audio file format"""
-    UNKNOWN = 0
-    WAV = 1
-    FLAC = 2
-    VORBIS = 3
-    MP3 = 4
-
-
-class LibSampleFormat(Enum):
-    """Sample format in memory"""
-    UNKNOWN = lib.ma_format_unknown
-    UNSIGNED8 = lib.ma_format_u8
-    SIGNED16 = lib.ma_format_s16
-    SIGNED24 = lib.ma_format_s24
-    SIGNED32 = lib.ma_format_s32
-    FLOAT32 = lib.ma_format_f32
-
-
-class DitherMode(Enum):
-    """How to dither when converting"""
-    NONE = lib.ma_dither_mode_none
-    RECTANGLE = lib.ma_dither_mode_rectangle
-    TRIANGLE = lib.ma_dither_mode_triangle
-
-SampleMap = {
-    SampleFormat.formatInt16 : LibSampleFormat.SIGNED16,
-    SampleFormat.formatFloat32 : LibSampleFormat.FLOAT32,
-    SampleFormat.formatInt32 : LibSampleFormat.SIGNED32,
-    SampleFormat.formatUInt8 : LibSampleFormat.UNSIGNED8,
-    SampleFormat.formatInt8 : LibSampleFormat.UNSIGNED8,
-    SampleFormat.formatUnknown : LibSampleFormat.UNKNOWN,
-}
-
-ISampleMap = {value : key for (key, value) in SampleMap.items()}
-
-SampleMapValue = {key.value : value for (key, value) in SampleMap.items()}
-
-ISampleFormat = {key.value : key for (key, value) in SampleMap.items()}
 
 class SoundFileInfo:
     """Contains various properties of an audio file."""
@@ -207,17 +161,7 @@ class SoundFileInfo:
         return str(self)
 
 
-class MiniaudioError(Exception):
-    """When a miniaudio specific error occurs."""
-    pass
-
-
-class DecodeError(MiniaudioError):
-    """When something went wrong during decoding an audio file."""
-    pass
-
-
-@Mem.process.add
+@Mem.master.add
 def get_file_info(filename: str) -> SoundFileInfo:
     """Fetch some information about the audio file."""
     ext = os.path.splitext(filename)[1].lower()

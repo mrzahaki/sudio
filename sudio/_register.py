@@ -41,5 +41,5 @@ def static_vars(**kwargs):
 # ___________________________________________________________def your objects here
 class Members:
     sudio = Register()
-    process = Register()
+    master = Register()
     process_slave = Register()

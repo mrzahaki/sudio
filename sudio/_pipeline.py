@@ -179,7 +179,7 @@ class Pipeline(threading.Thread):
                         self.init_queue.put(i)
 
         for num, i in enumerate(func):
-            assert type(i) == type(self.insert), 'TypeError'
+            assert callable(i), 'TypeError'
             if args:
                 # self._pipeline.append([i, *args[num]])
                 if type(args[num]) is tuple or type(args[num]) is list:
@@ -229,7 +229,7 @@ class Pipeline(threading.Thread):
     def delay(self):
 
         if not self.__len__():
-            raise EmptyError("Pipeline is empty ")
+            raise BufferError("Pipeline is empty ")
 
         elif self.is_alive():
             self._pipinput_queue.put(('time', 0))
@@ -303,7 +303,3 @@ class Pipeline(threading.Thread):
                             on_busy=self.on_busy).append(*data)
         except AssertionError:
             return self._pipeline[key]
-
-
-class EmptyError(Exception):
-     pass
