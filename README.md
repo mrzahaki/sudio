@@ -1604,7 +1604,8 @@ Unpack audio data  from cached files to the dynamic memory.
 
 ```py
 master = Master()
-wrap = master.add('file.mp3')
+wrapgen = master.add('file.mp3')
+wrap = wrapgen()
 with wrap.unpack() as data:
     wrap.set_data(data * .7)
 master.echo(wrap)
