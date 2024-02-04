@@ -12,7 +12,8 @@ setuptools.setup(
         'sudio.extras', 
         'sudio.wrap', 
         'sudio.stream',
-        'sudio.types'
+        'sudio.types',
+        'sudio.audioutils'
         ],
     author="mrzahaki",
     author_email="mrzahaki@gmail.com",
