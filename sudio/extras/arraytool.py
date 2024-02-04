@@ -1,3 +1,6 @@
+import array
+from sudio.types import LibSampleFormat, MiniaudioError
+
 
 def push(obj, data):
     """
@@ -40,3 +43,48 @@ def ipush(obj, data):
     obj.reverse()
     push(obj, data)
     obj.reverse()
+
+
+def create_integer_array_of_size(itemsize: int) -> array.array:
+    """
+    Creates an integer array with the specified item size.
+
+    Args:
+        itemsize (int): The desired item size for the array.
+
+    Returns:
+        array.array: An integer array with the specified item size.
+
+    Raises:
+        ValueError: If an array with the specified item size cannot be created.
+    """
+    for typecode in "Bhilq":
+        a = array.array(typecode)
+        if a.itemsize == itemsize:
+            return a
+    raise ValueError("Cannot create array with the specified item size.")
+
+
+def get_array_proto_from_format(sample_format: LibSampleFormat) -> array.array:
+    """
+    Get the array prototype based on the specified LibSampleFormat.
+
+    Args:
+        sample_format (LibSampleFormat): The sample format.
+
+    Returns:
+        array.array: The array prototype for the specified sample format.
+
+    Raises:
+        MiniaudioError: If the sample format cannot be used directly and needs conversion.
+    """
+    arrays = {
+        LibSampleFormat.UNSIGNED8: create_integer_array_of_size(1),
+        LibSampleFormat.SIGNED16: create_integer_array_of_size(2),
+        LibSampleFormat.SIGNED32: create_integer_array_of_size(4),
+        LibSampleFormat.FLOAT32: array.array('f')
+    }
+    if sample_format in arrays:
+        return arrays[sample_format]
+    raise MiniaudioError("The requested sample format cannot be used directly: "
+                         + sample_format.name + " (convert it first)")

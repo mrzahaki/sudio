@@ -5,11 +5,11 @@ from contextlib import contextmanager
 
 from sudio.wrap.wrap import Wrap
 from sudio._register import Members as Mem
-from sudio.types import Name
+from sudio.types.name import Name
 from sudio._audio import cache_write, smart_cache
 from sudio._port import Audio
 from sudio.extras.timed_indexed_string import TimedIndexedString
-from sudio.types import SampleFormat, ISampleFormat
+from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 
 
 @Mem.sudio.add
@@ -145,7 +145,7 @@ class WrapGenerator:
         Returns:
             SampleFormat: The sample format.
         '''
-        return ISampleFormat[self._sample_format]
+        return LibSampleFormatEnumToSample[self._sample_format]
 
     def get_sample_width(self) -> int:
         '''

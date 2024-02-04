@@ -8,12 +8,12 @@
 
 import io
 from sudio._register import Members as Mem
-from sudio._port import get_file_info, decode_file, wav_write_file, Audio
+from sudio._port import decode_file, wav_write_file, Audio
 from sudio._audio import play, smart_cache, cache_write
 from sudio._process_common import _iwin_nd
-from sudio.types import StreamMode, RefreshError, SampleMap, ISampleMap
-from sudio.types import SampleFormat, SampleMapValue, LibSampleFormat, DitherMode
-from sudio.types import ISampleFormat
+from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
+from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, DitherMode
+from sudio.types import LibSampleFormatEnumToSample
 from sudio.wrap.wrapgenerator import WrapGenerator
 from sudio.wrap.wrap import Wrap
 from sudio.extras.exmath import find_nearest_divisor
@@ -22,6 +22,7 @@ from sudio.extras.strtool import generate_timestamp_name
 from sudio.extras.timed_indexed_string import TimedIndexedString 
 from sudio.stream.stream import Stream
 from sudio.stream.streamcontrol import StreamControl
+from sudio.audioutils.info import get_file_info
 
 import scipy.signal as scisig
 import threading
@@ -921,14 +922,14 @@ class Master:
         '''
         info = get_file_info(filename)
         if safe_load:
-            sample_format = SampleMapValue[self._sample_format]
+            sample_format = SampleFormatEnumToLib[self._sample_format]
         elif sample_format is SampleFormat.formatUnknown:
             if info.sample_format is LibSampleFormat.UNKNOWN:
-                sample_format = SampleMap[self._sample_format]
+                sample_format = SampleFormatToLib[self._sample_format]
             else:
                 sample_format = info.sample_format
         else:
-            sample_format = SampleMap[sample_format]
+            sample_format = SampleFormatToLib[sample_format]
 
         if nchannels is None:
             nchannels = info.nchannels
@@ -943,7 +944,7 @@ class Master:
             'noise': None,
             'frameRate': sample_rate,
             'o': None,
-            'sampleFormat': ISampleMap[sample_format].value,
+            'sampleFormat': LibToSampleFormat[sample_format].value,
             'nchannels': nchannels,
             'duration': info.duration,
             'nperseg': self._nperseg,
@@ -1385,7 +1386,7 @@ class Master:
             'nchannels': rec['nchannels'],
             'nperseg': rec['nperseg'],
             'name': name,
-            'sampleFormat': ISampleFormat[rec['sampleFormat']].name
+            'sampleFormat': LibSampleFormatEnumToSample[rec['sampleFormat']].name
         }
 
     def get_exrecord_info(self, name: str) -> dict:

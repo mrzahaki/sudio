@@ -7,8 +7,8 @@ from typing import Union
 import pandas as pd
 
 from sudio._register import Members as Mem
-from sudio.types import Name
-from sudio.types import SampleFormat, ISampleFormat
+from sudio.types.name import Name
+from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio._port import Audio
 from sudio.extras.strtool import parse_dictionary_string
 
@@ -118,7 +118,7 @@ class Wrap:
 
         :return: The sample format enumeration.
         """
-        return ISampleFormat[self._sample_format]
+        return LibSampleFormatEnumToSample[self._sample_format]
 
     def get_sample_width(self) -> int:
         """
@@ -178,7 +178,7 @@ class Wrap:
         other = self._parent.sync(*other,
                                   nchannels=self._nchannels,
                                   sample_rate=self._frame_rate,
-                                  sample_format=ISampleFormat[self._sample_format],
+                                  sample_format=LibSampleFormatEnumToSample[self._sample_format],
                                   output='ndarray_data')
         # print(other)
         with self.unpack() as main_data:

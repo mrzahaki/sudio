@@ -6,12 +6,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='sudio',
-    version='1.0.9.3',
+    version='1.0.9.31',
     packages=[
         'sudio', 
         'sudio.extras', 
         'sudio.wrap', 
-        'sudio.stream'
+        'sudio.stream',
+        'sudio.types'
         ],
     author="mrzahaki",
     author_email="mrzahaki@gmail.com",
