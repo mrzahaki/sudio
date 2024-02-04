@@ -9,8 +9,8 @@
 import io
 from sudio._register import Members as Mem
 from sudio._port import get_file_info, decode_file, wav_write_file, Audio
-from sudio._process_common import StreamControl
 from sudio._audio import play, smart_cache, cache_write
+from sudio._process_common import _iwin_nd
 from sudio.types import StreamMode, RefreshError, SampleMap, ISampleMap
 from sudio.types import SampleFormat, SampleMapValue, LibSampleFormat, DitherMode
 from sudio.types import ISampleFormat
@@ -20,7 +20,8 @@ from sudio.extras.exmath import find_nearest_divisor
 from sudio.extras.exmath import voltage_to_dBu
 from sudio.extras.strtool import generate_timestamp_name 
 from sudio.extras.timed_indexed_string import TimedIndexedString 
-from sudio._process_common import Stream
+from sudio.stream.stream import Stream
+from sudio.stream.streamcontrol import StreamControl
 
 import scipy.signal as scisig
 import threading
@@ -1834,7 +1835,7 @@ class Master:
             return self._stream_control(record, on_stop, loop_mode, stream_mode)
 
     def _stream_control(self, *args):
-        return Master.StreamControl(self, *args)
+        return StreamControl(self, *args)
 
     def mute(self):
         '''
