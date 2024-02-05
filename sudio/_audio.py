@@ -12,7 +12,7 @@ import pandas as pd
 from typing import Union
 
 from sudio._register import Members as Mem
-from sudio._port import Audio
+from sudio.audioutils.audio import Audio
 import wave
 # import pyaudio
 # import time

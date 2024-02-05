@@ -12,7 +12,7 @@ import samplerate
 from sudio._register import Members as Mem
 from sudio.extras.arraytool import push
 from sudio._audio import win_parser
-from sudio._port import Audio
+from sudio.audioutils.audio import Audio
 from sudio.types import SampleFormat
 from sudio.stream.stream import Stream
 

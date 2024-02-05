@@ -9,7 +9,7 @@ import pandas as pd
 from sudio._register import Members as Mem
 from sudio.types.name import Name
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
-from sudio._port import Audio
+from sudio.audioutils.audio import Audio
 from sudio.extras.strtool import parse_dictionary_string
 
 

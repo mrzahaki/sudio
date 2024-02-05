@@ -8,7 +8,6 @@
 
 import io
 from sudio._register import Members as Mem
-from sudio._port import decode_file, wav_write_file, Audio
 from sudio._audio import play, smart_cache, cache_write
 from sudio._process_common import _iwin_nd
 from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
@@ -22,7 +21,11 @@ from sudio.extras.strtool import generate_timestamp_name
 from sudio.extras.timed_indexed_string import TimedIndexedString 
 from sudio.stream.stream import Stream
 from sudio.stream.streamcontrol import StreamControl
-from sudio.audioutils.info import get_file_info
+from sudio.audioutils.codecinfo import get_file_info
+from sudio.audioutils import interface as audiointerface
+from sudio.audioutils.audio import Audio
+from sudio.audioutils.io import write_wav_file
+from sudio.audioutils.codec import decode_audio_file
 
 import scipy.signal as scisig
 import threading
@@ -281,13 +284,13 @@ class Master:
         if std_input_dev_id is None:
             if ui_mode:
                 dev = []
-                for i in range(p.get_device_count()):
-                    tmp = p.get_device_info_by_index(i)
+                for i in range(self.get_device_count()):
+                    tmp = self.get_device_info_by_index(i)
                     if tmp['maxInputChannels'] > 0:
                         dev.append(tmp)
                 assert len(dev) > 0
                 print('\nplease choose input device from index :\n')
-                default_dev = p.get_default_input_device_info()['index']
+                default_dev = self.get_default_input_device_info()['index']
                 for idx, j in enumerate(dev):
                     msg = f'Index {idx}: ' \
                           f' Name: {j["name"]},' \
@@ -310,7 +313,7 @@ class Master:
                 self._input_dev_id = dev_id
 
             else:
-                dev = p.get_default_input_device_info()
+                dev = self.get_default_input_device_info()
                 # print(dev)
                 frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
                 inchannels = dev['maxInputChannels']
@@ -329,8 +332,8 @@ class Master:
             if std_output_dev_id is None and ui_mode:
                 dev = []
 
-                for i in range(p.get_device_count()):
-                    tmp = p.get_device_info_by_index(i)
+                for i in range(self.get_device_count()):
+                    tmp = self.get_device_info_by_index(i)
                     if tmp['maxOutputChannels'] > 0:
                         dev.append(tmp)
                 assert len(dev) > 0
@@ -352,7 +355,7 @@ class Master:
                         break
                     except:
                         print('please enter valid index!')
-                stdout = p.get_device_info_by_index(self._output_device_index)
+                stdout = self.get_device_info_by_index(self._output_device_index)
                 outchannels = stdout['maxOutputChannels']
 
             else:
@@ -975,7 +978,7 @@ class Master:
                                                                               ch0=record['nchannels'],
                                                                               ch1=self.nchannels))
 
-        decoder = lambda: decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
+        decoder = lambda: decode_audio_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
 
         record = (
         smart_cache(record,
@@ -1078,7 +1081,7 @@ class Master:
         # except Error:
         #     # print_en
         #     # print('new decode add file')
-        #     record['o'] = data = decode_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
+        #     record['o'] = data = decode_audio_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
         #     if safe_load:
         #         # printiooi
         #         # print(record['frameRate'])
@@ -1564,8 +1567,13 @@ class Master:
                 os.remove(streamfile_name)
             except FileNotFoundError:
                 pass
+            except PermissionError:
+                pass
 
-            os.remove(file.name)
+            try:
+                os.remove(file.name)
+            except PermissionError:
+                pass
             self._local_database.drop(name, inplace=True)
 
         if extern and deep:
@@ -1580,8 +1588,13 @@ class Master:
                 os.remove(streamfile_name)
             except FileNotFoundError:
                 pass
+            except PermissionError:
+                pass
 
-            os.remove(file.name)
+            try:
+                os.remove(file.name)
+            except PermissionError:
+                pass
             self._database.drop(name, inplace=True)
             self._database.to_pickle(Master.USER_PATH, compression='xz')
         gc.collect()
@@ -1630,7 +1643,7 @@ class Master:
         data = file.read()
         file.seek(file_pos, 0)
 
-        wav_write_file(file_path, data,
+        write_wav_file(file_path, data,
                        record['nchannels'], record['frameRate'],
                        Audio.get_sample_size(record['sampleFormat']))
 
@@ -2025,3 +2038,58 @@ class Master:
     def is_started(self):
         return self._pystream and True
 
+
+    def get_default_input_device_info(self):
+        """
+        Retrieves information about the default input audio device.
+
+        Returns:
+            dict: A dictionary containing information about the default input device.
+        """
+        data = audiointerface.get_default_input_device_info()
+        return data
+    
+
+    def get_device_count(self):
+        """
+        Gets the total number of available audio devices.
+
+        Returns:
+            int: The number of available audio devices.
+        """
+        data = audiointerface.get_device_count()
+        return data
+    
+
+    def get_device_info_by_index(self, index: int):
+        """
+        Retrieves information about an audio device based on its index.
+
+        Args:
+            index (int): The index of the audio device.
+
+        Returns:
+            dict: A dictionary containing information about the specified audio device.
+        """
+        data = audiointerface.get_device_info_by_index(int(index))
+        return data
+    
+
+    def get_input_devices(self):
+        """
+        Gets information about all available input audio devices.
+
+        Returns:
+            dict: A dictionary containing information about each available input device.
+        """
+        return audiointerface.get_input_devices()
+
+
+    def get_output_devices(self):
+        """
+        Gets information about all available output audio devices.
+
+        Returns:
+            dict: A dictionary containing information about each available output device.
+        """
+        return audiointerface.get_output_devices()

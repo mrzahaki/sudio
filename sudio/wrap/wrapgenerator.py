@@ -7,7 +7,7 @@ from sudio.wrap.wrap import Wrap
 from sudio._register import Members as Mem
 from sudio.types.name import Name
 from sudio._audio import cache_write, smart_cache
-from sudio._port import Audio
+from sudio.audioutils.audio import Audio
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 
