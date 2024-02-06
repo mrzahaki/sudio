@@ -1,4 +1,3 @@
-from sudio._register import Members as Mem
 from sudio.audioutils.audio import Audio
 
 def get_default_input_device_info():

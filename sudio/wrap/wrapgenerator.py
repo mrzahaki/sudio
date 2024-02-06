@@ -4,15 +4,13 @@ import pandas as pd
 from contextlib import contextmanager
 
 from sudio.wrap.wrap import Wrap
-from sudio._register import Members as Mem
 from sudio.types.name import Name
-from sudio._audio import cache_write, smart_cache
 from sudio.audioutils.audio import Audio
+from sudio.audioutils.cacheutil import write_to_cached_file, handle_cached_record
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 
 
-@Mem.sudio.add
 class WrapGenerator:
     # Class variable to store the name
     name = Name()
@@ -32,7 +30,7 @@ class WrapGenerator:
             # Convert bytes to cache and update the record
             if type(record['o']) is bytes:
                 record['o'] = (
-                    cache_write(record['size'],
+                    write_to_cached_file(record['size'],
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
@@ -83,7 +81,7 @@ class WrapGenerator:
             Wrap: A Wrap instance.
         '''
         record = (
-            smart_cache(self._rec.copy(),
+            handle_cached_record(self._rec.copy(),
                         self._name,
                         self._parent,
                         sync_sample_format_id=sync_sample_format_id,

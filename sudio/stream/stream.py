@@ -3,11 +3,9 @@ import queue
 import numpy as np
 
 from sudio.extras.arraytool import push
-from sudio._register import Members as Mem
 from sudio.types import StreamError
 
 
-@Mem.master.add
 class Stream:
     def __init__(self, other, obj, name=None, stream_type='multithreading', channel=None, process_type='main'):
 

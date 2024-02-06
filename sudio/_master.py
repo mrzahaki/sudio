@@ -7,26 +7,6 @@
 """
 
 import io
-from sudio._register import Members as Mem
-from sudio._audio import play, smart_cache, cache_write
-from sudio._process_common import _iwin_nd
-from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
-from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, DitherMode
-from sudio.types import LibSampleFormatEnumToSample
-from sudio.wrap.wrapgenerator import WrapGenerator
-from sudio.wrap.wrap import Wrap
-from sudio.extras.exmath import find_nearest_divisor
-from sudio.extras.exmath import voltage_to_dBu
-from sudio.extras.strtool import generate_timestamp_name 
-from sudio.extras.timed_indexed_string import TimedIndexedString 
-from sudio.stream.stream import Stream
-from sudio.stream.streamcontrol import StreamControl
-from sudio.audioutils.codecinfo import get_file_info
-from sudio.audioutils import interface as audiointerface
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.io import write_wav_file
-from sudio.audioutils.codec import decode_audio_file
-
 import scipy.signal as scisig
 import threading
 import queue
@@ -40,9 +20,32 @@ import os
 from io import BufferedRandom
 
 
+from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
+from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, DitherMode
+from sudio.types import LibSampleFormatEnumToSample
+from sudio.wrap.wrapgenerator import WrapGenerator
+from sudio.wrap.wrap import Wrap
+from sudio.extras.exmath import find_nearest_divisor
+from sudio.extras.exmath import voltage_to_dBu
+from sudio.extras.strtool import generate_timestamp_name 
+from sudio.extras.timed_indexed_string import TimedIndexedString 
+from sudio.stream.stream import Stream
+from sudio.stream.streamcontrol import StreamControl
+from sudio.stream.utils import stdout_stream
+from sudio.audioutils.window import multi_channel_overlap, single_channel_overlap
+from sudio.audioutils.window import multi_channel_windowing, single_channel_windowing
+from sudio.audioutils.codecinfo import get_file_info
+from sudio.audioutils import interface as audiointerface
+from sudio.audioutils.audio import Audio
+from sudio.audioutils.io import write_wav_file
+from sudio.audioutils.codec import decode_audio_file
+from sudio.audioutils.channel import shuffle3d_channels, shuffle2d_channels
+from sudio.audioutils.sync import synchronize_audio
+from sudio.audioutils.cacheutil import handle_cached_record, write_to_cached_file
 
-@Mem.master.parent
-@Mem.sudio.add
+
+
+
 class Master:
 
     DATA_PATH = './data/'
@@ -75,181 +78,117 @@ class Master:
                  output_dev_callback: callable = None,
                  master_mix_callback: callable = None,
                  buffer_size: int = 30):
-        '''
-        __init__(self,
-                 std_input_dev_id: int = None,
-                 std_output_dev_id: int = None,
-                 frame_rate: int = 48000,
-                 nchannels: int = 2,
-                 data_format: SampleFormat = 16bit mode
-                 mono_mode: bool = True,
-                 ui_mode: bool = True,
-                 nperseg: int = 256,
-                 noverlap: int = None,
-                 window: object = 'hann',
-                 NOLA_check: bool = True,
-                 IO_mode: str = "stdInput2stdOutput",
-                 input_dev_callback: callable = None,
-                 output_dev_callback: callable = None,
-                 master_mix_callback: callable = None)
+        """
+        Create a Master object to manage audio processing.
 
-            Creating a Master object.
+        Parameters
+        ----------
+        std_input_dev_id: int, optional
+            OS standard input device id. If not provided, the input device id will
+            be selected automatically (ui_mode=False) or manually by the user (ui_mode=True).
 
-            Parameters
-            ----------
-            std_input_dev_id: int, optional
-                os standard input device id. If not given, then the input device id will
-                be selected automatically(ui_mode=False) or manually by the user(ui_mode=True)
+        std_output_dev_id: int, optional
+            OS standard output device id. If not provided, the output device id will
+            be selected automatically (ui_mode=False) or manually by the user (ui_mode=True).
 
-            std_output_dev_id: int, optional
-                os standard output device id. If not given, then the output device id will
-                be selected automatically(ui_mode=False) or manually by the user(ui_mode=True)
+        frame_rate: int, optional
+            Input channel sample rate. If std_input_dev_id is None, the value of
+            frame_rate does not matter.
 
-            frame_rate:  int, optional
-                Input channel sample rate. if std_input_dev_id selected as None then the value of
-                frame_rate does not matter.
+        nchannels: int, optional
+            Number of input channels (inner channels). If std_input_dev_id is None, the value of
+            nchannels does not matter.
 
-            nchannels: int, optional
-                Number of input channels(inner channels)if std_input_dev_id selected as None then the value of
-                nchannels does not matter.
+        data_format: SampleFormat
+            Specify the audio bit depths. Supported data formats (from audio):
+            formatFloat32, formatInt32, formatInt24, formatInt16 (default),
+            formatInt8, formatUInt8.
 
-            data_format: SampleFormat
-                Specify the audio bit depths. Supported data format(from sudio):
-                formatFloat32, formatInt32, formatInt24, formatInt16(default),
-                formatInt8, formatUInt8
+        mono_mode: bool, optional
+            If True, all input channels will be mixed to one channel.
 
-            mono_mode: bool, optional
-                If True, then all of the input channels will be mixed to one channel.
+        ui_mode: bool, optional
+            If enabled, user interface mode will be activated.
 
-            ui_mode: bool, optional
-                If Enabled then user interface mode will be activated.
+        nperseg: int, optional
+            Number of samples per each data frame (window) in one channel.
 
-            nperseg: int,optional
-                number of samples per each data frame(window)(in one channel)
+        noverlap: int, default None
+            Number of samples that overlap between defined windows. If not given, it will
+            be selected automatically.
 
-            noverlap: int, default None
-                When the length of a data set to be transformed is larger than necessary to
-                provide the desired frequency resolution, a common practice is to subdivide
-                it into smaller sets and window them individually.
-                To mitigate the "loss" at the edges of the window, the individual sets may overlap in time.
-                The noverlap defines the number of overlap between defined windows. If not given then it's value
-                will be selected automatically.
+        window: string, float, tuple, ndarray, optional
+            Type of window to create (string) or pre-designed window in numpy array format.
+            Default ("hann"): Hanning function. None to disable windowing.
 
-            window:  string, float, tuple, ndarray, optional
-                The type of window to create(string) or pre designed window in numpy array format.
-                See below for more details.
-                Default ("hann") Hanning function.
-                None for disable windowing
+        NOLA_check: bool, optional
+            Check whether the Nonzero Overlap Add (NOLA) constraint is met (if True).
 
-            NOLA_check: bool, optional
-                Check whether the Nonzero Overlap Add (NOLA) constraint is met.(If true)
+        IO_mode: str, optional
+            Input/Output processing mode can be:
+            - "stdInput2stdOutput" (default): standard input stream (system audio or any other
+            defined streams) to standard defined output stream (system speakers).
+            - "usrInput2usrOutput": user-defined input stream (callback function defined with
+            input_dev_callback) to user-defined output stream (callback function defined with
+            output_dev_callback).
+            - "usrInput2stdOutput": user-defined input stream (callback function defined with
+            input_dev_callback) to user-defined output stream (callback function defined with
+            output_dev_callback).
+            - "stdInput2usrOutput": standard input stream (system audio or any other defined
+            streams) to user-defined output stream (callback function defined with
+            output_dev_callback).
 
-            IO_mode: str, optional
-                Input/Output processing mode can be:
-                "stdInput2stdOutput":(default)
-                    default mode; standard input stream (system audio or any
-                     other windows defined streams) to standard defined output stream (system speakers)
+        input_dev_callback: callable, default None
+            Callback function for user-defined input stream, called by the core every 1/frame_rate second.
+            Must return frame data in (Number of channels, Number of data per segment) dimensions numpy array.
+            Each data must be in the format defined in data_format section.
 
-                "usrInput2usrOutput":
-                    user defined input stream (callback function defined with input_dev_callback)
-                    to  user defined output stream (callback function defined with output_dev_callback)
+        output_dev_callback: callable, default None
+            Callback function for user-defined output stream, called by the core every 1/frame_rate second.
+            Must return frame data in (Number of channels, Number of data per segment) dimensions numpy array.
+            Each data must be in the format defined in the data_format section.
 
-                "usrInput2stdOutput":
-                    user defined input stream (callback function defined with input_dev_callback)
-                    to  user defined output stream (callback function defined with output_dev_callback)
-
-                "stdInput2usrOutput":
-                    standard input stream (system audio or any other windows defined streams)
-                    to  user defined output stream (callback function defined with output_dev_callback)
-
-            input_dev_callback: callable;
-                callback function; default None;
-
-                :inputs:    frame_count, time_info, status
-                :outputs:   Numpy N-channel data frame in  (Number of channels, Number of data per segment)
-                            dimensions.
-                :note: In 1 channel mode data frame have  (Number of data per segment, ) shape
-
-                can be used to define user input callback
-                this function used in "usrInput2usrOutput" and "usrInput2usrOutput" IO modes
-                and called by core every 1/frame_rate second and must returns frame data
-                in (Number of channels, Number of data per segment) dimensions numpy array.
-                each data must be in special format that defined in data_format section.
-
-            output_dev_callback: callable;
-                callback function; default None;
-
-                :inputs:    Numpy N-channel data frame in  (Number of channels, Number of data per segment)
-                            dimensions.
-                :outputs:
-                :note: In 1 channel mode data frame have  (Number of data per segment, ) shape
-
-                Can be used to define user input callback.
-                This function used in "usrInput2usrOutput" and "usrInput2usrOutput" IO modes
-                and called by core every 1/frame_rate second and must returns frame data
-                in (Number of channels, Number of data per segment) dimensions numpy array.
-                each data must be in special format that defined in data_format section..
-
-            master_mix_callback: callable, optional
-                This callback is used before the main-processing stage in the master
-                for controlling and mixing all slave channels to a ndarray of shape
-                (master.nchannels, 2, master.nperseg).
-
-                If this parameter is not defined, then the number of audio channels
-                in all slaves must be the same as the master.
-
-
-            Note
-            -----
-            If the window requires no parameters, then `window` can be a string.
-
-            If the window requires parameters, then `window` must be a tuple
-            with the first argument the string name of the window, and the next
-            arguments the needed parameters.
-
-            If `window` is a floating point number, it is interpreted as the beta
-            parameter of the `~scipy.signal.windows.kaiser` window.
-
-            Each of the window types listed above is also the name of
-            a function that can be called directly to create a window of that type.
-
-            window types:
-                boxcar, triang , blackman, hamming, hann(default), bartlett, flattop, parzen, bohman, blackmanharris
-                nuttall, barthann, cosine, exponential, tukey, taylor, kaiser (needs beta),
-                gaussian (needs standard deviation), general_cosine (needs weighting coefficients),
-                general_gaussian (needs power, width), general_hamming (needs window coefficient),
-                dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
-
-            Note
-            -----
-            In order to enable inversion of an STFT via the inverse STFT in
-            `istft`, the signal windowing must obey the constraint of "nonzero
-            overlap add" (NOLA):
-
-            .. math:: \sum_{t}w^{2}[n-tH] \ne 0
-
-            for all :math:`n`, where :math:`w` is the window function, :math:`t` is the
-            frame index, and :math:`H` is the hop size (:math:`H` = `nperseg` -
-            `noverlap`).
-
-            This ensures that the normalization factors in the denominator of the
-            overlap-add inversion equation are not zero. Only very pathological windows
-            will fail the NOLA constraint.
+        master_mix_callback: callable, optional
+            Callback used before the main processing stage in the master for controlling and mixing all
+            slave channels to an ndarray of shape (master.nchannels, 2, master.nperseg).
+            If not defined, the number of audio channels in all slaves must be the same as the master.
 
         Note
         -----
-        Master/Slave mode details:
-            Every Process object can operate in master or slave modes.
-            Each input must be preprocessed before mixing different
-            audio inputs, so the slave object is designed so that the
-            post-processing stage is disabled and can be joined to master simply
-            by the 'join' method.
+        - If the window requires no parameters, then `window` can be a string.
+        - If the window requires parameters, then `window` must be a tuple with the first argument the
+        string name of the window, and the next arguments the needed parameters.
+        - If `window` is a floating-point number, it is interpreted as the beta parameter of the
+        `scipy.signal.windows.kaiser` window.
 
-        '''
-        # _______________________________________________________First Initialization
+        Window Types:
+        boxcar, triang, blackman, hamming, hann (default), bartlett, flattop, parzen, bohman, blackmanharris,
+        nuttall, barthann, cosine, exponential, tukey, taylor, kaiser (needs beta),
+        gaussian (needs standard deviation), general_cosine (needs weighting coefficients),
+        general_gaussian (needs power, width), general_hamming (needs window coefficient),
+        dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
+
+        Note
+        -----
+        To enable inversion of an STFT via the inverse STFT in `istft`, the signal windowing must obey
+        the constraint of "nonzero overlap add" (NOLA):
+            \sum_{t}w^{2}[n-tH] \ne 0
+        This ensures that the normalization factors in the denominator of the overlap-add inversion
+        equation are not zero. Only very pathological windows will fail the NOLA constraint.
+
+        Master/Slave Mode Details:
+        - Every Process object can operate in master or slave modes.
+        - Each input must be preprocessed before mixing different audio inputs, so the slave object is
+        designed so that the post-processing stage is disabled and can be joined to master simply by
+        using the 'join' method.
+        """
+        # ----------------------------------------------------- First Initialization Section -----------------------------------------------------
+
+        # Check if UI mode is enabled and print initialization message
         if ui_mode:
             print('Initialization...')
 
+        # Create necessary directories if they don't exist
         try:
             os.mkdir(Master.DATA_PATH)
         except FileExistsError:
@@ -259,6 +198,7 @@ class Master:
         except:
             pass
 
+        # Set initial values for various attributes
         self._sound_buffer_size = buffer_size
         self._stream_type = StreamMode.optimized
         data_format = data_format.value
@@ -266,6 +206,7 @@ class Master:
         self.input_dev_callback = input_dev_callback
         self.output_dev_callback = output_dev_callback
 
+        # Initialize threading events and flags
         self._exstream_mode = threading.Event()
         self._master_mute_mode = threading.Event()
         self._stream_loop_mode = False
@@ -274,13 +215,17 @@ class Master:
         self._stream_data_size = None
         self._stream_file = None
 
+        # Suppress warnings
         warnings.filterwarnings("ignore")
-        # np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-        # np.warnings.filterwarnings('ignore', category=RuntimeWarning)
+
         self._output_device_index = None
-        p = self._paudio = Audio()  # Create an interface to PortAudio
+        # Create an interface to PortAudio
+        p = self._paudio = Audio()
+
+        # Set default number of input channels
         inchannels = int(1e6)
 
+        # UI mode: Choose input device interactively
         if std_input_dev_id is None:
             if ui_mode:
                 dev = []
@@ -289,24 +234,21 @@ class Master:
                     if tmp['maxInputChannels'] > 0:
                         dev.append(tmp)
                 assert len(dev) > 0
-                print('\nplease choose input device from index :\n')
+                print('\nPlease choose input device from index:\n')
                 default_dev = self.get_default_input_device_info()['index']
                 for idx, j in enumerate(dev):
-                    msg = f'Index {idx}: ' \
-                          f' Name: {j["name"]},' \
-                          f' Input Channels:{j["maxInputChannels"]},' \
-                          f' Sample Rate:{j["defaultSampleRate"]},' \
-                          f' Host Api:{j["hostApi"]}'
+                    msg = f'Index {idx}: Name: {j["name"]}, Input Channels:{j["maxInputChannels"]}, ' \
+                        f'Sample Rate:{j["defaultSampleRate"]}, Host Api:{j["hostApi"]}'
                     if default_dev == idx:
                         msg += '  <<default>>'
                     print(msg)
 
                 while 1:
                     try:
-                        dev_id = int(input('index for input dev: '))
+                        dev_id = int(input('Index for input dev: '))
                         break
                     except:
-                        print('please enter valid index!')
+                        print('Please enter a valid index!')
 
                 frame_rate = self._frame_rate = int(dev[dev_id]['defaultSampleRate'])
                 inchannels = dev[dev_id]['maxInputChannels']
@@ -314,20 +256,21 @@ class Master:
 
             else:
                 dev = self.get_default_input_device_info()
-                # print(dev)
                 frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
                 inchannels = dev['maxInputChannels']
                 self._input_dev_id = dev['index']
 
         else:
+            # Use specified input device ID
             inchannels = nchannels
             self._input_dev_id = std_input_dev_id
 
-
+        # Set number of output channels to a large value initially
         self._sampwidth = Audio.get_sample_size(data_format)
         self._sample_format = data_format
         outchannels = int(1e6)
 
+        # UI mode: Choose output device interactively
         if self.io_mode.endswith("stdOutput"):
             if std_output_dev_id is None and ui_mode:
                 dev = []
@@ -337,113 +280,122 @@ class Master:
                     if tmp['maxOutputChannels'] > 0:
                         dev.append(tmp)
                 assert len(dev) > 0
-                print('\nplease choose output device from index :\n')
+                print('\nPlease choose output device from index:\n')
                 default_dev = p.get_default_output_device_info()['index']
                 for idx, j in enumerate(dev):
-                    msg = f'Index {idx}:' \
-                          f'  Name: {j["name"]},' \
-                          f' Channels:{j["maxOutputChannels"]},' \
-                          f' Sample Rate:{j["defaultSampleRate"]},' \
-                          f' Host Api:{j["hostApi"]}'
+                    msg = f'Index {idx}: Name: {j["name"]}, Channels:{j["maxOutputChannels"]}, ' \
+                        f'Sample Rate:{j["defaultSampleRate"]}, Host Api:{j["hostApi"]}'
                     if default_dev == idx:
                         msg += '  <<default>>'
                     print(msg)
 
                 while 1:
                     try:
-                        self._output_device_index = int(input('index for output dev: '))
+                        self._output_device_index = int(input('Index for output dev: '))
                         break
                     except:
-                        print('please enter valid index!')
+                        print('Please enter a valid index!')
                 stdout = self.get_device_info_by_index(self._output_device_index)
                 outchannels = stdout['maxOutputChannels']
 
             else:
+                # Use default output device
                 stdout = p.get_default_output_device_info()
                 self._output_device_index = stdout['index']
                 outchannels = stdout['maxOutputChannels']
 
+        # Set the number of channels to the minimum of input and output channels
         self.nchannels = min(inchannels, outchannels)
-        if self.nchannels == 0:
-            raise ValueError('no input or output device found')
 
+        # Raise an error if no input or output device is found
+        if self.nchannels == 0:
+            raise ValueError('No input or output device found')
+
+        # Set mono mode to True if there is only one channel
         if self.nchannels == 1:
             mono_mode = True
 
+        # Mute the audio initially
         self.mute()
 
+        # Set initial values for various attributes
         self.branch_pipe_database_min_key = 0
         self._ui_mode = ui_mode
         self._window_type = window
-
         self._sample_rate = frame_rate
         self._nperseg = nperseg
-        # check _win arguments
+
+        # Check _win arguments
         if noverlap is None:
             noverlap = nperseg // 2
-        if type(self._window_type) is str or \
-                type(self._window_type) is tuple or \
-                type(self._window_type) == float:
+
+        if type(self._window_type) is str or type(self._window_type) is tuple or type(self._window_type) == float:
             window = scisig.get_window(window, nperseg)
 
+        # Check window size
         if self._window_type:
-            assert len(window) == nperseg, 'control size of window'
+            assert len(window) == nperseg, 'Control size of window'
             if NOLA_check:
                 assert scisig.check_NOLA(window, nperseg, noverlap)
         elif self._window_type is None:
             window = None
             self._window_type = None
 
-        # _______________________________________________________UI mode std_input_dev_id calculator
+        # ----------------------------------------------------- UI mode std_input_dev_id calculator -----------------------------------------------------
+
+        # Calculate recording period based on window size and frame rate
         record_period = nperseg / frame_rate
         self._record_period = record_period
         self._mono_mode = mono_mode
-        # ______________________________________________________________Vectorized dbu calculator
+
+        # ----------------------------------------------------- Vectorized dbu calculator -----------------------------------------------------
+
+        # Vectorize the dbu calculation function
         self._vdbu = np.vectorize(self._rdbu, signature='(m)->()')
 
-        # ______________________________________________________________channels type and number processing
+        # ----------------------------------------------------- Channels type and number processing -----------------------------------------------------
+
+        # Process the number of channels based on the configuration
         if self.nchannels == 1:
             Master.get_channels = lambda x: x
-
         elif mono_mode:
             if type(mono_mode) is str:
                 mono_mode = int(mono_mode)
                 Master.get_channels = lambda x: x[mono_mode]
             else:
-                Master.get_channels = lambda x: np.mean(x.reshape((self._data_chunk, self.nchannels)),
-                                                    axis=1)
+                Master.get_channels = lambda x: np.mean(x.reshape((self._data_chunk, self.nchannels)), axis=1)
         else:
-            Master.get_channels = lambda x: np.append(*[[x[i::self.nchannels]] for i in range(self.nchannels)],
-                                                      axis=0)
+            Master.get_channels = lambda x: np.append(*[[x[i::self.nchannels]] for i in range(self.nchannels)], axis=0)
 
+        # Set the number of channels for processing
         if mono_mode:
             self._process_nchannel = 1
         else:
             self._process_nchannel = self.nchannels
 
-        # ______________________________________________________________sample rate and pre filter processing
+        # ----------------------------------------------------- Sample rate and pre-filter processing -----------------------------------------------------
+
+        # Set data chunk size, frame rate, and other constants
         self._data_chunk = nperseg
         self._frame_rate = frame_rate
-        # data type of buffer                       0
-        # feature reseved                           1
-        # used in _win_nd                           2
-        # rms constant value                        3
-        #                                           4
 
-        # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sampwidth)]  # 1 2 4 8
-        # f'<{self.data_chunk * self.nchannels}{sampwidth}'
-
+        # Define constants for data processing
         self._constants = ['<i{}'.format(self._sampwidth),
-                           0,
-                           range(self.nchannels)[1:],
-                           ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225),
-                           range(self.nchannels)]
+                        0,
+                        range(self.nchannels)[1:],
+                        ((2 ** (self._sampwidth * 8 - 1) - 1) / 1.225),
+                        range(self.nchannels)]
 
+        # Adjust constant for floating-point data format
         if data_format == SampleFormat.formatFloat32.value:
             self._constants[0] = '<f{}'.format(self._sampwidth)
 
+        # Initialize thread list
         self._threads = []
-        # _______________________________________________________user _database define
+
+        # ----------------------------------------------------- User _database define -----------------------------------------------------
+
+        # Load user database from pickle file or create an empty DataFrame
         try:
             self._database = pd.read_pickle(Master.USER_PATH, compression='xz')
         except:
@@ -451,8 +403,9 @@ class Master:
 
         self._local_database = pd.DataFrame(columns=Master.DATABASE_COLS)
 
-        # _______________________________________________________pipeline _database and other definitions section
+        # ----------------------------------------------------- Pipeline _database and other definitions section -----------------------------------------------------
 
+        # Initialize semaphores, queues, and events
         try:
             self._semaphore = [threading.Semaphore()]
 
@@ -464,66 +417,61 @@ class Master:
             self._echo = threading.Event()
             self.main_pipe_database = []
             self.branch_pipe_database = []
-            # _______________________________________threading management
+
+            # ----------------------------------------------------- Threading management -----------------------------------------------------
+
             self._functions = []
-            # self._functions.append(self._process)
             self._functions.append(self.__post_process)
 
+            # Create and start threads
             for i in range(len(self._functions)):
                 self._threads.append(threading.Thread(target=self._run, daemon=True, args=(len(self._threads),)))
                 self._queue.put(i)
 
-            # ____________________________________________________windowing object define and initialization
-            # post, pre
+            # ----------------------------------------------------- Windowing object define and initialization -----------------------------------------------------
+
+            # Set parameters for windowing
             self._nhop = nperseg - noverlap
             self._noverlap = noverlap
             self._window = window
-            # self._win_frame_rate = [self.main_fs, (self.primary_fc * 2)]
-            # self._win_downsample_coef = int(np.round(self._win_frame_rate[0] / self._win_frame_rate[1]))
-            # self._win_filter = scisig.firwin(30, self.primary_fc, fs=self._win_frame_rate[0])
-            # self._win_window = get_window(self._window_type, self._nperseg)
-            # self._win_nchannels_range = range(self.nchannels)
 
+            # Initialize buffers and functions based on mono or multi-channel mode
             if mono_mode:
                 self._iwin_buffer = [np.zeros(nperseg)]
                 self._win_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
-                self._win = self._win_mono
-                self._iwin = self._iwin_mono
+                self._win = self._single_channel_windowing
+                self._iwin = self._single_channel_overlap
                 self._upfirdn = lambda h, x, const: scisig.upfirdn(h, x, down=const)
             else:
                 self._iwin_buffer = [np.zeros(nperseg) for i in range(self.nchannels)]
                 self._win_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self.nchannels)]
 
-                # 2d mode
-                self._upfirdn = np.vectorize(lambda h, x, const: scisig.upfirdn(h, x, down=const),
-                                             signature='(n),(m),()->(c)')
-                self._iwin = self._iwin_nd
-                self._win = self._win_nd
+                # 2D mode
+                self._upfirdn = np.vectorize(lambda h, x, const: scisig.upfirdn(h, x, down=const), signature='(n),(m),()->(c)')
+                self._iwin = self._multi_channel_overlap
+                self._win = self._multi_channel_windowing
 
+            # Create Stream objects for main and normal streams
             self._normal_stream = Stream(self, dataq, process_type='queue')
             self._main_stream = Stream(self, dataq, process_type='queue')
-            # self.data_tst_buffer = [i for i in range(5)]
-            # self.iwin_tst_buffer = [i for i in range(5)]
+
+            # ----------------------------------------------------- Miscellaneous initialization -----------------------------------------------------
             self._refresh_ev = threading.Event()
             if self._ui_mode:
                 print('Initialization completed!')
 
             self._master_mix_callback = master_mix_callback
 
-            # master/ slave selection
-            # _master_sync in slave mode must be deactivated
-            # The _master_sync just used in the activated multi_stream pipelines
+            # Master/slave selection and synchronization
             self._master_sync = threading.Barrier(self._process_nchannel)
-
             self.slave_database = []
-            # The _slave_sync just used in the activated slave's main pipelines
             self._slave_sync = None
             self._pystream = False
 
-            # print(self.nchannels)
         except:
             print('Initialization error!')
             raise
+
 
     def start(self):
         '''
@@ -672,7 +620,7 @@ class Master:
             if rec_ev.isSet():
                 rec_queue.put_nowait(data)
             if not self._mono_mode:
-                data = Master.shuffle2d_channels(data)
+                data = shuffle2d_channels(data)
             # data = data.T.reshape(np.prod(data.shape))
             # print(data.shape)
             if self._echo.isSet():
@@ -811,10 +759,10 @@ class Master:
                 progress.close()
 
             if not self._mono_mode:
-                sample = self.shuffle3d_channels(sample)
+                sample = shuffle3d_channels(sample)
             sample = sample.astype(self._constants[0]).tobytes()
             if play_recorded:
-                play(sample,
+                stdout_stream(sample,
                      sample_format=self._sample_format,
                      nchannels=self._process_nchannel,
                      framerate=self._frame_rate)
@@ -981,7 +929,7 @@ class Master:
         decoder = lambda: decode_audio_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
 
         record = (
-        smart_cache(record,
+        handle_cached_record(record,
                     TimedIndexedString(Master.DATA_PATH + name + Master.BUFFER_TYPE,
                                       start_before=Master.BUFFER_TYPE),
                     self,
@@ -1060,7 +1008,7 @@ class Master:
         #             record = self._sync_record(record)
         #
         #             f = record['o'] = (
-        #             cache_write(record['size'],
+        #             write_to_cached_file(record['size'],
         #                         record['frameRate'],
         #                         record['sampleFormat'] if record['sampleFormat'] else 0,
         #                         record['nchannels'],
@@ -1090,7 +1038,7 @@ class Master:
         #
         #     record['size'] = len(record['o']) + Master.CACHE_INFO
         #     f = record['o'] = (
-        #         cache_write(record['size'],
+        #         write_to_cached_file(record['size'],
         #                     record['frameRate'],
         #                     record['sampleFormat'] if record['sampleFormat'] else 0,
         #                     record['nchannels'],
@@ -1179,7 +1127,7 @@ class Master:
                     record = self._sync_record(record)
 
                 f, newsize = (
-                    cache_write(record['size'],
+                    write_to_cached_file(record['size'],
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
@@ -1204,7 +1152,7 @@ class Master:
                 prepos = prefile.tell(), 0
 
                 record['o'], newsize = (
-                    cache_write(record['size'],
+                    write_to_cached_file(record['size'],
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
@@ -1278,7 +1226,7 @@ class Master:
                               rec_start_callback=rec_start_callback)
 
         data['o'] = (
-            cache_write(data['size'],
+            write_to_cached_file(data['size'],
                         data['frameRate'],
                         data['sampleFormat'] if data['sampleFormat'] else 0,
                         data['nchannels'],
@@ -1412,23 +1360,6 @@ class Master:
             'name': name,
         }
 
-    @staticmethod
-    def _resample(data: np.ndarray, fir_win, data_rate, output_rate, data_chunk=500000):
-        # 1 dimentional array
-        scale = np.gcd(output_rate, data_rate)
-        up, down = output_rate// scale, data_rate // scale
-        print(up, down)
-        data_size = data.size
-        res = scisig.upfirdn(fir_win, data, up=up, down=down)
-        print(res.shape)
-        # i = 0
-        # res = np.array([])
-        # while i < data_size:
-        #     res = np.append(res, scisig.upfirdn(fir_win, data[i: i + data_chunk], up=up, down=down))
-        #     i += data_chunk
-
-        return res
-
 
     def _syncable(self,
                  *target,
@@ -1527,7 +1458,7 @@ class Master:
             main_seek = main_file.tell(), 0
             record['o'] = main_file.read()
             main_file.seek(*main_seek)
-            Master._sync(record, nchannels, sample_rate, sample_format, output_data=out_type)
+            synchronize_audio(record, nchannels, sample_rate, sample_format, output_data=out_type)
             record.name = generate_timestamp_name(record.name)
             if output[0] == 'w':
                 buffer.append(self.add(record))
@@ -1538,7 +1469,7 @@ class Master:
 
     # save from local _database to stable memory
     def _sync_record(self, rec):
-        return Master._sync(rec, self.nchannels, self._frame_rate, self._sample_format)
+        return synchronize_audio(rec, self.nchannels, self._frame_rate, self._sample_format)
 
     def del_record(self, name: str, deep: bool=False):
         '''
@@ -1818,7 +1749,7 @@ class Master:
             file.seek(file_pos, 0)
 
             record['o'] = streamfile = (
-                cache_write(record['size'],
+                write_to_cached_file(record['size'],
                             record['frameRate'],
                             record['sampleFormat'] if record['sampleFormat'] else 0,
                             record['nchannels'],
@@ -1923,7 +1854,7 @@ class Master:
                 flg = True
                 self._echo.clear()
 
-            play(data,
+            stdout_stream(data,
                  sample_format=record['sampleFormat'],
                  nchannels=record['nchannels'],
                  framerate=record['frameRate'])
@@ -2037,9 +1968,245 @@ class Master:
 
     def is_started(self):
         return self._pystream and True
+    
+    def get_window(self):
+        """
+        Retrieves information about the window used for processing.
+
+        Returns:
+            dict or None: A dictionary containing window information if available, or None if not set.
+                - 'type': str, the type of window.
+                - 'window': window data.
+                - 'overlap': int, the overlap value.
+                - 'size': int, the size of the window.
+        """
+        if self._window_type:
+            return {'type': self._window_type,
+                    'window': self._window,
+                    'overlap': self._noverlap,
+                    'size': len(self._window)}
+        else:
+            return None
+
+    def disable_std_input(self):
+        """
+        Disables standard input stream by acquiring a lock.
+        """
+        self._main_stream.acquire()
+
+    def enable_std_input(self):
+        """
+        Enables standard input stream by clearing the lock.
+        """
+        self._main_stream.clear()
+        self._main_stream.release()
 
 
-    def get_default_input_device_info(self):
+    def add_pipeline(self, name, pip, process_type='main', channel=None):
+        """
+        Add a pipeline to the DSP core.
+
+        Parameters:
+        - name (str): Indicates the name of the pipeline.
+        - pip (obj): Pipeline object or array of defined pipelines.
+                    Note: In 'multi_stream' process type, pip must be an array of defined pipelines.
+                    The size of the array must be the same as the number of input channels.
+        - process_type (str): Type of DSP core process.
+                            Options: 'main', 'branch', 'multi_stream'
+                            'main': Processes input data and passes it to activated pipelines (if exist).
+                            'branch': Represents a branch pipeline with optional channel parameter.
+                            'multi_stream': Represents a multi_stream pipeline mode. Requires an array of pipelines.
+        - channel (obj): None or [0 to self.nchannel].
+                        The input data passed to the pipeline can be a NumPy array in
+                        (self.nchannel, 2[2 windows in 1 frame], self._nperseg) dimension [None]
+                        or mono (2, self._nperseg) dimension.
+                        In mono mode [self.nchannel = 1 or mono mode activated], channel must be None.
+
+        Returns:
+        - The pipeline must process data and return it to the core with the dimensions as same as the input.
+        """
+        stream_type = 'multithreading'
+
+        if process_type == 'main' or process_type == 'multi_stream':
+            # n-dim main pipeline
+            self.main_pipe_database.append(
+                Stream(self, pip, name, stream_type=stream_type, process_type=process_type))
+        elif process_type == 'branch':
+            self.branch_pipe_database.append(
+                Stream(self, pip, name, stream_type=stream_type, channel=channel, process_type=process_type))
+        # Reserved for future versions
+        else:
+            pass
+
+
+
+    def set_pipeline(self, name, enable=True):
+        """
+        Set the active pipeline for processing in the DSP core.
+
+        Parameters:
+        - name (str): Name of the pipeline to be set as active.
+        - enable (bool): If True, set the specified pipeline as active. If False, reset to the normal stream.
+
+        Returns:
+        None
+        """
+        if not enable:
+            # Disable the active pipeline and revert to the normal stream
+            self._main_stream.clear()
+            self._main_stream.set(self._normal_stream)
+            return
+
+        # Enable the specified pipeline
+        for obj in self.main_pipe_database:
+            if name == obj.name:
+                # Check if the pipeline is a main or multi_stream pipeline
+                assert obj.process_type == 'main' or obj.process_type == 'multi_stream'
+
+                if obj.process_type == 'multi_stream':
+                    # Ensure all sub-pipelines are alive in multi_stream mode
+                    for i in obj.pip:
+                        assert i.is_alive(), f'Error: {name} pipeline is not alive!'
+                        i.sync(self._master_sync)
+
+                # Clear the current main_stream and set the specified pipeline
+                self._main_stream.clear()
+
+                # For multi_stream mode, set each sub-pipeline as async
+                if self._main_stream.process_type == 'multi_stream':
+                    for i in self._main_stream.pip:
+                        i.aasync()
+
+                self._main_stream.set(obj)
+
+
+    def _single_channel_windowing(self, data):
+        """
+        Performs windowing on a single channel of data.
+
+        Parameters:
+        - data (np.ndarray): The input data to be windowed.
+
+        Returns:
+        - np.ndarray: The windowed data.
+        """
+        # Check if the data is mono or multi-channel
+        if self._window_type:
+            retval = single_channel_windowing(
+                data,
+                self._win_buffer, 
+                self._window,
+                self._nhop
+                )
+        else:
+            retval = data.astype(np.float64)
+        return retval
+    
+    def _multi_channel_windowing(self, data):
+        """
+        Performs windowing on multiple channels of data.
+
+        Parameters:
+        - data (np.ndarray): The input data to be windowed.
+
+        Returns:
+        - np.ndarray: The windowed data.
+        """
+        # Check if the data is mono or multi-channel
+        if self._window_type:
+            retval = multi_channel_windowing(
+                data,
+                self._win_buffer,
+                self._window,
+                self._nhop,
+                self.nchannels
+                )
+        else:
+            retval = data.astype(np.float64)
+        return retval
+    
+
+    def _single_channel_overlap(self, data):
+        """
+        Performs overlap-add on a single channel of data.
+
+        Parameters:
+        - data (np.ndarray): The input data to be processed.
+
+        Returns:
+        - np.ndarray: The processed data.
+        """
+        retval = single_channel_overlap(
+            data,
+            self._iwin_buffer,
+            self._nhop
+            )
+
+        return retval
+    
+
+    def _multi_channel_overlap(self, data):
+        """
+        Performs overlap-add on multiple channels of data.
+
+        Parameters:
+        - data (np.ndarray): The input data to be processed.
+
+        Returns:
+        - np.ndarray: The processed data.
+        """
+        retval = multi_channel_overlap(
+            data,
+            self._iwin_buffer,
+            self._nhop,
+            self.nchannels,
+            )
+
+        return retval
+    
+
+    def set_window(self,
+               window: object = 'hann',
+               noverlap: int = None,
+               NOLA_check: bool = True):
+        
+        if self._window_type == window and self._noverlap == noverlap:
+            return
+        else:
+            self._window_type = window
+            if noverlap is None:
+                noverlap = self._nperseg // 2
+
+            if type(window) is str or \
+                    type(window) is tuple or \
+                    type(window) == float:
+                window = scisig.get_window(window, self._nperseg)
+
+            elif window:
+                assert len(window) == self._nperseg, 'control size of window'
+                if NOLA_check:
+                    assert scisig.check_NOLA(window, self._nperseg, noverlap)
+
+            elif self._window_type is None:
+                window = None
+                self._window_type = None
+
+        self._window = window
+        # refresh
+        self._noverlap = noverlap
+        self._nhop = self._nperseg - self._noverlap
+        if self._mono_mode:
+            self._iwin_buffer = [np.zeros(self._nperseg)]
+            self._win_buffer = [np.zeros(self._nperseg), np.zeros(self._nperseg)]
+        else:
+            self._iwin_buffer = [np.zeros(self._nperseg) for i in range(self.nchannels)]
+            self._win_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self.nchannels)]
+        self._main_stream.clear()
+
+
+
+    @staticmethod
+    def get_default_input_device_info():
         """
         Retrieves information about the default input audio device.
 
@@ -2049,8 +2216,8 @@ class Master:
         data = audiointerface.get_default_input_device_info()
         return data
     
-
-    def get_device_count(self):
+    @staticmethod
+    def get_device_count():
         """
         Gets the total number of available audio devices.
 
@@ -2060,8 +2227,8 @@ class Master:
         data = audiointerface.get_device_count()
         return data
     
-
-    def get_device_info_by_index(self, index: int):
+    @staticmethod
+    def get_device_info_by_index(index: int):
         """
         Retrieves information about an audio device based on its index.
 
@@ -2074,8 +2241,8 @@ class Master:
         data = audiointerface.get_device_info_by_index(int(index))
         return data
     
-
-    def get_input_devices(self):
+    @staticmethod
+    def get_input_devices():
         """
         Gets information about all available input audio devices.
 
@@ -2084,8 +2251,8 @@ class Master:
         """
         return audiointerface.get_input_devices()
 
-
-    def get_output_devices(self):
+    @staticmethod
+    def get_output_devices():
         """
         Gets information about all available output audio devices.
 
@@ -2093,3 +2260,21 @@ class Master:
             dict: A dictionary containing information about each available output device.
         """
         return audiointerface.get_output_devices()
+    
+
+    @staticmethod
+    def _resample(data: np.ndarray, fir_win, data_rate, output_rate, data_chunk=500000):
+        # 1 dimentional array
+        scale = np.gcd(output_rate, data_rate)
+        up, down = output_rate// scale, data_rate // scale
+        print(up, down)
+        data_size = data.size
+        res = scisig.upfirdn(fir_win, data, up=up, down=down)
+        print(res.shape)
+        # i = 0
+        # res = np.array([])
+        # while i < data_size:
+        #     res = np.append(res, scisig.upfirdn(fir_win, data[i: i + data_chunk], up=up, down=down))
+        #     i += data_chunk
+
+        return res

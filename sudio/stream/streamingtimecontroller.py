@@ -1,3 +1,4 @@
+
 class StreamingTimeController:
     def __get__(self, instance, owner):
         assert instance.isready(), PermissionError('current object is not streaming')

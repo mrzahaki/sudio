@@ -1,9 +1,8 @@
 
 
-from sudio._register import Members as Mem
 from sudio.stream.streamingtimecontroller import StreamingTimeController
 
-@Mem.master.add
+
 class StreamControl:
     """
     The StreamControl class is defined to control the mainstream audio playback for a special 'record'.

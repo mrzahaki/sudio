@@ -6,14 +6,12 @@ from contextlib import contextmanager
 from typing import Union
 import pandas as pd
 
-from sudio._register import Members as Mem
 from sudio.types.name import Name
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio.audioutils.audio import Audio
 from sudio.extras.strtool import parse_dictionary_string
 
 
-@Mem.sudio.add
 class Wrap:
     name = Name()
 

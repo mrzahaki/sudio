@@ -1,14 +1,12 @@
 import os
 from _miniaudio import ffi, lib
 
-from sudio._register import Members as Mem
 from sudio.audioutils.fileinfo import AudioFileInfo
 from sudio.types import FileFormat, LibSampleFormat, DecodeError
 from sudio.extras.io import get_encoded_filename_bytes
 from sudio.audioutils.typeconversion import get_format_from_width
 
 
-@Mem.master.add
 def get_file_info(filename: str) -> AudioFileInfo:
     """
     Fetches information about the audio file.

@@ -6,4 +6,4 @@
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 from sudio.pipeline import Pipeline
-from sudio._master import *
+from sudio._master import Master
