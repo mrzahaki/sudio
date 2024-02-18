@@ -1,16 +1,4 @@
 # Welcome to the Sudio Symphony 🎵
-
-Hey there, lone audio adventurer! 👋
-
-Embarking on this sound-filled journey solo? Fear not, for you are the maestro of your own destiny! 🎶
-
-🚀 Get ready for a symphony of solitude and code! Remember, even a single note can create magic.
-
-🎧 So, tune into the rhythm of your creativity and let the solo beats guide you through the code. It's a long way, but hey, the best symphonies are worth the wait!
-
-🔊 Happy coding, solo virtuoso! 🎻
-
-
  
 `sudio` is an `Open-source`, `fast and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
 
@@ -186,13 +174,13 @@ Sudo can manage various audio streams from audio files or operating systems with
 ## Installation
 
 
-##### Latest PyPI stable release
+##### Latest PyPI stable release (previous version)
 
     pip install sudio
 
 ##### Latest development release on GitHub
 
-Pull and install pre-release `main` branch:
+Pull and install pre-release `main` branch  (recommended):
 
     pip install git+https://github.com/MrZahaki/sudio.git
 
