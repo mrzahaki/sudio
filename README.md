@@ -23,10 +23,131 @@ Sudio is a comprehensive library for mixing, editing, and recording audio conten
 The sudio used additional cached files to reduce dynamic memory usage and improve performance, meaning that audio data storage methods could have different execution times based on the stored files. Thanks to that, 
 Sudo can manage various audio streams from audio files or operating systems without any size limitation.
 
-<!--
-<a href="https://www.buymeacoffee.com/mrzahakiU" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
--->
- ---
+## Installation
+
+
+##### Latest PyPI stable release (previous version)
+
+    pip install sudio
+
+##### Latest development release on GitHub
+
+Pull and install pre-release `main` branch  (recommended):
+
+    pip install git+https://github.com/MrZahaki/sudio.git
+
+
+## Quick start
+
+#### Audio playback
+
+```python
+import sudio
+
+su = sudio.Master()
+su.add('baroon.mp3')
+su.echo('baroon')
+``` 
+
+the record with the name of baroon will be played on the stdout audio stream. 
+
+#### Audio slicing
+
+##### Time domain
+
+###### simple slicing
+
+The following example is used to play the audio record with the name of baroon from 12 to 27.66 seconds on the stdout audio stream.
+
+```python
+su = sudio.Master()
+baroon = su.add('baroon.mp3')
+su.echo(baroon[12: 27.66])
+```
+
+###### slice & merge
+
+
+```python
+su = sudio.Master()
+rec = su.add('baroon.mp3')
+
+# method 1
+su.echo(rec[12: 27.66, 65: 90])
+
+# method 2
+su.echo(rec[12: 27.66] + rec[65: 90])
+```
+
+The audio record is split into two parts, the first one 12-27.66 seconds, and the last one 65-90 seconds, then the sliced records are merged and played in the stream.
+
+
+##### Frequency domain
+
+###### LPF 100Hz
+
+```python
+su = sudio.Master()
+baroon = su.add('baroon.mp3')
+su.echo(baroon[: '100'])
+```
+
+###### HPF 1KHz
+
+```python
+su = sudio.Master()
+baroon = su.add('baroon.mp3')
+su.echo(baroon['1000':])
+```
+
+###### BPF 500Hz - 1KHz
+
+```python
+su = sudio.Master()
+baroon = su.add('baroon.mp3')
+su.echo(baroon['500':'1000'])
+```
+
+##### Complex Slicing
+
+```python
+su = sudio.Master()
+baroon = su.add('baroon.mp3')
+su.echo(baroon[5:10, :'1000', 10: 20, '1000': '5000'])
+```
+
+In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5 to 10 seconds, then a band-pass filter is applied from 10 to 20 seconds, and finally they are merged.
+
+
+
+#### Audio Streaming
+
+
+```python
+su = sudio.Master()
+
+# start sudio kernel
+su.start()
+
+record = su.add('baroon.mp3')
+stream = su.stream(record)
+
+# enable stdout
+su.echo()
+
+# start streaming
+stream.start()
+
+# wait for 10 seconds  
+time.sleep(10)
+
+# stop streaming
+stream.stop()
+```
+
+
+
+
 
 ## Table of contents:
 
@@ -171,127 +292,6 @@ Sudo can manage various audio streams from audio files or operating systems with
   - [LICENCE](#licence)
 
 
-## Installation
-
-
-##### Latest PyPI stable release (previous version)
-
-    pip install sudio
-
-##### Latest development release on GitHub
-
-Pull and install pre-release `main` branch  (recommended):
-
-    pip install git+https://github.com/MrZahaki/sudio.git
-
-
-## Quick start
-
-#### Audio playback
-
-```python
-import sudio
-
-su = sudio.Master()
-su.add('baroon.mp3')
-su.echo('baroon')
-``` 
-
-the record with the name of baroon will be played on the stdout audio stream. 
-
-#### Audio slicing
-
-##### Time domain
-
-###### simple slicing
-
-The following example is used to play the audio record with the name of baroon from 12 to 27.66 seconds on the stdout audio stream.
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[12: 27.66])
-```
-
-###### slice & merge
-
-
-```python
-su = sudio.Master()
-rec = su.add('baroon.mp3')
-
-# method 1
-su.echo(rec[12: 27.66, 65: 90])
-
-# method 2
-su.echo(rec[12: 27.66] + rec[65: 90])
-```
-
-The audio record is split into two parts, the first one 12-27.66 seconds, and the last one 65-90 seconds, then the sliced records are merged and played in the stream.
-
-
-##### Frequency domain
-
-###### LPF 100Hz
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[: '100'])
-```
-
-###### HPF 1KHz
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon['1000':])
-```
-
-###### BPF 500Hz - 1KHz
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon['500':'1000'])
-```
-
-##### Complex Slicing
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[5:10, :'1000', 10: 20, '1000': '5000'])
-```
-
-In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5 to 10 seconds, then a band-pass filter is applied from 10 to 20 seconds, and finally they are merged.
-
-
-
-#### Audio Streaming
-
-
-```python
-su = sudio.Master()
-
-# start sudio kernel
-su.start()
-
-record = su.add('baroon.mp3')
-stream = su.stream(record)
-
-# enable stdout
-su.echo()
-
-# start streaming
-stream.start()
-
-# wait for 10 seconds  
-time.sleep(10)
-
-# stop streaming
-stream.stop()
-```
 
 
 ### [Examples and Advanced Usage](#examples-and-advanced-usage)
