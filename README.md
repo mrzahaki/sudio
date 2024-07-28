@@ -1,6 +1,6 @@
 # Welcome to the Sudio 🎵
  
-`sudio` is an `Open-source`, `fast and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
+`sudio` is an `Open-source`,  `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
 
 
 ## Abstract
