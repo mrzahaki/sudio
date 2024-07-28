@@ -1,4 +1,4 @@
-# Welcome to the Sudio Symphony 🎵
+# Welcome to the Sudio 🎵
  
 `sudio` is an `Open-source`, `fast and `easy-to-use` digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform. 
 
@@ -961,7 +961,7 @@ The audio data maintaining process has additional cached files to reduce dynamic
 sudio.Master.add_pipeline(  self, 
                             name: str, 
                             pip: Union[Pipeline, list],
-                            process_type: str='main', 
+                            process_type: sudio.types.PipelineProcessType=PipelineProcessType.MAIN, 
                             channel: int=None)
 
 ```
@@ -977,7 +977,7 @@ Add a new process pipeline to the master object.
              In the multi_stream process type, this argument must be a list of the defined pipelines, with the size equal to the nchannel.
      <br/>
 
-  - **process_type**: string; 'main', 'branch', 'multi_stream'
+  - **process_type**: PipelineProcessType; MAIN, BRANCH, MULTI_STREAM
      The sudio kernel inject audio data to the activated pipeline[if exist] and all of the branch type pipelines then takes output from the primary one.
      
      <br />

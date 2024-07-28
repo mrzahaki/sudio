@@ -12,6 +12,18 @@ def get_default_input_device_info():
     au.terminate()
     return data
 
+def get_default_output_device_info():
+    """
+    Retrieves information about the default input audio device.
+
+    Returns:
+        dict: A dictionary containing information about the default input device.
+    """
+    au = Audio()
+    data = au.get_default_output_device_info()
+    au.terminate()
+    return data
+
 
 def get_device_count():
     """

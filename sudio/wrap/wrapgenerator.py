@@ -57,7 +57,7 @@ class WrapGenerator:
         self._nchannels = self._rec['nchannels']
         self._sample_format = self._rec['sampleFormat']
         self._nperseg = self._rec['nperseg']
-        self._sample_type = self._parent._constants[0]
+        self._sample_type = self._parent._sample_width_format_str
         self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
         self._seek = 0
 

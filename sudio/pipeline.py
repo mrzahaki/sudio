@@ -10,6 +10,7 @@ import threading
 import queue
 import time
 from typing import Union
+import traceback
 
 
 class Pipeline(threading.Thread):
@@ -133,7 +134,6 @@ class Pipeline(threading.Thread):
         Returns:
             None
         """
-        data = None
         while 1:
             try:
                 if self._list_dispatch:
@@ -149,11 +149,6 @@ class Pipeline(threading.Thread):
                         self._run_norm()
 
             except IndexError:
-                # print('IndexError ', time.time())
-                if data:
-                    if self._sync:
-                        self._sync.wait()
-                    self.output_line.put(data, timeout=self._timeout)
                 while not len(self._pipeline):
                     try:
                         if self._sync:
@@ -162,7 +157,6 @@ class Pipeline(threading.Thread):
                     except queue.Empty:
                         pass
                     self.refresh()
-                # raise
             except (queue.Full, queue.Empty):
                 pass
 
@@ -176,16 +170,22 @@ class Pipeline(threading.Thread):
         Returns:
             None
         """
+        try:
+            data = self.input_line.get(timeout=self._timeout)
+            ret_val = self._pipeline[0][0](*self._pipeline[0][1:], data)
+            for func in self._pipeline[1:]:
+                ret_val = func[0](*func[1:], ret_val)
+            self._post_process(ret_val)
 
-        # print('data')
-        # call from pipeline
-        # print(data)
-        ret_val = self._pipeline[0][0](*self._pipeline[0][1:],
-                                       *self.input_line.get(timeout=self._timeout))
-        for i in self._pipeline[1:]:
-            ret_val = i[0](*i[1:], *ret_val)
+            self._post_process(ret_val)
+        except queue.Empty:
+            # You might want to add a small sleep here to prevent tight looping
+            time.sleep(0.001)
 
-        self._post_process(ret_val)
+        except Exception as e:
+            error_msg = f"Error in pipeline processing: {type(e).__name__}: {str(e)}"
+            print(error_msg)
+            print(traceback.format_exc())  # This will print the full stack trace
 
     def _run_norm(self):
         """
@@ -197,13 +197,19 @@ class Pipeline(threading.Thread):
         Returns:
             None
         """
-        # call from pipeline
-        ret_val = self._pipeline[0][0](*self._pipeline[0][1:],
-                                       self.input_line.get(timeout=self._timeout))
-        for i in self._pipeline[1:]:
-            ret_val = i[0](*i[1:], ret_val)
-
-        self._post_process(ret_val)
+        try:
+            data = self.input_line.get(timeout=self._timeout)
+            ret_val = self._pipeline[0][0](*self._pipeline[0][1:], data)
+            for func in self._pipeline[1:]:
+                ret_val = func[0](*func[1:], ret_val)
+            self._post_process(ret_val)
+        except queue.Empty:
+            # You might want to add a small sleep here to prevent tight looping
+            time.sleep(0.001)
+        except Exception as e:
+            error_msg = f"Error in pipeline processing: {type(e).__name__}: {str(e)}"
+            print(error_msg)
+            print(traceback.format_exc())
 
     def _post_process(self, retval):
         """

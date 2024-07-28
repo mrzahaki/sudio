@@ -110,7 +110,7 @@ def handle_cached_record(record: Union[pd.Series, dict],
     - Modified audio record as a pandas Series.
     """
     sync_sample_format_id = master_obj._sample_format if sync_sample_format_id is None else sync_sample_format_id
-    sync_nchannels = master_obj.nchannels if sync_nchannels is None else sync_nchannels
+    sync_nchannels = master_obj._nchannels if sync_nchannels is None else sync_nchannels
     sync_sample_rate = master_obj._sample_rate if sync_sample_rate is None else sync_sample_rate
 
     path: str = path_server()

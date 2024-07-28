@@ -3,11 +3,19 @@ import queue
 import numpy as np
 
 from sudio.extras.arraytool import push
-from sudio.types import StreamError
+from sudio.types import StreamError, PipelineProcessType
 
 
 class Stream:
-    def __init__(self, other, obj, name=None, stream_type='multithreading', channel=None, process_type='main'):
+    def __init__(
+            self, 
+            other, 
+            obj, 
+            name=None, 
+            stream_type='multithreading', 
+            channel=None, 
+            process_type:PipelineProcessType=PipelineProcessType.MAIN
+            ):
 
         '''
         Initialize the Stream class for managing audio data streams.
@@ -18,7 +26,8 @@ class Stream:
         - name: A name for the stream (optional).
         - stream_type: Type of streaming operation ('multithreading' or reserved for future versions).
         - channel: Channel index for controlling multi-channel streams (optional).
-        - process_type: Type of stream processing ('main', 'multi_stream', 'branch', 'queue').
+        - process_type: Type of stream processing PipelineProcessType 
+        (PipelineProcessType.MAIN, PipelineProcessType.MULTI_STREAM, PipelineProcessType.BRANCH, PipelineProcessType.QUEUE).
 
         Raises:
         - StreamError: If there are issues with the provided parameters based on the selected processing mode.
@@ -37,41 +46,41 @@ class Stream:
         self._data_indexer = lambda data: data[channel]
         self._lock = threading.Lock()
 
-        if process_type == 'main' and type(obj) == list and len(obj) == other.nchannels and channel is None:
-            self.process_type = 'multi_stream'
+        if process_type == PipelineProcessType.MAIN and type(obj) == list and len(obj) == other._nchannels and channel is None:
+            self.process_type = PipelineProcessType.MULTI_STREAM
 
-        if process_type == 'multi_stream':
+        if process_type == PipelineProcessType.MULTI_STREAM:
             if not channel is None:
                 raise StreamError('In multi_stream mode, channel value must have None value (see documentation)')
-            elif not type(obj) == list or not len(obj) == other.nchannels:
+            elif not type(obj) == list or not len(obj) == other._nchannels:
                 raise StreamError('In multi_stream mode, pip argument must be a list with the length of the number of data channels')
-            elif other.nchannels < 2 or other._mono_mode:
+            elif other._nchannels < 2 or other._mono_mode:
                 raise StreamError('The multi_stream mode works only when the number of input channels is set to be more than 1')
 
-        elif process_type == 'main':
-            if not channel is None and not (type(channel) is int and channel <= other.nchannels):
+        elif process_type == PipelineProcessType.MAIN:
+            if not channel is None and not (type(channel) is int and channel <= other._nchannels):
                 raise StreamError('Invalid control channel data')
 
         if stream_type == 'multithreading':
-            if process_type == 'main':
+            if process_type == PipelineProcessType.MAIN:
                 self.put = self._main_put
                 self.clear = obj.clear
                 self.sget = self._main_get
                 self.get = self._main_get
 
-            elif process_type == 'multi_stream':
+            elif process_type == PipelineProcessType.MULTI_STREAM:
                 self.put = self._multi_main_put
                 self.clear = self._multi_main_clear
                 self.sget = self._multi_main_get
                 self.get = self._multi_main_get
 
-            elif process_type == 'branch':
+            elif process_type == PipelineProcessType.BRANCH:
                 self.put = obj.put
                 self.clear = obj.clear
                 self.sget = obj.get
                 self.get = obj.get
 
-            elif process_type == 'queue':
+            elif process_type == PipelineProcessType.QUEUE:
                 self.put = self._main_put
                 self.clear = obj.queue.clear
                 self.sget = self._main_get
@@ -141,7 +150,7 @@ class Stream:
         # print(self.process_obj.branch_pipe_database)
         self.pip.put(data)
 
-    def _main_get(self, *args):
+    def _main_get(self, *args, **kwargs):
         '''
         Get data from the main stream.
 
@@ -151,11 +160,11 @@ class Stream:
         Notes:
         - Reverses windowing if specified in the main audio processing instance.
         '''
-        data = self.pip.get(*args)
+        data = self.pip.get(*args, **kwargs)
         if self.process_obj._window_type:
             data = self.process_obj._iwin(data)
         # print(data.shape)
-        return data.astype(self.process_obj._constants[0])
+        return data.astype(self.process_obj._sample_width_format_str)
 
     def _multi_main_put(self, data):
         '''
@@ -184,8 +193,7 @@ class Stream:
                 pass
 
             final.append(win)
-            # range(self.process_obj.nchannels)[1:]
-            for i in self.process_obj._constants[2]:
+            for i in range(1, self.process_obj.nchannels):
                 win = np.vstack((self.process_obj._win_buffer[i][1], np.hstack(
                     (self.process_obj._win_buffer[i][1][self.process_obj._nhop:],
                      self.process_obj._win_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
@@ -200,7 +208,7 @@ class Stream:
                 final.append(win)
         else:
             final = data.astype('float64')
-            for i in self.process_obj._constants[4]:
+            for i in range(self.process_obj.nchannels):
                 try:
                     self.pip[i].put(final[i])
                 except queue.Full:
@@ -230,7 +238,7 @@ class Stream:
                      win[0]
             self.process_obj._iwin_buffer[0] = win[1]
 
-            for i in self.process_obj._constants[2]:
+            for i in range(1, self.process_obj.nchannels):
                 win = self.pip[i].get(*args)
                 tmp = np.hstack(
                     (self.process_obj._iwin_buffer[i][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
@@ -239,11 +247,11 @@ class Stream:
                 self.process_obj._iwin_buffer[i] = win[1]
         else:
             retval = self.pip[0].get(*args)
-            for i in self.process_obj._constants[2]:
+            for i in range(1, self.process_obj.nchannels):
                 tmp = self.pip[i].get(*args)
                 retval = np.vstack((retval, tmp))
 
-        return retval.astype(self.process_obj._constants[0])
+        return retval.astype(self.process_obj._sample_width_format_str)
 
     def _multi_main_clear(self):
         '''
@@ -263,13 +271,13 @@ class Stream:
         - This method allows setting the attributes of the current stream to match those of another stream.
         '''
         if isinstance(other, self.__class__):
-            assert ('main' in self.process_type or
-                    'multi_stream' in self.process_type or
-                    'queue' in self.process_type) \
+            assert ((self.process_type == PipelineProcessType.MAIN) or
+                    (self.process_type == PipelineProcessType.MULTI_STREAM) or
+                    (self.process_type == PipelineProcessType.QUEUE)) \
                    and \
-                   ('main' in other.process_type or
-                    'multi_stream' in other.process_type or
-                    'queue' in other.process_type), \
+                   ((other.process_type == PipelineProcessType.MAIN) or
+                    (other.process_type == PipelineProcessType.MULTI_STREAM) or
+                    (other.process_type == PipelineProcessType.QUEUE)), \
                 'set is enabled only for "main or multi_stream" modes'
             (self.put,
              self.clear,
@@ -322,7 +330,7 @@ class Stream:
         Get the type of stream processing.
 
         Returns:
-        - str: The type of stream processing ('main', 'multi_stream', 'branch', 'queue').
+        - PipelineProcessType: The type of stream processing (MAIN, MULTI_STREAM, BRANCH, QUEUE).
 
         Note:
         - This method returns the type of stream processing used by the current instance.
