@@ -11,7 +11,7 @@ import queue
 import time
 from typing import Union
 import traceback
-
+from sudio.types.pipelineonbusytype import PipelineOnBusyType
 
 class Pipeline(threading.Thread):
     """
@@ -59,7 +59,7 @@ class Pipeline(threading.Thread):
     """
     def __init__(self, max_size: int = 0,
                  io_buffer_size: int = 10,
-                 on_busy: Union[float, str] = 'drop',
+                 on_busy: Union[PipelineOnBusyType, str] = PipelineOnBusyType.BLOCK,
                  list_dispatch: bool = False):
         """
         Initializes the Pipeline instance with the specified parameters.
@@ -67,7 +67,7 @@ class Pipeline(threading.Thread):
         Args:
             max_size (int): Maximum size of the pipeline.
             io_buffer_size (int): Size of the I/O buffer.
-            on_busy (Union[float, str]): Action to take when the pipeline is busy.
+            on_busy (Union[float, PipelineOnBusyType]): Action to take when the pipeline is busy. DROP or BLOCK, float for timeout
             list_dispatch (bool): Flag indicating whether to use list dispatch mode.
         """
         super(Pipeline, self).__init__(daemon=True)
@@ -85,9 +85,9 @@ class Pipeline(threading.Thread):
         self.init_queue = queue.Queue()
         self._list_dispatch = list_dispatch
 
-        if on_busy == 'drop':
+        if on_busy == PipelineOnBusyType.DROP:
             self._process_type = (False, None)
-        elif on_busy == 'block':
+        elif on_busy == PipelineOnBusyType.BLOCK:
             self._process_type = (True, None)
         elif type(on_busy) == float:
             self._process_type = (True, on_busy)
@@ -176,12 +176,10 @@ class Pipeline(threading.Thread):
             for func in self._pipeline[1:]:
                 ret_val = func[0](*func[1:], ret_val)
             self._post_process(ret_val)
-
-            self._post_process(ret_val)
         except queue.Empty:
-            # You might want to add a small sleep here to prevent tight looping
             time.sleep(0.001)
-
+        except queue.Full:
+            pass
         except Exception as e:
             error_msg = f"Error in pipeline processing: {type(e).__name__}: {str(e)}"
             print(error_msg)
@@ -204,8 +202,9 @@ class Pipeline(threading.Thread):
                 ret_val = func[0](*func[1:], ret_val)
             self._post_process(ret_val)
         except queue.Empty:
-            # You might want to add a small sleep here to prevent tight looping
             time.sleep(0.001)
+        except queue.Full:
+            pass
         except Exception as e:
             error_msg = f"Error in pipeline processing: {type(e).__name__}: {str(e)}"
             print(error_msg)

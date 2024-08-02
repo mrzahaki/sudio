@@ -543,41 +543,35 @@ start audio streaming, must be called before audio streaming process.
 
 <br />
 
-##### recorder
+## Audio Recorder
 
-```py
-   sudio.Master.recorder(self,
-                        record_duration: Union[int, float] = 10,
-                        name: str=None,
-                        enable_compressor: bool=False,
-                        noise_sampling_duration: Union[int, float]=1,
-                        enable_ui: bool=False,
-                        play_recorded: bool=False,
-                        catching_precision: float=0.1,
-                        echo_mode: bool=False,
-                        on_start_callback: callable=None,
-                        on_sampling_callback: callable=None)
-```
+The `recorder` method provides advanced audio recording capabilities, allowing capture of any signal in the output processing stage.
 
-record from main stream for a while.
+### Features
 
+- Record audio for a specified duration
+- Automatic naming with timestamp or custom name option
+- Supports multi-channel recording
+- Integrated with the local database for efficient storage and retrieval
+- Channel shuffling for non-mono recordings
 
-- **parameters**:
+### Usage
 
-    - **record_duration**: determines duration of the recording process.
-    - **name**: optional; name of new record.
-    - **enable_compressor**: optional; enable to compress the recorded data. The compressor deletes part of the signal that has lower energy than the sampled noise.
-    - **noise_sampling_duration**: optional; noise sampling duration used by the compressor(if enabled).
-    - **enable_ui**: optional; user inteface mode (need to install tqdm module)
-    - **play_recorded**: optional; Determines whether the recorded file will be played after the recording process.
-    - **catching_precision**: optional; Signal compression accuracy, more accuracy can be achieved with a smaller number (default 0.1).
-    - **echo_mode**: It can disable the mainstream's echo mode, when the recorder is online.
-    - **on_start_callback**: called after noise sampling. 
-        ```py
-        parameters: master object, sampled noise level, record duration time. 
-        return true to continiue recording.
-        ```
-- **returns** Wrapped(WrapGenerator) object
+```python
+def recorder(self, record_duration: float, name: str = None) -> WrapGenerator:
+    """
+    Record audio for a specified duration.
+
+    Args:
+        record_duration (float): Duration to record in seconds.
+        name (str, optional): Name for the recording. If None, a timestamp-based name will be generated.
+
+    Returns:
+        WrapGenerator: A wrapped version of the recorded audio data.
+
+    Raises:
+        KeyError: If the provided name already exists in the database.
+    """
 
 
 

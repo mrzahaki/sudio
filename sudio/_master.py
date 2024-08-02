@@ -432,7 +432,6 @@ class Master:
             in_data: np.ndarray = np.frombuffer(
                 self._stream_file.read(self._stream_data_size),
                 self._sample_width_format_str).astype('f')
-
             try:
                 in_data: np.ndarray = map_channels(in_data, self._nchannels, self._nchannels, self._mono_mode)
             except ValueError:
@@ -473,7 +472,6 @@ class Master:
         if self._exstream_mode.is_set():
             self._exstream()
             return None, 0
-
         elif self._master_mute_mode.is_set():
             in_data = get_mute_mode_data(self._nchannels, self._nperseg)
         else:
@@ -529,7 +527,7 @@ class Master:
         rec_ev, rec_queue = self._recordq
         while 1:
             try:
-                data = self._main_stream.get(timeout=0.001)
+                data = self._main_stream.get(timeout=0.0001)
 
                 if rec_ev.is_set():
                     rec_queue.put_nowait(data)
@@ -564,18 +562,6 @@ class Master:
 
                 stream_out.start_stream()
                 self._main_stream.clear()
-
-
-    def _safe_input(self, *args, **kwargs):
-        self._semaphore[0].acquire()
-        res = input(*args, **kwargs)
-        self._semaphore[0].release()
-        return res
-
-    def _safe_print(self, *args, **kwargs):
-        self._semaphore[0].acquire(timeout=1)
-        print(*args, **kwargs)
-        self._semaphore[0].release()
 
     # RMS to dbu
     # signal maps to standard +4 dbu
