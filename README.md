@@ -122,30 +122,134 @@ In the example above, a low-pass filter with a cutoff frequency of 1 kHz is appl
 
 #### Audio Streaming
 
+##### Basic Streaming with Pause and Resume
+
+This example demonstrates how to start, pause, resume, and stop audio playback using the `sudio` library.
 
 ```python
-su = sudio.Master()
+import sudio
+import time
 
-# start sudio kernel
+# Initialize the audio master
+su = sudio.Master()
 su.start()
 
-record = su.add('baroon.mp3')
+# Add an audio file to the master
+record = su.add('example.mp3')
 stream = su.stream(record)
 
-# enable stdout
+# Enable stdout echo
 su.echo()
 
-# start streaming
+# Start the audio stream
 stream.start()
+print(f"Current playback time: {stream.time} seconds")
 
-# wait for 10 seconds  
+# Pause the playback after 5 seconds
+time.sleep(5)
+stream.pause()
+print("Paused playback")
+
+# Resume playback after 2 seconds
+time.sleep(2)
+stream.resume()
+print("Resumed playback")
+
+# Stop playback after 5 more seconds
+time.sleep(5)
+stream.stop()
+print("Stopped playback")
+```
+
+#### Basic Streaming with Jumping to Specific Times in the Audio
+
+This example shows how to start playback and jump to a specific time in the audio file.
+
+```python
+import sudio
+import time
+
+# Initialize the audio master
+su = sudio.Master()
+su.start()
+
+# Add a long audio file to the master
+record = su.add('long_audio.mp3')
+stream = su.stream(record)
+
+# Enable stdout echo
+su.echo()
+
+# Start the audio stream
+stream.start()
+print(f"Starting playback at: {stream.time} seconds")
+
+# Jump to 30 seconds into the audio after 5 seconds of playback
+time.sleep(5)
+stream.time = 30
+print(f"Jumped to: {stream.time} seconds")
+
+# Continue playback for 10 more seconds
 time.sleep(10)
+print(f"Current playback time: {stream.time} seconds")
 
-# stop streaming
+# Stop the audio stream
 stream.stop()
 ```
 
+#### Streaming with Volume Control
 
+This example demonstrates how to control the volume of the audio stream using a custom pipeline.
+
+```python
+import sudio
+import time
+import sudio.types
+
+# Initialize the audio master with a specific input device
+su = sudio.Master(std_input_dev_id=2)
+su.start()
+
+# Add an audio file to the master
+record = su.add('example.mp3')
+stream = su.stream(record)
+
+# Define a function to adjust the volume
+def adjust_volume(data, args):
+    return data * args['volume']
+
+# Create a pipeline and append the volume adjustment function
+pip = sudio.Pipeline()
+pip.append(adjust_volume, args={'volume': 1.0})
+
+# Start the pipeline
+pip.start()
+
+# Add the pipeline to the master
+pipeline_id = su.add_pipeline(pip, process_type=sudio.types.PipelineProcessType.MAIN)
+su.set_pipeline(pipeline_id)
+
+# Enable stdout echo
+su.echo()
+
+# Start the audio stream
+stream.start()
+print("Playing at normal volume")
+time.sleep(10)
+
+# Adjust the volume to 50%
+pip.update_args(adjust_volume, {'volume': 0.5})
+print("Reduced volume to 50%")
+time.sleep(10)
+
+# Restore the volume to normal
+pip.update_args(adjust_volume, {'volume': 1.0})
+print("Restored normal volume")
+time.sleep(10)
+
+# Stop the audio stream
+stream.stop()
+```
 
 
 
@@ -172,6 +276,9 @@ stream.stop()
           - [BPF 500Hz - 1KHz](#bpf-500hz---1khz)
         - [Complex Slicing](#complex-slicing)
       - [Audio Streaming](#audio-streaming)
+        - [Basic Streaming with Pause and Resume](#basic-streaming-with-pause-and-resume)
+        - [Basic Streaming with Jumping to Specific Times in the Audio](#basic-streaming-with-jumping-to-specific-times-in-the-audio)
+        - [Streaming with Volume Control](#streaming-with-volume-control)
     - [Examples and Advanced Usage](#examples-and-advanced-usage)
       - [Short-time Fourier transform](#short-time-fourier-transform)
         - [prerequisites](#prerequisites)

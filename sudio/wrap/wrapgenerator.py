@@ -257,7 +257,11 @@ class WrapGenerator:
             # 404: Record not found
             pass
         if os.path.exists(self._file.name):
-            os.remove(self._file.name)
+            try:
+                os.remove(self._file.name)
+            except PermissionError:
+                pass
+            
 
     def __str__(self):
         '''

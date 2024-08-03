@@ -172,9 +172,9 @@ class Pipeline(threading.Thread):
         """
         try:
             data = self.input_line.get(timeout=self._timeout)
-            ret_val = self._pipeline[0][0](*self._pipeline[0][1:], data)
+            ret_val = self._pipeline[0][0](data, *self._pipeline[0][1:])
             for func in self._pipeline[1:]:
-                ret_val = func[0](*func[1:], ret_val)
+                ret_val = func[0](ret_val, *func[1:])
             self._post_process(ret_val)
         except queue.Empty:
             time.sleep(0.001)
@@ -197,9 +197,9 @@ class Pipeline(threading.Thread):
         """
         try:
             data = self.input_line.get(timeout=self._timeout)
-            ret_val = self._pipeline[0][0](*self._pipeline[0][1:], data)
+            ret_val = self._pipeline[0][0](data, *self._pipeline[0][1:])
             for func in self._pipeline[1:]:
-                ret_val = func[0](*func[1:], ret_val)
+                ret_val = func[0](ret_val, *func[1:])
             self._post_process(ret_val)
         except queue.Empty:
             time.sleep(0.001)
@@ -273,7 +273,32 @@ class Pipeline(threading.Thread):
                             self._run_norm()
                             tdiff = time.thread_time_ns() - t0
                         self._pipoutput_queue.put(('time', tdiff * 1e-3))
-
+                    elif args[0] == 'index':
+                        index = -1
+                        for i, item in enumerate(self._pipeline):
+                            if item[0] == args[1]:
+                                index = i
+                                break
+                        self._pipoutput_queue.put(('index', index))
+                    elif args[0] == 'update_args':
+                        func_or_index, new_args = args[1], args[2]
+                        if isinstance(func_or_index, int):
+                            if 0 <= func_or_index < len(self._pipeline):
+                                self._pipeline[func_or_index] = [self._pipeline[func_or_index][0], *new_args]
+                                self._pipoutput_queue.put(('update_args', 'success'))
+                            else:
+                                self._pipoutput_queue.put(('update_args', 'error'))
+                        else:
+                            updated = False
+                            for i, item in enumerate(self._pipeline):
+                                if item[0] == func_or_index:
+                                    self._pipeline[i] = [item[0], *new_args]
+                                    updated = True
+                                    break
+                            if updated:
+                                self._pipoutput_queue.put(('update_args', 'success'))
+                            else:
+                                self._pipoutput_queue.put(('update_args', 'error'))
             self.refresh_ev.clear()
 
     def insert(self,
@@ -307,13 +332,16 @@ class Pipeline(threading.Thread):
             assert callable(i), 'TypeError'
             if args:
                 # self._pipeline.append([i, *args[num]])
-                if type(args[num]) is tuple or type(args[num]) is list:
-                    self._pipinput_queue.put([index, [i, *args[num]]])
-                elif type(args) is tuple or type(args) is list:
-                    if not args[num] is None:
-                        self._pipinput_queue.put([index, [i, args[num]]])
-                else:
-                    self._pipinput_queue.put([index, [i, args]])
+                try:
+                    if type(args[num]) is tuple or type(args[num]) is list:
+                        self._pipinput_queue.put([index, [i, *args[num]]])
+                except KeyError:
+
+                    if type(args) is tuple or type(args) is list:
+                        if not args[num] is None:
+                            self._pipinput_queue.put([index, [i, args[num]]])
+                    else:
+                        self._pipinput_queue.put([index, [i, args]])
 
             else:
                 # self._pipeline.append([i])
@@ -506,3 +534,78 @@ class Pipeline(threading.Thread):
                             on_busy=self.on_busy).append(*data)
         except AssertionError:
             return self._pipeline[key]
+        
+
+    def index(self, func):
+        """
+        Returns the index of the first occurrence of the specified function in the pipeline.
+
+        Args:
+            func (callable): The function to search for in the pipeline.
+
+        Returns:
+            int: The index of the function if found, -1 otherwise.
+
+        Raises:
+            ValueError: If the function is not found in the pipeline.
+        """
+        if self.is_alive():
+            self._pipinput_queue.put(('index', func))
+            self.refresh_ev.set()
+            while self.refresh_ev.is_set():
+                pass
+
+            while not self._pipoutput_queue.empty():
+                data = self._pipoutput_queue.get()
+                if data[0] == 'index':
+                    if data[1] == -1:
+                        raise ValueError(f"{func} is not in the pipeline")
+                    return data[1]
+                self._pipoutput_queue.put(data)
+        else:
+            for i, item in enumerate(self._pipeline):
+                if item[0] == func:
+                    return i
+            raise ValueError(f"{func} is not in the pipeline")
+        
+    
+    def update_args(self, func_or_index, *new_args):
+        """
+        Updates the arguments of a function in the pipeline.
+
+        Args:
+            func_or_index (Union[callable, int]): The function or its index in the pipeline.
+            *new_args: The new arguments to be used for the function.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the function is not found in the pipeline.
+            IndexError: If the provided index is out of range.
+        """
+        if self.is_alive():
+            self._pipinput_queue.put(('update_args', func_or_index, new_args))
+            self.refresh_ev.set()
+            while self.refresh_ev.is_set():
+                pass
+
+            while not self._pipoutput_queue.empty():
+                data = self._pipoutput_queue.get()
+                if data[0] == 'update_args':
+                    if data[1] == 'error':
+                        raise ValueError(f"Function or index {func_or_index} not found in the pipeline")
+                    break
+                self._pipoutput_queue.put(data)
+        else:
+            if isinstance(func_or_index, int):
+                if 0 <= func_or_index < len(self._pipeline):
+                    self._pipeline[func_or_index] = [self._pipeline[func_or_index][0], *new_args]
+                else:
+                    raise IndexError("Index out of range")
+            else:
+                for i, item in enumerate(self._pipeline):
+                    if item[0] == func_or_index:
+                        self._pipeline[i] = [item[0], *new_args]
+                        return
+                raise ValueError(f"Function {func_or_index} not found in the pipeline")

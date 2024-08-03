@@ -373,7 +373,6 @@ class Master:
         data_queue = queue.Queue(maxsize=self._sound_buffer_size)
         self._normal_stream = Stream(self, data_queue, process_type=PipelineProcessType.QUEUE)
         self._main_stream = Stream(self, data_queue, process_type=PipelineProcessType.QUEUE)
-        self._main_stream.acquire()
         # ----------------------------------------------------- Miscellaneous initialization -----------------------------------------------------
         self._refresh_ev = threading.Event()
 
@@ -441,7 +440,6 @@ class Master:
                 if self._stream_loop_mode:
                     self._stream_file.seek(self._stream_data_pointer, 0)
                 else:
-                    # print('ok')
                     self._exstream_mode.clear()
                     self._stream_file.seek(self._stream_data_pointer, 0)
                     self._main_stream.clear()
@@ -482,7 +480,6 @@ class Master:
             except Exception as e:
                 print(f"Error {e}")
                 return None, 0
-
         try:
             self._main_stream.acquire()
             self._main_stream.put(in_data)  
@@ -512,7 +509,6 @@ class Master:
         self._main_stream.put(in_data)  
         self._main_stream.release()
 
-        # print(f't={a0- time.perf_counter()}, tlo={self.a1 - a0}')
         # self.a1 = time.perf_counter()
         return None, 0
 
@@ -551,7 +547,6 @@ class Master:
                 rate = self._frame_rate
 
 
-                # print(rate)
                 stream_out = self._audio_instance.open_stream(
                                     format=self._sample_format,
                                     channels=self._output_channels,
@@ -621,7 +616,6 @@ class Master:
             'nperseg': self._nperseg,
         }
 
-        # print(record)
 
         p0 = max(filename.rfind('\\'), filename.rfind('/')) + 1
         p1 = filename.rfind('.')
@@ -637,7 +631,6 @@ class Master:
 
 
 
-        # print(list(record.keys()), list(self._local_database.columns))
         assert list(record.keys()) == list(self._local_database.columns)
 
         if safe_load and not self._mono_mode and record['nchannels'] > self._nchannels:
@@ -706,7 +699,6 @@ class Master:
 
             else:
                 raise ValueError('second item in the list is the name of the new record')
-            # print(record.name)
             return self.add(record, safe_load=safe_load)
 
         elif name_type is Wrap or name_type is WrapGenerator:
@@ -725,7 +717,6 @@ class Master:
             if type(record['o']) is not BufferedRandom:
                 if  record.name in self._local_database.index or record.name in self._database.index:
                     record.name = generate_timestamp_name()
-                    # print('yessssss')
 
                 if safe_load:
                     record = self._sync_record(record)
@@ -769,7 +760,6 @@ class Master:
                 prefile.seek(*prepos)
                 record['size'] = newsize
 
-            # print(record)
             # if record.name  in self._local_database.index or \
             #     record.name in self._database.index:
             #     raise KeyError('Record with the name of {}'
@@ -1173,7 +1163,6 @@ class Master:
         if (p0 == len(file_path) - 1) or len(file_path) < 2:
             name = record.name
         else:
-            # print(p0, p1, file_path[p0+1: p1])
             name = file_path[p0 : p1]
 
         name += '.wav'
@@ -1181,7 +1170,6 @@ class Master:
             file_path = file_path[0: p0 + 1] + name
         else:
             file_path = Master.SAVE_PATH + name
-        # print(file_path, p0, p1)
         file = record['o']
         file_pos = file.tell()
         data = file.read()
@@ -1450,7 +1438,6 @@ class Master:
             file.seek(0, 0)
             data = file.read()
             file.seek(0, 0)
-            # print(file)
 
             flg = False
             # assert self._nchannels == record['nchannels'] and self._sample_width == record['Sample Width']
@@ -1599,9 +1586,9 @@ class Master:
         """
         Enables standard input stream by clearing the lock.
         """
-        # if self._main_stream.locked():
-        self._main_stream.clear()
-        self._main_stream.release()
+        if self._main_stream.locked():
+            self._main_stream.clear()
+            self._main_stream.release()
 
 
     def add_pipeline(
@@ -1681,7 +1668,7 @@ class Master:
             try:
                 # Set the new pipeline
                 self._main_stream.set(pipeline)
-
+                
                 if pipeline.process_type == PipelineProcessType.MULTI_STREAM:
                     # Ensure all sub-pipelines are alive in multi_stream mode
                     for i in pipeline.pip:
