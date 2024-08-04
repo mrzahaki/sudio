@@ -54,7 +54,7 @@ class Stream:
                 raise StreamError('In multi_stream mode, channel value must have None value (see documentation)')
             elif not type(obj) == list or not len(obj) == other._nchannels:
                 raise StreamError('In multi_stream mode, pip argument must be a list with the length of the number of data channels')
-            elif other._nchannels < 2 or other._mono_mode:
+            elif other._nchannels < 2:
                 raise StreamError('The multi_stream mode works only when the number of input channels is set to be more than 1')
 
         elif process_type == PipelineProcessType.MAIN:
@@ -86,16 +86,16 @@ class Stream:
                 self.sget = self._main_get
                 self.get = self._main_get
 
-            if channel is None or self.process_obj._mono_mode or (self.process_obj.nchannels == 1):
+            if channel is None or (self.process_obj.nchannels == 1):
                 self._data_indexer = lambda data: data
         else:
             pass
-            # obj.insert(0, np.vectorize(other._win, signature=''))
+            # obj.insert(0, np.vectorize(other._multi_channel_windowing, signature=''))
             # pickle.dumps(obj._config['authkey'])
             # reserved for next versions
             # self.put = obj.put_nowait
             # self.clear = obj.queue.clear
-            # self.get = lambda: other._win(obj.get())
+            # self.get = lambda: other._multi_channel_windowing(obj.get())
             # self.sget = obj.get
 
     def acquire(self):
@@ -140,7 +140,7 @@ class Stream:
         - Distributes data to connected branches using their respective data indexers.
         '''
 
-        data = self.process_obj._win(data)
+        data = self.process_obj._multi_channel_windowing(data)
         # print(data.shape)
         for branch in self.process_obj.branch_pipe_database:
             try:
@@ -162,7 +162,7 @@ class Stream:
         '''
         data = self.pip.get(*args, **kwargs)
         if self.process_obj._window_type:
-            data = self.process_obj._iwin(data)
+            data = self.process_obj._multi_channel_overlap(data)
         # print(data.shape)
         return data.astype(self.process_obj._sample_width_format_str)
 
@@ -181,11 +181,11 @@ class Stream:
         if self.process_obj._window_type:
             final = []
             # Channel 0
-            win = np.vstack((self.process_obj._win_buffer[0][1], np.hstack(
-                (self.process_obj._win_buffer[0][1][self.process_obj._nhop:],
-                 self.process_obj._win_buffer[0][0][:self.process_obj._nhop])))) * self.process_obj._window
+            win = np.vstack((self.process_obj._windowing_buffer[0][1], np.hstack(
+                (self.process_obj._windowing_buffer[0][1][self.process_obj._nhop:],
+                 self.process_obj._windowing_buffer[0][0][:self.process_obj._nhop])))) * self.process_obj._window
 
-            push(self.process_obj._win_buffer[0], data[0])
+            push(self.process_obj._windowing_buffer[0], data[0])
 
             try:
                 self.pip[0].put(win)
@@ -194,11 +194,11 @@ class Stream:
 
             final.append(win)
             for i in range(1, self.process_obj.nchannels):
-                win = np.vstack((self.process_obj._win_buffer[i][1], np.hstack(
-                    (self.process_obj._win_buffer[i][1][self.process_obj._nhop:],
-                     self.process_obj._win_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
+                win = np.vstack((self.process_obj._windowing_buffer[i][1], np.hstack(
+                    (self.process_obj._windowing_buffer[i][1][self.process_obj._nhop:],
+                     self.process_obj._windowing_buffer[i][0][:self.process_obj._nhop])))) * self.process_obj._window
 
-                push(self.process_obj._win_buffer[i], data[i])
+                push(self.process_obj._windowing_buffer[i], data[i])
 
                 try:
                     self.pip[i].put(win)
@@ -234,17 +234,17 @@ class Stream:
         if self.process_obj._window_type:
             win = self.pip[0].get(*args)
             retval = np.hstack(
-                (self.process_obj._iwin_buffer[0][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
+                (self.process_obj._overlap_buffer[0][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
                      win[0]
-            self.process_obj._iwin_buffer[0] = win[1]
+            self.process_obj._overlap_buffer[0] = win[1]
 
             for i in range(1, self.process_obj.nchannels):
                 win = self.pip[i].get(*args)
                 tmp = np.hstack(
-                    (self.process_obj._iwin_buffer[i][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
+                    (self.process_obj._overlap_buffer[i][self.process_obj._nhop:], win[1][:self.process_obj._nhop])) + \
                       win[0]
                 retval = np.vstack((retval, tmp))
-                self.process_obj._iwin_buffer[i] = win[1]
+                self.process_obj._overlap_buffer[i] = win[1]
         else:
             retval = self.pip[0].get(*args)
             for i in range(1, self.process_obj.nchannels):

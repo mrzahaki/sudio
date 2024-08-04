@@ -144,7 +144,7 @@ def handle_cached_record(record: Union[pd.Series, dict],
             f.seek(0, 0)
             cache_info = f.read(master_obj.__class__.CACHE_INFO)
             try:
-                csize, cframe_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
+                csize, csample_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
             except ValueError:
                 # Handle bad cache error
                 f.close()
@@ -154,13 +154,13 @@ def handle_cached_record(record: Union[pd.Series, dict],
             csample_format = csample_format if csample_format else None
             record['size'] = csize
 
-            record['frameRate'] = cframe_rate
+            record['frameRate'] = csample_rate
             record['nchannels'] = cnchannels
             record['sampleFormat'] = csample_format
 
             if (cnchannels == sync_nchannels and
                     csample_format == sync_sample_format_id and
-                    cframe_rate == sync_sample_rate):
+                    csample_rate == sync_sample_rate):
                 pass
 
             elif safe_load:

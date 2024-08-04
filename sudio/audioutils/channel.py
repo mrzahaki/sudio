@@ -198,7 +198,7 @@ def get_mute_mode_data(nchannel, nperseg):
             return np.zeros((nchannel, nperseg), 'f')
         
 
-def map_channels(in_data, in_channels, out_channels, mono_mode):
+def map_channels(in_data:np.ndarray, in_channels, out_channels):
     """
     Map input audio channels to desired output channels.
 
@@ -206,46 +206,33 @@ def map_channels(in_data, in_channels, out_channels, mono_mode):
     in_data (np.ndarray): Input audio data.
     in_channels (int): Number of input channels.
     out_channels (int): Number of desired output channels.
-    mono_mode (bool or int): Mono conversion mode. If int, selects specific channel.
     data_chunk (int): Size of data chunk for processing.
 
     Returns:
     np.ndarray: Processed audio data with desired number of channels.
     """
 
-    # Handle mono input
     if in_channels == 1:
-        output = in_data
-    elif mono_mode:
-        if isinstance(mono_mode, int):
-            # Select specific channel for mono
-            output = in_data[mono_mode::in_channels]
-        else:
-            # Average all channels for mono
-            output = np.mean(in_data.reshape(-1, in_channels), axis=1)
+        output = np.expand_dims(in_data, 0)
     else:
         # Reshape multi-channel data
         output = in_data.reshape(-1, in_channels).T
 
-
     # Upmixing
     if in_channels < out_channels:
-        if in_channels == 1:
-            # Duplicate mono channel for all output channels
-            output = np.tile(output, (out_channels, 1))
-        else:
-            # Duplicate last channel for additional output channels
-            output = np.vstack((output, np.tile(output[-1], (out_channels - in_channels, 1))))
+        # Duplicate last channel for additional output channels
+        output = np.vstack((output, np.tile(output[-1], (out_channels - in_channels, 1))))
 
     # Downmixing
     elif in_channels > out_channels:
-        output = in_channels[:out_channels]
-        if in_channels == 2 and out_channels == 1:
-            # Stereo to mono
-            output = np.mean(output, axis=0)
-        else:
-            # General downmixing (average channels)
-            output = output[:out_channels]
+        output = np.mean(output, axis=0, keepdims=True)
+        output = np.tile(output[-1], (in_channels - out_channels, 1))
 
+        # if in_channels == 2 and out_channels == 1:
+        #     # Stereo to mono
+        #     output = np.mean(output, axis=0, keepdims=True)
+        # else:
+        #     # General downmixing (average channels)
+        #     output = output[:out_channels]
     
     return output

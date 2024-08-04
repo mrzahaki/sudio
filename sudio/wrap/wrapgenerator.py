@@ -53,7 +53,7 @@ class WrapGenerator:
                                 start_before=self._parent.__class__.BUFFER_TYPE)
         self._size = self._rec['size']
         self._duration = record['duration']
-        self._frame_rate = self._rec['frameRate']
+        self._sample_rate = self._rec['frameRate']
         self._nchannels = self._rec['nchannels']
         self._sample_format = self._rec['sampleFormat']
         self._nperseg = self._rec['nperseg']
@@ -181,14 +181,14 @@ class WrapGenerator:
         '''
         return os.path.getsize(self._file.name)
 
-    def get_frame_rate(self) -> int:
+    def get_sample_rate(self) -> int:
         '''
         Get the frame rate of the WrapGenerator instance.
 
         Returns:
             int: The frame rate.
         '''
-        return self._frame_rate
+        return self._sample_rate
 
     def get_nchannels(self) -> int:
         '''

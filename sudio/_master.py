@@ -20,6 +20,7 @@ import gc
 import time
 import os
 from io import BufferedRandom
+import traceback
 
 
 from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
@@ -27,7 +28,6 @@ from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, Di
 from sudio.types import LibSampleFormatEnumToSample, PipelineProcessType
 from sudio.wrap.wrapgenerator import WrapGenerator
 from sudio.wrap.wrap import Wrap
-from sudio.extras.exmath import find_nearest_divisor
 from sudio.extras.exmath import voltage_to_dBu
 from sudio.extras.strtool import generate_timestamp_name 
 from sudio.extras.timed_indexed_string import TimedIndexedString 
@@ -54,9 +54,6 @@ class Master:
     DATA_PATH = './data/'
     USER_PATH = DATA_PATH + 'user.sufile'
     SAVE_PATH = DATA_PATH + 'export/'
-    SAMPLE_CATCH_TIME = 10  # s
-    SAMPLE_CATCH_PRECISION = 0.1  # s
-    SPEAK_LEVEL_GAP = 10  # dbu
     CACHE_INFO = 4 * 8
 
     DATABASE_COLS = ['size', 'noise', 'frameRate', 'o', 'sampleFormat', 'nchannels', 'duration', 'nperseg']
@@ -65,103 +62,109 @@ class Master:
     def __init__(self,
                  std_input_dev_id: int = None,
                  std_output_dev_id: int = None,
-                 frame_rate: int = 48000,
-                 nchannels: int = None,
                  data_format: SampleFormat = SampleFormat.formatInt16,  # 16bit mode
-                 mono_mode: Union[bool, int] = False,
                  nperseg: int = 500,
                  noverlap: int = None,
                  window: object = 'hann',
                  NOLA_check: bool = True,
+                 input_dev_sample_rate: int = 48000,
+                 input_dev_nchannels: int = None,
                  input_dev_callback: Callable = None,
+                 output_dev_nchannels:int = None,
                  output_dev_callback: Callable = None,
-                 master_mix_callback: Callable = None,
                  buffer_size: int = 30):
         
         """
-        Create a Master object to manage audio processing.
+        Initialize the Master audio processing object.
 
-        Parameters
-        ----------
-        std_input_dev_id: int, optional
-             If not provided, the input device id will be OS standard input device id.
+        This class provides comprehensive audio processing capabilities, including
+        device management, audio format handling, windowing, and pipeline processing.
 
-        std_output_dev_id: int, optional
-             If not provided, the output device id will OS standard output device id.
+        Parameters:
+        -----------
+        std_input_dev_id : int, optional
+            Input device ID. If None, uses the system's default input device.
+        
+        std_output_dev_id : int, optional
+            Output device ID. If None, uses the system's default output device.
+        
+        data_format : SampleFormat, optional
+            Audio sample format. Default is 16-bit integer (formatInt16).
+            Supported formats: formatFloat32, formatInt32, formatInt24, formatInt16, formatInt8, formatUInt8.
+        
+        nperseg : int, optional
+            Number of samples per frame (window) in one channel. Default is 500.
+        
+        noverlap : int, optional
+            Number of samples to overlap between frames. If None, defaults to nperseg // 2.
+        
+        window : str, float, tuple, or ndarray, optional
+            Window type or array. Default is 'hann'.
+            - If string: Specifies a scipy.signal window type (e.g., 'hamming', 'blackman').
+            - If float: Interpreted as the beta parameter for scipy.signal.windows.kaiser.
+            - If tuple: First element is the window name, followed by its parameters.
+            - If ndarray: Direct specification of window values.
+            - If None: Disables windowing.
+        
+        NOLA_check : bool, optional
+            If True, checks if the window satisfies the Non-Zero Overlap Add (NOLA) constraint. Default is True.
+        
+        input_dev_sample_rate : int, optional
+            Sample rate for the input device. Default is 48000 Hz. Only used if input_dev_callback is provided.
+        
+        input_dev_nchannels : int, optional
+            Number of input channels. Required if input_dev_callback is provided.
+        
+        input_dev_callback : Callable, optional
+            Custom callback function for input stream processing.
+            Should return a numpy array of shape (nchannels, nperseg) with appropriate data format.
+        
+        output_dev_nchannels : int, optional
+            Number of output channels. Required if output_dev_callback is provided.
+        
+        output_dev_callback : Callable, optional
+            Custom callback function for output stream processing.
+            Receives a numpy array of shape (nchannels, nperseg) with processed audio data.
+        
+        buffer_size : int, optional
+            Size of the internal audio buffer in frames. Default is 30.
 
-        frame_rate: int, optional
-            Input channel sample rate. If std_input_dev_id is None, the value of
-            frame_rate does not matter.
+        Attributes:
+        -----------
+        Numerous internal attributes are set for managing audio streams, processing pipelines,
+        and maintaining state. These are not typically accessed directly by users.
 
-        nchannels: int, optional
-            Number of input channels (inner channels). If std_input_dev_id is None, the value of
-            nchannels does not matter.
+        Methods:
+        --------
+        Various methods are available for audio processing, pipeline management, and device control.
+        Refer to individual method docstrings for details.
 
-        data_format: SampleFormat
-            Specify the audio bit depths. Supported data formats (from audio):
-            formatFloat32, formatInt32, formatInt24, formatInt16 (default),
-            formatInt8, formatUInt8.
+        Notes:
+        ------
+        - The class uses threading for efficient audio stream management.
+        - Window functions are crucial for spectral analysis and should be chosen carefully.
+        - NOLA constraint ensures proper reconstruction in overlap-add methods.
+        - Custom callbacks allow for flexible input/output handling but require careful implementation.
 
-        mono_mode: bool, int optional
-            If True, all input channels will be mixed to one channel. (integer type considered as specific input channel)
+        Examples:
+        ---------
+        # Basic initialization with default settings
+        master = Master()
 
-        nperseg: int, optional
-            Number of samples per each data frame (window) in one channel.
+        # Custom configuration
+        master = Master(std_input_dev_id=1, data_format=SampleFormat.formatFloat32,
+                        nperseg=1024, window='hamming')
 
-        noverlap: int, default None
-            Number of samples that overlap between defined windows. If not given, it will
-            be selected automatically.
+        # Using custom callbacks
+        def input_callback(frame_count, time_info, status):
+            # Custom input processing
+            return processed_data
 
-        window: string, float, tuple, ndarray, optional
-            Type of window to create (string) or pre-designed window in numpy array format.
-            Default ("hann"): Hanning function. None to disable windowing.
+        master = Master(input_dev_callback=input_callback, input_dev_nchannels=2,
+                        input_dev_sample_rate=44100)
 
-        NOLA_check: bool, optional
-            Check whether the Nonzero Overlap Add (NOLA) constraint is met (if True).
-
-        input_dev_callback: callable, default None
-            Callback function for user-defined input stream, called by the core every 1/frame_rate second.
-            Must return frame data in (Number of channels, Number of data per segment) dimensions numpy array.
-            Each data must be in the format defined in data_format section.
-
-        output_dev_callback: callable, default None
-            Callback function for user-defined output stream, called by the core every 1/frame_rate second.
-            Must return frame data in (Number of channels, Number of data per segment) dimensions numpy array.
-            Each data must be in the format defined in the data_format section.
-
-        master_mix_callback: callable, optional
-            Callback used before the main processing stage in the master for controlling and mixing all
-            slave channels to an ndarray of shape (master.nchannels, 2, master.nperseg).
-            If not defined, the number of audio channels in all slaves must be the same as the master.
-
-        Note
-        -----
-        - If the window requires no parameters, then `window` can be a string.
-        - If the window requires parameters, then `window` must be a tuple with the first argument the
-        string name of the window, and the next arguments the needed parameters.
-        - If `window` is a floating-point number, it is interpreted as the beta parameter of the
-        `scipy.signal.windows.kaiser` window.
-
-        Window Types:
-        boxcar, triang, blackman, hamming, hann (default), bartlett, flattop, parzen, bohman, blackmanharris,
-        nuttall, barthann, cosine, exponential, tukey, taylor, kaiser (needs beta),
-        gaussian (needs standard deviation), general_cosine (needs weighting coefficients),
-        general_gaussian (needs power, width), general_hamming (needs window coefficient),
-        dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
-
-        Note
-        -----
-        To enable inversion of an STFT via the inverse STFT in `istft`, the signal windowing must obey
-        the constraint of "nonzero overlap add" (NOLA):
-            \sum_{t}w^{2}[n-tH] \ne 0
-        This ensures that the normalization factors in the denominator of the overlap-add inversion
-        equation are not zero. Only very pathological windows will fail the NOLA constraint.
-
-        Master/Slave Mode Details:
-        - Every Process object can operate in master or slave modes.
-        - Each input must be preprocessed before mixing different audio inputs, so the slave object is
-        designed so that the post-processing stage is disabled and can be joined to master simply by
-        using the 'join' method.
+        # Start audio processing
+        master.start()
         """
         # ----------------------------------------------------- First Initialization Section -----------------------------------------------------
 
@@ -192,6 +195,7 @@ class Master:
         self._stream_data_size = None
         self._stream_file = None
         self._nchannels = None
+        self._sample_rate = None
 
         # Suppress warnings
         warnings.filterwarnings("ignore")
@@ -207,11 +211,12 @@ class Master:
         if callable(input_dev_callback):
             self.input_dev_callback = input_dev_callback
             self._default_stream_callback = self._custom_stream_callback
-            self._nchannels = nchannels
+            input_channels = input_dev_nchannels
+            self._sample_rate = input_dev_sample_rate
 
         elif std_input_dev_id is None:
             dev = self.get_default_input_device_info()
-            frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
+            self._sample_rate = int(dev['defaultSampleRate'])
             input_channels = dev['maxInputChannels']
             self._std_input_dev_id = dev['index']
 
@@ -220,7 +225,7 @@ class Master:
             self._std_input_dev_id = std_input_dev_id
             dev = self.get_device_info_by_index(std_input_dev_id)
             input_channels = dev['maxInputChannels']
-            frame_rate = self._frame_rate = int(dev['defaultSampleRate'])
+            self._sample_rate = int(dev['defaultSampleRate'])
 
 
         # Set number of output channels to a large value initially
@@ -230,9 +235,7 @@ class Master:
 
         if callable(output_dev_callback):
             self.output_dev_callback = output_dev_callback
-            self._default_stream_callback = self._custom_stream_callback
-            self._nchannels = nchannels
-
+            output_channels = output_dev_nchannels
         # UI mode: Choose output device interactively
         elif std_output_dev_id is None:
             # Use default output device
@@ -243,7 +246,7 @@ class Master:
             # Use specified input device ID
             self._std_input_dev_id = std_output_dev_id
             dev = self.get_device_info_by_index(std_output_dev_id)
-            output_channels = dev['maxInputChannels']
+            output_channels = dev['maxOutputChannels']
 
         self._input_channels = input_channels
         self._output_channels = output_channels
@@ -255,20 +258,15 @@ class Master:
         if self._nchannels == 0:
             raise ValueError('No input or output device found')
 
-        # Set mono mode to True if there is only one channel
-        if self._nchannels == 1:
-            mono_mode = True
-
         # Mute the audio initially
         self.mute()
 
         # Set initial values for various attributes
         self.branch_pipe_database_min_key = 0
         self._window_type = window
-        self._sample_rate = frame_rate
         self._nperseg = nperseg
 
-        # Check _win arguments
+        # Check window arguments
         if noverlap is None:
             noverlap = nperseg // 2
 
@@ -283,28 +281,10 @@ class Master:
         elif self._window_type is None:
             window = None
             self._window_type = None
-
-        # ----------------------------------------------------- UI mode std_input_dev_id calculator -----------------------------------------------------
-
-        # Calculate recording period based on window size and frame rate
-        record_period = nperseg / frame_rate
-        self._record_period = record_period
-
-        # ----------------------------------------------------- Vectorized dbu calculator -----------------------------------------------------
-
-        # Vectorize the dbu calculation function
-        self._vdbu = np.vectorize(self._rdbu, signature='(m)->()')
-
-        # Set the number of channels for processing
-        if mono_mode:
-            self._nchannels = 1
- 
-
         # ----------------------------------------------------- Sample rate and pre-filter processing -----------------------------------------------------
 
         # Set data chunk size, frame rate, and other constants
         self._data_chunk = nperseg
-        self._frame_rate = frame_rate
         self._sample_width_format_str = '<i{}'.format(self._sample_width)
 
         # Adjust constant for floating-point data format
@@ -316,23 +296,14 @@ class Master:
 
         # ----------------------------------------------------- User _database define -----------------------------------------------------
 
-        # Load user database from pickle file or create an empty DataFrame
-        try:
-            self._database = pd.read_pickle(Master.USER_PATH, compression='xz')
-        except:
-            self._database = pd.DataFrame(columns=Master.DATABASE_COLS)
-
         self._local_database = pd.DataFrame(columns=Master.DATABASE_COLS)
 
         # ----------------------------------------------------- Pipeline _database and other definitions section -----------------------------------------------------
 
-        # Initialize semaphores, queues, and events
-        self._semaphore = [threading.Semaphore()]
         self._recordq = [threading.Event(), queue.Queue(maxsize=0)]
         self._queue = queue.Queue()
-        self._streamq = [threading.Event(), queue.Queue(maxsize=self._sound_buffer_size)]
 
-        self._echo = threading.Event()
+        self._echo_flag = threading.Event()
         self.main_pipe_database = []
         self.branch_pipe_database = []
 
@@ -353,21 +324,9 @@ class Master:
         self._noverlap = noverlap
         self._window = window
 
-        # Initialize buffers and functions based on mono or multi-channel mode
-        if mono_mode:
-            self._iwin_buffer = [np.zeros(nperseg)]
-            self._win_buffer = [np.zeros(nperseg), np.zeros(nperseg)]
-            self._win = self._single_channel_windowing
-            self._iwin = self._single_channel_overlap
-            self._upfirdn = lambda h, x, const: scisig.upfirdn(h, x, down=const)
-        else:
-            self._iwin_buffer = [np.zeros(nperseg) for i in range(self._nchannels)]
-            self._win_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
 
-            # 2D mode
-            self._upfirdn = np.vectorize(lambda h, x, const: scisig.upfirdn(h, x, down=const), signature='(n),(m),()->(c)')
-            self._iwin = self._multi_channel_overlap
-            self._win = self._multi_channel_windowing
+        self._overlap_buffer = [np.zeros(nperseg) for i in range(self._nchannels)]
+        self._windowing_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
 
         # Create Stream objects for main and normal streams
         data_queue = queue.Queue(maxsize=self._sound_buffer_size)
@@ -376,30 +335,63 @@ class Master:
         # ----------------------------------------------------- Miscellaneous initialization -----------------------------------------------------
         self._refresh_ev = threading.Event()
 
-        self._master_mix_callback = master_mix_callback
-
-        # Master/slave selection and synchronization
+        # Master selection and synchronization
         self._master_sync = threading.Barrier(self._nchannels)
-        self.slave_database = []
-        self._slave_sync = None
         self._pystream = False
-        self._mono_mode = mono_mode
 
 
     def start(self):
-        '''
-        start audio streaming process
-        :return: self object
-        '''
+        """
+        Start the audio processing stream.
+
+        This method initializes and starts the audio stream, activating all configured
+        audio processing pipelines and enabling real-time audio input/output.
+
+        Returns:
+        --------
+        self : Master
+            Returns the instance of the Master class, allowing for method chaining.
+
+        Raises:
+        -------
+        AssertionError
+            If the audio stream is already started.
+        
+        Other exceptions may be raised depending on the underlying audio library's
+        behavior when opening the stream.
+
+        Notes:
+        ------
+        - This method must be called after all desired configurations (like setting
+        input/output devices, adding pipelines, etc.) have been made.
+        - Once started, the audio stream runs in a separate thread, allowing for
+        concurrent processing.
+        - The method blocks until all active threads are initialized, ensuring
+        the system is fully operational before returning.
+
+        Examples:
+        ---------
+        # Basic usage
+        master = Master()
+        master.start()
+
+        # Method chaining
+        master = Master().start()
+
+        # Start after configuration
+        master = Master()
+        master.add_pipeline(some_pipeline)
+        master.set_window('hamming')
+        master.start()
+        """
         assert not self._pystream, 'Master is Already Started'
         try:
             self._pystream = self._audio_instance.open_stream(format=self._sample_format,
                                                    channels=self._input_channels,
-                                                   rate=self._frame_rate,
+                                                   rate=self._sample_rate,
                                                    frames_per_buffer=self._data_chunk,
                                                    input_device_index=self._std_input_dev_id,
                                                    input=True,
-                                                #    output=True,  # Enable output
                                                    stream_callback=self._default_stream_callback)
             for i in self._threads:
                 i.start()
@@ -414,15 +406,7 @@ class Master:
         return self
 
     def _run(self, th_id):
-        # self.a1=0
         self._functions[self._queue.get()](th_id)
-        # Indicate that a formerly enqueued task is complete.
-        # Used by queue consumer threads. For each get() used to fetch a task,
-        # a subsequent call to task_done() tells the queue that the processing on the task is complete.
-
-        # If a join() is currently blocking,
-        # it will resume when all items have been processed
-        # (meaning that a task_done() call was received for every item that had been put() into the queue).
         self._queue.task_done()
 
 
@@ -432,7 +416,7 @@ class Master:
                 self._stream_file.read(self._stream_data_size),
                 self._sample_width_format_str).astype('f')
             try:
-                in_data: np.ndarray = map_channels(in_data, self._nchannels, self._nchannels, self._mono_mode)
+                in_data: np.ndarray = map_channels(in_data, self._nchannels, self._nchannels)
             except ValueError:
                 return
 
@@ -475,10 +459,12 @@ class Master:
         else:
             in_data = np.frombuffer(in_data, self._sample_width_format_str).astype('f')
             try:
-                in_data = map_channels(in_data, self._input_channels, self._nchannels, self._mono_mode)
-            # except ValueError:
+                in_data = map_channels(in_data, self._input_channels, self._nchannels)
             except Exception as e:
-                print(f"Error {e}")
+                error_msg = f"Error in audio channel mapping: {type(e).__name__}: {str(e)}"
+                print(error_msg)
+                print(traceback.format_exc())  # This will print the full stack trace
+
                 return None, 0
         try:
             self._main_stream.acquire()
@@ -489,6 +475,7 @@ class Master:
             print(f"Error in stream callback: {e}")
             print(f"in_data shape: {in_data.shape}, type: {type(in_data)}")
             print(f"self._input_channels: {self._input_channels}, self._nchannels: {self._nchannels}")
+            print(traceback.format_exc())  # This will print the full stack trace
             return None, 1  # Indicate that an error occurred
 
         return None, 0
@@ -504,10 +491,24 @@ class Master:
             in_data = get_mute_mode_data(self._nchannels, self._nperseg)
         else:
             in_data = self.input_dev_callback(frame_count, time_info, status).astype('f')
+            try:
+                in_data = map_channels(in_data, self._input_channels, self._nchannels)
+            except Exception as e:
+                error_msg = f"Error in audio channel mapping: {type(e).__name__}: {str(e)}"
+                print(error_msg)
+                print(traceback.format_exc())  # This will print the full stack trace
 
-        self._main_stream.acquire()
-        self._main_stream.put(in_data)  
-        self._main_stream.release()
+        try:
+            self._main_stream.acquire()
+            self._main_stream.put(in_data)  
+            self._main_stream.release()
+
+        except Exception as e:
+            print(f"Error in stream callback: {e}")
+            print(f"in_data shape: {in_data.shape}, type: {type(in_data)}")
+            print(f"self._input_channels: {self._input_channels}, self._nchannels: {self._nchannels}")
+            print(traceback.format_exc())  # This will print the full stack trace
+            return None, 1  # Indicate that an error occurred
 
         # self.a1 = time.perf_counter()
         return None, 0
@@ -517,7 +518,7 @@ class Master:
                             format=self._sample_format,
                             channels=self._output_channels,
                             output_device_index=self._output_device_index,
-                            rate=self._frame_rate, input=False, output=True)
+                            rate=self._sample_rate, input=False, output=True)
 
         stream_out.start_stream()
         rec_ev, rec_queue = self._recordq
@@ -528,23 +529,25 @@ class Master:
                 if rec_ev.is_set():
                     rec_queue.put_nowait(data)
 
-                if not self._mono_mode:
-                    data = shuffle2d_channels(data)
+                data = shuffle2d_channels(data)
 
-                if self._echo.is_set():
+                if self._echo_flag.is_set():
                     stream_out.write(data.tobytes())
 
                 if self.output_dev_callback:
                     self.output_dev_callback(data)
             except Exception as e:
                 pass
+                # error_msg = f"Error in _stream_output_manager: {type(e).__name__}: {str(e)}"
+                # print(error_msg)
+                # print(traceback.format_exc())  
 
             if self._refresh_ev.is_set():
                 self._refresh_ev.clear()
                 # close current stream
                 stream_out.close()
                 # create new stream
-                rate = self._frame_rate
+                rate = self._sample_rate
 
 
                 stream_out = self._audio_instance.open_stream(
@@ -624,8 +627,7 @@ class Master:
         if p1 <= 0:
             p1 = None
         name = filename[p0: p1]
-        if name in self._local_database.index or \
-                name in self._database.index:
+        if name in self._local_database.index:
             raise KeyError('Record with the name of {}'
                            ' already registered in local or external database'.format(name))
 
@@ -633,7 +635,7 @@ class Master:
 
         assert list(record.keys()) == list(self._local_database.columns)
 
-        if safe_load and not self._mono_mode and record['nchannels'] > self._nchannels:
+        if safe_load and  record['nchannels'] > self._nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
                               ' is not same as object channels({ch1})'.format(name=name,
                                                                               ch0=record['nchannels'],
@@ -656,24 +658,59 @@ class Master:
 
 
     def add(self, record, safe_load=True):
-        '''
-        Add new record to the local database.
+        """
+        Add a new record to the database.
 
-        Note:
-         The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
-         meaning that, The audio data storage methods can have different execution times based on the cached files.
+        This method can handle various types of input including wrapped records,
+        Record objects, or audio files in mp3, WAV, FLAC, or VORBIS format.
 
-        :param record: can be an wrapped record, pandas series or an audio file in
-                        mp3, WAV, FLAC or VORBIS format.
-        :param safe_load: load an audio file and modify it according to the 'Master' attributes.
-        :return: Wrapped object
+        Parameters:
+        -----------
+        record : Union[Wrap, str, pd.Series, WrapGenerator, Tuple[Union[Wrap, str, pd.Series, WrapGenerator], str]]
+            The record to be added. Can be:
+            - A Wrap or WrapGenerator object
+            - A string representing the path to an audio file
+            - A pandas Series containing record data
+            - A tuple containing the record and a custom name for the record
 
-        \nnote:
-         The name of the new record can be changed with the following tuple that is passed to the function:
-         (record object, new name of )
+        safe_load : bool, optional
+            If True (default), the audio file is loaded and modified according to
+            the Master object's attributes. This ensures compatibility with the
+            current audio processing settings.
 
+        Returns:
+        --------
+        WrapGenerator
+            A wrapped version of the added record.
 
-        '''
+        Notes:
+        ------
+        - If a tuple is passed as the record parameter, the second element will be
+        used as the name for the new record. Otherwise, a name is automatically generated.
+        - The method uses cached files to optimize memory usage and improve performance.
+        As a result, execution times may vary depending on the state of these cached files.
+        - Supported audio file formats: mp3, WAV, FLAC, VORBIS
+
+        Raises:
+        -------
+        ValueError
+            If the record type is not recognized or if there's an issue with file format.
+        ImportError
+            If the number of channels in the record is incompatible with the Master object's settings.
+
+        Examples:
+        ---------
+        # Adding an audio file
+        master.add("path/to/audio.wav")
+
+        # Adding a wrapped record with a custom name
+        wrapped_record = some_wrap_generator()
+        master.add((wrapped_record, "my_custom_name"))
+
+        # Adding a pandas Series record
+        series_record = pd.Series({...})  # Record data
+        master.add(series_record)
+        """
         name_type = type(record)
         if name_type is list or name_type is tuple:
             assert len(record) < 3
@@ -709,13 +746,13 @@ class Master:
             name = record.name
             assert list(record.keys()) == list(self._local_database.columns)
 
-            if safe_load and not self._mono_mode and record['nchannels'] > self._nchannels:
+            if safe_load  and record['nchannels'] > self._nchannels:
                 raise ImportError('number of channel for the {name}({ch0})'
                                   ' is not same as object channels({ch1})'.format(name=name,
                                                                                   ch0=record['nchannels'],
                                                                                          ch1=self._nchannels))
             if type(record['o']) is not BufferedRandom:
-                if  record.name in self._local_database.index or record.name in self._database.index:
+                if  record.name in self._local_database.index:
                     record.name = generate_timestamp_name()
 
                 if safe_load:
@@ -737,10 +774,10 @@ class Master:
                 record['size'] = newsize
 
             elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) ==  record.name) or \
-                    record.name in self._local_database.index or record.name in self._database.index:
+                    record.name in self._local_database.index:
                 # new sliced Wrap data
 
-                if  record.name in self._local_database.index or record.name in self._database.index:
+                if  record.name in self._local_database.index:
                     record.name = generate_timestamp_name()
                 
                 prefile = record['o']
@@ -760,10 +797,6 @@ class Master:
                 prefile.seek(*prepos)
                 record['size'] = newsize
 
-            # if record.name  in self._local_database.index or \
-            #     record.name in self._database.index:
-            #     raise KeyError('Record with the name of {}'
-            #                    ' already registered in local or external database'.format(name))
             self._local_database.loc[record.name] = record
 
             gc.collect()
@@ -780,13 +813,47 @@ class Master:
     def recorder(self, record_duration: float, name: str = None):
         """
         Record audio for a specified duration.
-        
-        Args:
-            record_duration (float): Duration to record in seconds.
-            name (str, optional): Name for the recording. If None, a timestamp-based name will be generated.
-        
+
+        This method captures audio input for a given duration and stores it as a new record
+        in the Master object's database.
+
+        Parameters:
+        -----------
+        record_duration : float
+            The duration of the recording in seconds.
+
+        name : str, optional
+            A custom name for the recorded audio. If None, a timestamp-based name is generated.
+
         Returns:
-            WrapGenerator: A wrapped version of the recorded audio data.
+        --------
+        Wrap
+            A wrapped version of the recorded audio data.
+
+        Raises:
+        -------
+        KeyError
+            If the provided name already exists in the database.
+
+        Notes:
+        ------
+        - The recording uses the current audio input settings of the Master object
+        (sample rate, number of channels, etc.).
+        - The recorded audio is automatically added to the Master's database and can be
+        accessed later using the provided or generated name.
+        - This method temporarily modifies the internal state of the Master object to
+        facilitate recording. It restores the previous state after recording is complete.
+
+        Examples:
+        ---------
+        # Record for 5 seconds with an auto-generated name
+        recorded_audio = master.recorder(5)
+
+        # Record for 10 seconds with a custom name
+        recorded_audio = master.recorder(10, name="my_recording")
+
+        # Use the recorded audio
+        master.play(recorded_audio)
         """
         if name is None:
             name = generate_timestamp_name('record')
@@ -809,14 +876,13 @@ class Master:
         sample = np.array(recorded_data)
         
         # Apply shuffle3d_channels if not in mono mode
-        if not self._mono_mode:
-            sample = shuffle3d_channels(sample)
+        sample = shuffle3d_channels(sample)
 
         # Prepare the record data
         record_data = {
             'size': sample.nbytes,
             'noise': None,
-            'frameRate': self._frame_rate,
+            'frameRate': self._sample_rate,
             'nchannels': self._nchannels,
             'sampleFormat': self._sample_format,
             'nperseg': self._nperseg,
@@ -844,24 +910,8 @@ class Master:
 
         return self.wrap(self._local_database.loc[name].copy())
 
-    def load_all(self, safe_load=True):
-        '''
-        load all of the saved records from the external database
-                        to the local database.
 
-        Note:
-         The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
-         meaning that, The audio data storage methods can have different execution times based on the cached files.
-
-        :param safe_load: if safe load is enabled then load function tries to load a record
-         in the local database based on the master  settings, like the frame rate and etc.
-
-        :return:None
-        '''
-        self.load('', load_all=True, safe_load=safe_load)
-
-
-    def load(self, name: str, load_all: bool=False, safe_load: bool=True,
+    def load(self, name: str, safe_load: bool=True,
              series: bool=False) -> Union[WrapGenerator, pd.Series]:
         '''
         This method used to load a predefined recoed from the staable/external database to
@@ -877,26 +927,14 @@ class Master:
         of the named record.
         :return: (optional) Wrapped object, pd.Series
         '''
-        if load_all:
-            for i in self._database.index:
-                self.load(i, safe_load=safe_load)
 
-            return
-        # elif type(name) is pd.Series:
-        #     ret
+        if name in self._local_database.index:
+            rec = self._local_database.loc[name].copy()
+            if series:
+                return rec
+            return self.wrap(rec)
         else:
-            if name in self._local_database.index:
-                rec = self._local_database.loc[name].copy()
-                if series:
-                    return rec
-                return self.wrap(rec)
-
-            elif name in self._database.index:
-                rec = self._database.loc[name].copy()
-                file = open(rec['o'], 'rb+')
-                file_size = os.path.getsize(rec['o'])
-            else:
-                raise ValueError('can not found the {name} in the local and the external databases'.format(name=name))
+            raise ValueError('can not found the {name} in the local and the external databases'.format(name=name))
 
         if safe_load and not self._mono_mode and rec['nchannels'] > self._nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
@@ -917,7 +955,7 @@ class Master:
         if series:
             return rec
         return self.wrap(rec)
-
+    
 
     def get_record_info(self, name: str) -> dict:
         '''
@@ -928,8 +966,6 @@ class Master:
         if name in self._local_database.index:
             rec = self._local_database.loc[name]
 
-        elif name in self._database.index:
-            rec = self._database.loc[name]
         else:
             raise ValueError('can not found the {name} in the local and the external databases'.format(name=name))
         return {
@@ -942,27 +978,6 @@ class Master:
             'name': name,
             'sampleFormat': LibSampleFormatEnumToSample[rec['sampleFormat']].name
         }
-
-    def get_exrecord_info(self, name: str) -> dict:
-        '''
-        :param name: name of the registered record on the external database
-        :return: information about saved record ['noiseLevel' 'frameRate'  'sizeInByte' 'duration'
-            'nchannels' 'nperseg' 'name'].
-        '''
-        if name in self._database.index:
-            rec = self._database.loc[name]
-        else:
-            raise ValueError('can not found the {name} in the external databases'.format(name=name))
-        return {
-            'noiseLevel': str(rec['noise']) + ' <dbm>',
-            'frameRate': rec['frameRate'],
-            'sizeInByte': rec['size'],
-            'duration': rec['duration'],
-            'nchannels': rec['nchannels'],
-            'nperseg': rec['nperseg'],
-            'name': name,
-        }
-
 
     def _syncable(self,
                  *target,
@@ -1042,17 +1057,6 @@ class Master:
 
         out_type = 'ndarray' if output.startswith('n') else 'byte'
 
-        # targets = list(val.get_data().copy() for idx, val in enumerate(records) if syncable[idx])
-        # buffer = [*list(val.get_data().copy() for idx, val in enumerate(records) if not syncable[idx])]
-        # for record in buffer:
-        #     f = record['o']
-        #     tmp = f.tell, 0
-        #     record['o'] = f.read()
-        #     f.seek(*tmp)
-        #
-        #     if out_type.startswith('n'):
-        #         pass
-
         buffer = []
         for record in targets:
             record: pd.Series = record.get_data().copy()
@@ -1070,24 +1074,19 @@ class Master:
         return tuple(buffer)
 
 
-    # save from local _database to stable memory
     def _sync_record(self, rec):
-        return synchronize_audio(rec, self._nchannels, self._frame_rate, self._sample_format)
+        return synchronize_audio(rec, self._nchannels, self._sample_rate, self._sample_format)
 
-    def del_record(self, name: str, deep: bool=False):
+    def del_record(self, name: str):
         '''
         This function is used to delete a record from the internal database.
         :param name str: the name of preloaded record.
-        :param deep bool: deep delete mode is used to remove the record and its corresponding caches
-        from the external database.
         :return: None
         '''
         local = name in self._local_database.index
-        extern = name in self._database.index
+
         ex = ''
-        if deep:
-            ex = 'and the external '
-        assert local or (extern and deep), ValueError(f'can not found the {name} in the '
+        assert local, ValueError(f'can not found the {name} in the '
                                             f'local {ex}databases'.format(name=name, ex=ex))
         if local:
             file = self._local_database.loc[name, 'o']
@@ -1110,31 +1109,10 @@ class Master:
                 pass
             self._local_database.drop(name, inplace=True)
 
-        if extern and deep:
-            file = self._database.loc[name, 'o']
-            if not file.closed:
-                file.close()
-
-            tmp = list(file.name)
-            tmp.insert(file.name.find(name), 'stream_')
-            streamfile_name = ''.join(tmp)
-            try:
-                os.remove(streamfile_name)
-            except FileNotFoundError:
-                pass
-            except PermissionError:
-                pass
-
-            try:
-                os.remove(file.name)
-            except PermissionError:
-                pass
-            self._database.drop(name, inplace=True)
-            self._database.to_pickle(Master.USER_PATH, compression='xz')
         gc.collect()
 
 
-    def save_as(self, record: Union[str, pd.Series, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
+    def export(self, record: Union[str, pd.Series, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
         '''
         Convert the record to the wav audio format.
         :param record: record can be the name of registered record, a pandas series or an wrap object
@@ -1180,53 +1158,12 @@ class Master:
                        Audio.get_sample_size(record['sampleFormat']))
 
 
-    def save(self, name: str='None', save_all: bool=False):
+    def get_record_names(self) -> list:
         '''
-        Save the preloaded record to the external database
-        :param name: name of the preloaded record
-        :param save_all: if true then it's tries to save all of the preloaded records
-        :return:None
+        :return: list of the saved records in database
         '''
-        if save_all:
-            data = self._local_database.copy()
-            for i in data.index:
-                data.loc[i, 'o'] = Master.DATA_PATH + i + Master.BUFFER_TYPE
-            self._database = self._database.append(data, verify_integrity=True)
-        else:
-            if name in self._database.index and not (name in self._local_database.index):
-                raise ValueError(f'the same name already registered in the database file')
-            try:
-                data = self._local_database.loc[name].copy()
-                data['o'] = Master.DATA_PATH + name + Master.BUFFER_TYPE
-                self._database.loc[name] = data
-            except KeyError:
-                raise ValueError(f'can not found the {name} in the local database')
+        return list(self._local_database.index)
 
-        self._database.to_pickle(Master.USER_PATH, compression='xz')
-
-    def save_all(self):
-        '''
-        Save all of the preloaded records to the external database
-        :return: None
-        '''
-        self.save(save_all=True)
-
-    def get_exrecord_names(self) -> list:
-        '''
-        :return: list of the saved records in the external database
-        '''
-        return self.get_record_names(local_database=False)
-
-    # 'local' or stable database
-    def get_record_names(self, local_database: bool=True) -> list:
-        '''
-        :param local_database: if false then external database will be selected
-        :return: list of the saved records in the external or internal database
-        '''
-        if local_database:
-            return list(self._local_database.index)
-        else:
-            return list(self._database.index)
 
 
     def get_nperseg(self):
@@ -1236,7 +1173,7 @@ class Master:
         return self._nchannels
 
     def get_sample_rate(self):
-        return self._frame_rate
+        return self._sample_rate
 
     def stream(self, record: Union[str, Wrap, pd.Series, WrapGenerator],
                block_mode: bool=False,
@@ -1282,13 +1219,13 @@ class Master:
                 raise TypeError('please control the type of record')
 
 
-        if not self._mono_mode and record['nchannels'] > self._nchannels:
+        if record['nchannels'] > self._nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
                               ' is not same as object channels({ch1})'.format(name=record.name,
                                                                               ch0=record['nchannels'],
                                                                               ch1=self._nchannels))
 
-        elif not self._frame_rate == record['frameRate']:
+        elif not self._sample_rate == record['frameRate']:
             warnings.warn('Warning, frame rate must be same')
 
         assert  type(record['o']) is io.BufferedRandom, TypeError('The record object is not standard')
@@ -1356,7 +1293,7 @@ class Master:
                 if not in_data:
                     break
                 in_data = np.frombuffer(in_data, self._sample_width_format_str).astype('f')
-                in_data = map_channels(in_data, self._nchannels, self._nchannels, self._mono_mode)
+                in_data = map_channels(in_data, self._nchannels, self._nchannels)
                 self._main_stream.put(in_data)  
             self._main_stream.release()
             self._main_stream.clear()
@@ -1411,16 +1348,16 @@ class Master:
         # from local or external database
         if record is None:
             if enable is None:
-                if self._echo.is_set():
-                    self._echo.clear()
+                if self._echo_flag.is_set():
+                    self._echo_flag.clear()
                 else:
                     self._main_stream.clear()
-                    self._echo.set()
+                    self._echo_flag.set()
             elif enable:
                 self._main_stream.clear()
-                self._echo.set()
+                self._echo_flag.set()
             else:
-                self._echo.clear()
+                self._echo_flag.clear()
         else:
             if type(record) is Wrap or type(record) is WrapGenerator:
                 assert type(record) is WrapGenerator or record.is_packed()
@@ -1441,9 +1378,9 @@ class Master:
 
             flg = False
             # assert self._nchannels == record['nchannels'] and self._sample_width == record['Sample Width']
-            if not main_output_enable and self._echo.is_set():
+            if not main_output_enable and self._echo_flag.is_set():
                 flg = True
-                self._echo.clear()
+                self._echo_flag.clear()
 
             stdout_stream(data,
                  sample_format=record['sampleFormat'],
@@ -1451,7 +1388,7 @@ class Master:
                  framerate=record['frameRate'])
 
             if flg:
-                self._echo.set()
+                self._echo_flag.set()
 
         # self.clean_cache()
         # return WrapGenerator(record)
@@ -1476,8 +1413,6 @@ class Master:
         path = []
         expath = []
         base_len = len(Master.DATA_PATH)
-        for i in self._database.index:
-            path.append(self._database.loc[i, 'o'][base_len:])
         for i in self._local_database.index:
             expath.append(self._local_database.loc[i, 'o'].name[base_len:])
         path += [i for i in expath if not i in path]
@@ -1536,17 +1471,12 @@ class Master:
 
         self._main_stream.acquire()
 
-        if self._mono_mode:
-            self._iwin_buffer = [np.zeros(win_len)]
-            self._win_buffer = [np.zeros(win_len), np.zeros(win_len)]
-        else:
-            self._iwin_buffer = [np.zeros(win_len) for i in range(self._nchannels)]
-            self._win_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self._nchannels)]
+
+        self._overlap_buffer = [np.zeros(win_len) for i in range(self._nchannels)]
+        self._windowing_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self._nchannels)]
         # format specifier used in struct.unpack    2
         # rms constant value                        3
         # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sample_width)]  # 1 2 4 8
-
-        self._record_period = self._nperseg / self._frame_rate
 
         self._refresh_ev.set()
 
@@ -1736,7 +1666,7 @@ class Master:
         if self._window_type:
             retval = single_channel_windowing(
                 data,
-                self._win_buffer, 
+                self._windowing_buffer, 
                 self._window,
                 self._nhop
                 )
@@ -1758,7 +1688,7 @@ class Master:
         if self._window_type:
             retval = multi_channel_windowing(
                 data,
-                self._win_buffer,
+                self._windowing_buffer,
                 self._window,
                 self._nhop,
                 self._nchannels
@@ -1780,7 +1710,7 @@ class Master:
         """
         retval = single_channel_overlap(
             data,
-            self._iwin_buffer,
+            self._overlap_buffer,
             self._nhop
             )
 
@@ -1799,7 +1729,7 @@ class Master:
         """
         retval = multi_channel_overlap(
             data,
-            self._iwin_buffer,
+            self._overlap_buffer,
             self._nhop,
             self._nchannels,
             )
@@ -1837,13 +1767,11 @@ class Master:
         # refresh
         self._noverlap = noverlap
         self._nhop = self._nperseg - self._noverlap
-        if self._mono_mode:
-            self._iwin_buffer = [np.zeros(self._nperseg)]
-            self._win_buffer = [np.zeros(self._nperseg), np.zeros(self._nperseg)]
-        else:
-            self._iwin_buffer = [np.zeros(self._nperseg) for i in range(self._nchannels)]
-            self._win_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self._nchannels)]
+
+        self._overlap_buffer = [np.zeros(self._nperseg) for i in range(self._nchannels)]
+        self._windowing_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self._nchannels)]
         self._main_stream.clear()
+
 
     @staticmethod
     def get_default_input_device_info():

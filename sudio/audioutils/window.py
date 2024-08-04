@@ -58,7 +58,7 @@ def multi_channel_overlap(
         nchannels:int,
         ):
     # data.shape =>(number of channels, number of windows(2), size of data chunk depend on primary_filter activity).
-    # _iwin_buffer => [buffer 0, buffer1, buffer(number of channels)]
+    # _overlap_buffer => [buffer 0, buffer1, buffer(number of channels)]
     # for 2 channel data must be an 2[two ], 2, self._data_chunk(e.g. 256)
     # pre post, data,
     # 2 window per frame

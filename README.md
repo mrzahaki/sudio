@@ -124,7 +124,7 @@ In the example above, a low-pass filter with a cutoff frequency of 1 kHz is appl
 
 ##### Basic Streaming with Pause and Resume
 
-This example demonstrates how to start, pause, resume, and stop audio playback using the `sudio` library.
+This example demonstrates how to control audio playback using the sudio library, including starting, pausing, resuming, and stopping a stream.
 
 ```python
 import sudio
@@ -161,9 +161,12 @@ stream.stop()
 print("Stopped playback")
 ```
 
-#### Basic Streaming with Jumping to Specific Times in the Audio
+This script showcases basic audio control operations, allowing you to manage playback with precise timing.
 
-This example shows how to start playback and jump to a specific time in the audio file.
+
+##### Basic Streaming with Jumping to Specific Times in the Audio
+
+This example illustrates how to start playback and jump to a specific time in an audio file.
 
 ```python
 import sudio
@@ -197,9 +200,11 @@ print(f"Current playback time: {stream.time} seconds")
 stream.stop()
 ```
 
-#### Streaming with Volume Control
+This script demonstrates how to navigate within an audio file, which is useful for long audio content or when specific sections need to be accessed quickly.
 
-This example demonstrates how to control the volume of the audio stream using a custom pipeline.
+##### Streaming with Volume Control
+
+This example shows how to dynamically control the volume of an audio stream using a custom pipeline.
 
 ```python
 import sudio
@@ -251,25 +256,25 @@ time.sleep(10)
 stream.stop()
 ```
 
+This example introduces a more complex setup using a custom pipeline to dynamically adjust the audio volume during playback. It's particularly useful for applications requiring real-time audio processing or user-controlled volume adjustments.
 
 
 ## Table of contents:
 
-- [Sudio](#sudio)
+- [Welcome to the Sudio 🎵](#welcome-to-the-sudio-)
   - [Abstract](#abstract)
       - [Real-time audio processing](#real-time-audio-processing)
       - [Non-Realtime processing:](#non-realtime-processing)
       - [Audio data maintaining process:](#audio-data-maintaining-process)
-  - [Table of contents:](#table-of-contents)
   - [Installation](#installation)
-        - [Latest PyPI stable release](#latest-pypi-stable-release)
+        - [Latest PyPI stable release (previous version)](#latest-pypi-stable-release-previous-version)
         - [Latest development release on GitHub](#latest-development-release-on-github)
   - [Quick start](#quick-start)
       - [Audio playback](#audio-playback)
       - [Audio slicing](#audio-slicing)
         - [Time domain](#time-domain)
           - [simple slicing](#simple-slicing)
-          - [slice & merge](#slice--merge)
+          - [slice \& merge](#slice--merge)
         - [Frequency domain](#frequency-domain)
           - [LPF 100Hz](#lpf-100hz)
           - [HPF 1KHz](#hpf-1khz)
@@ -279,67 +284,83 @@ stream.stop()
         - [Basic Streaming with Pause and Resume](#basic-streaming-with-pause-and-resume)
         - [Basic Streaming with Jumping to Specific Times in the Audio](#basic-streaming-with-jumping-to-specific-times-in-the-audio)
         - [Streaming with Volume Control](#streaming-with-volume-control)
+  - [Table of contents:](#table-of-contents)
     - [Examples and Advanced Usage](#examples-and-advanced-usage)
       - [Short-time Fourier transform](#short-time-fourier-transform)
         - [prerequisites](#prerequisites)
   - [API Documentation](#api-documentation)
     - [Master](#master)
-      - [Parameters](#parameters)
-      - [Notes](#notes)
+      - [Key Features](#key-features)
+      - [Initialization](#initialization)
+        - [Key Parameters](#key-parameters)
+      - [Advanced Features](#advanced-features)
+      - [Usage Examples](#usage-examples)
       - [Methods](#methods)
-        - [add_file](#add_file)
+        - [add\_file](#add_file)
         - [add](#add)
+          - [Parameters](#parameters)
+          - [Returns](#returns)
+          - [Notes](#notes)
+          - [Examples](#examples)
+          - [Exceptions](#exceptions)
         - [start](#start)
+          - [Description](#description)
+          - [Returns](#returns-1)
+          - [Behavior](#behavior)
+          - [Usage Notes](#usage-notes)
+          - [Examples](#examples-1)
+          - [Exceptions](#exceptions-1)
         - [recorder](#recorder)
-        - [load_all](#load_all)
+          - [Parameters](#parameters-1)
+          - [Returns](#returns-2)
+          - [Description](#description-1)
+          - [Behavior](#behavior-1)
+          - [Usage Notes](#usage-notes-1)
+          - [Examples](#examples-2)
+          - [Exceptions](#exceptions-2)
         - [load](#load)
-        - [get_record_info](#get_record_info)
-        - [get_exrecord_info](#get_exrecord_info)
+        - [get\_record\_info](#get_record_info)
         - [syncable](#syncable)
         - [sync](#sync)
-        - [del_record](#del_record)
-        - [save_as](#save_as)
-        - [save](#save)
-        - [save](#save-1)
-        - [save_all](#save_all)
-        - [get_exrecord_names](#get_exrecord_names)
-        - [get_record_names](#get_record_names)
-        - [get_nperseg](#get_nperseg)
-        - [get_nchannels](#get_nchannels)
-        - [get_sample_rate](#get_sample_rate)
+        - [del\_record](#del_record)
+        - [export](#export)
+        - [get\_record\_names](#get_record_names)
+        - [get\_nperseg](#get_nperseg)
+        - [get\_nchannels](#get_nchannels)
+        - [get\_sample\_rate](#get_sample_rate)
         - [stream](#stream)
         - [mute](#mute)
         - [unmute](#unmute)
         - [echo](#echo)
         - [wrap](#wrap)
-        - [clean_cache](#clean_cache)
-        - [add_pipeline](#add_pipeline)
-        - [set_pipeline](#set_pipeline)
-        - [set_window](#set_window)
+        - [clean\_cache](#clean_cache)
+        - [add\_pipeline](#add_pipeline)
+        - [set\_pipeline](#set_pipeline)
+        - [set\_window](#set_window)
     - [StreamControl](#streamcontrol)
       - [Methods](#methods-1)
         - [isready](#isready)
-        - [is_streaming](#is_streaming)
+        - [is\_streaming](#is_streaming)
         - [start](#start-1)
         - [resume](#resume)
         - [stop](#stop)
         - [pause](#pause)
-        - [enable_loop](#enable_loop)
-        - [disable_loop](#disable_loop)
+        - [enable\_loop](#enable_loop)
+        - [disable\_loop](#disable_loop)
       - [Properties](#properties)
         - [time](#time)
           - [Getter](#getter)
           - [Setter](#setter)
     - [WrapGenerator](#wrapgenerator)
       - [Methods](#methods-2)
-        - [get_sample_format](#get_sample_format)
-        - [get_sample_width](#get_sample_width)
-        - [get_master](#get_master)
-        - [get_size](#get_size)
-        - [get_cache_size](#get_cache_size)
-        - [get_nchannels](#get_nchannels-1)
-        - [get_frame_rate](#get_frame_rate)
-        - [get_duration](#get_duration)
+        - [get\_sample\_format](#get_sample_format)
+        - [get\_sample\_width](#get_sample_width)
+        - [get\_master](#get_master)
+        - [get\_size](#get_size)
+        - [get\_cache\_size](#get_cache_size)
+        - [get\_nchannels](#get_nchannels-1)
+        - [get\_sample\_rate](#get_sample_rate-1)
+        - [get\_duration](#get_duration)
         - [join](#join)
       - [Magic methods](#magic-methods)
         - [getitem](#getitem)
@@ -353,19 +374,19 @@ stream.stop()
         - [call](#call)
     - [Wrap](#wrap-1)
       - [Methods](#methods-3)
-        - [get_sample_format](#get_sample_format-1)
-        - [get_sample_width](#get_sample_width-1)
-        - [get_master](#get_master-1)
-        - [get_size](#get_size-1)
-        - [get_frame_rate](#get_frame_rate-1)
-        - [get_nchannels](#get_nchannels-2)
-        - [get_duration](#get_duration-1)
+        - [get\_sample\_format](#get_sample_format-1)
+        - [get\_sample\_width](#get_sample_width-1)
+        - [get\_master](#get_master-1)
+        - [get\_size](#get_size-1)
+        - [get\_sample\_rate](#get_sample_rate-2)
+        - [get\_nchannels](#get_nchannels-2)
+        - [get\_duration](#get_duration-1)
         - [join](#join-1)
         - [unpack](#unpack)
-        - [get_data](#get_data)
-        - [is_packed](#is_packed)
+        - [get\_data](#get_data)
+        - [is\_packed](#is_packed)
         - [get](#get)
-        - [set_data](#set_data)
+        - [set\_data](#set_data)
       - [Magic methods](#magic-methods-1)
         - [del](#del-1)
         - [str](#str-1)
@@ -376,19 +397,19 @@ stream.stop()
         - [add](#add-2)
         - [sub](#sub-1)
     - [Pipeline](#pipeline)
-      - [Parameters](#parameters-1)
+      - [Parameters](#parameters-2)
       - [Methods](#methods-4)
         - [clear](#clear)
         - [run](#run)
         - [insert](#insert)
-          - [Parameters](#parameters-2)
+          - [Parameters](#parameters-3)
           - [Reterns](#reterns)
         - [append](#append)
         - [sync](#sync-1)
         - [aasync](#aasync)
         - [delay](#delay)
-        - [set_timeout](#set_timeout)
-        - [get_timeout](#get_timeout)
+        - [set\_timeout](#set_timeout)
+        - [get\_timeout](#get_timeout)
         - [put](#put)
         - [get](#get-1)
       - [Magic methods](#magic-methods-2)
@@ -441,149 +462,73 @@ This library used scientific computing packages to manipulate data like the nump
 sudio.Master
 ```
 
+The Master class is the core component of the audio processing system. It manages audio input/output, signal processing, and provides a framework for advanced audio manipulation.
 
-#### Parameters
+#### Key Features
 
-- **std_input_dev_id**: int, optional
-    os standard input device id. If not given, then the input device id will be selected automatically(ui_mode=False) or manually by the user(ui_mode=True)
+1. **Flexible Device Configuration**: Supports both default and custom audio input/output devices.
+2. **Multiple Audio Formats**: Handles various sample formats including 32-bit float, 32/24/16/8-bit integer.
+3. **Windowing and Overlap**: Implements customizable windowing functions with overlap-add method.
+4. **Multithreaded Processing**: Utilizes threading for efficient audio stream management.
+5. **Pipeline System**: Allows creation and management of audio processing pipelines.
+6. **File I/O**: Supports adding, loading, and exporting audio files.
+7. **Real-time Processing**: Enables real-time audio manipulation through callback functions.
 
-    <br />
-    
-- **std_output_dev_id**: int, optional
-    os standard output device id. If not given, then the output device id will
-    be selected automatically(ui_mode=False) or manually by the user(ui_mode=True)
+#### Initialization
 
-- **frame_rate**:  int, optional
-    Input channel sample rate. If std_input_dev_id is selected as None, the value will be selected automatically.
+The Master class is initialized with various parameters to configure the audio processing environment:
 
-    <br />
-    
-- **nchannels**: int, optional
-    The number of audible perspective directions or dimensions.    
-    If std_input_dev_id is selected as None, the value will be selected automatically.
+```python
+master = Master(std_input_dev_id=None, std_output_dev_id=None, data_format=SampleFormat.formatInt16, ...)
+```
 
-    <br />
-    
-- **data_format**: SampleFormat
-    Specifies the audio bit depths. Supported data format (from sudio):
-    **formatFloat32**, **formatInt32**, **formatInt24**, **formatInt16** (default), **formatInt8**, **formatUInt8**
+##### Key Parameters
 
-    <br />
-    
-- **mono_mode**: bool, optional
-    If True, then all the input channels will be mixed into one channel.
+- `std_input_dev_id` / `std_output_dev_id`: Specify input/output device IDs. If None, uses system defaults.
+- `data_format`: Sets the audio sample format (e.g., 16-bit integer, 32-bit float).
+- `nperseg`: Number of samples per frame in each channel.
+- `window`: Specifies the windowing function (e.g., 'hann', 'hamming').
+- `input_dev_callback` / `output_dev_callback`: Custom callback functions for audio I/O.
 
-- **ui_mode**: bool, optional
-    If Enabled then user interface mode will be activated.
+#### Advanced Features
 
-    <br />
-    
-- **nperseg**: int,optional
-    number of samples per each data frame (in one channel)
+1. **Windowing**: Supports various window types with automatic NOLA (Nonzero Overlap Add) constraint checking.
+2. **Stream Control**: Methods for muting, unmuting, and echoing audio streams.
+3. **Pipeline Management**: Add, set, and disable audio processing pipelines.
+4. **File Management**: Add, load, export, and delete audio records.
+5. **Device Information**: Static methods to query available audio devices and their properties.
 
-    <br />
-    
-- **noverlap**: int, default None
+#### Usage Examples
 
-    The noverlap defines the number of overlap between defined windows. If not given then it's value will be selected as
-    
-    ```math
-    SE = \frac{nperseg}{2}.
-    ```
+1. **Basic Initialization**:
+   ```python
+   master = Master()
+   master.start()
+   ```
 
-    When the length of a data set to be transformed is larger than necessary to provide the desired frequency resolution, a common practice is to subdivide it into smaller sets and window them individually.
+2. **Custom Input Device**:
+   ```python
+   master = Master(std_input_dev_id=1, data_format=SampleFormat.formatFloat32)
+   ```
 
-    To mitigate the "loss" at the edges of the window, the individual sets may overlap in time.
+3. **Adding a Pipeline**:
+   ```python
+   pipeline = Pipeline()
+   master.add_pipeline(pipeline, name="my_pipeline", process_type=PipelineProcessType.MAIN)
+   master.set_pipeline("my_pipeline")
+   ```
 
-    
+4. **Recording Audio**:
+   ```python
+   recorded_audio = master.recorder(record_duration=10, name="my_recording")
+   ```
 
-    <br />
-    
-- **NOLA_check**: bool, optional
-    Check whether the Nonzero Overlap Add (NOLA) constraint is met.(If true)
+5. **Exporting Audio**:
+   ```python
+   master.export("my_recording", "path/to/output.wav")
+   ```
 
-    <br />
-    
-- **IO_mode**: str, optional
-    Input/Output processing mode that can be:
-    
-    <br />
-    
-    - "**stdInput2stdOutput**":(default)
-        default mode; standard input stream (system audio or any other windows defined streams) to standard defined output stream (system speakers).
-
-    - "**usrInput2usrOutput**":
-        user defined input stream (callback function defined with input_dev_callback) to  user defined output stream (callback function defined with output_dev_callback).
-
-    - "**usrInput2stdOutput**":
-        user defined input stream (callback function defined with input_dev_callback) to  user defined output stream (callback function defined with output_dev_callback).
-
-    - "**stdInput2usrOutput**":
-        standard input stream (system audio or any other windows defined streams) to  user defined output stream (callback function defined with output_dev_callback).
-
-    <br />
-    
-- **input_dev_callback**: callable;
-    user input callback; default None; 
-    this function used in "**usrInput2usrOutput**" and "**usrInput2stdOutput**" IO modes and called by the sudio core every 1/frame_rate second and must returns frame data as a numpy array with the dimensions of the (Number of channels, Number of data per segment).
-    <br />
-
-    Format: 
-    
-    ```py
-    :inputs:    frame_count, time_info, status
-    :outputs:   Numpy N-channel data frame in  (Number of channels, Number of data per segment)
-                dimensions.
-    ```                
-    :memo: **Note:** The data frame in single channel mode has the shape of (Number of data per segment, ).
-
-    <br />
-    
-- **output_dev_callback**: callable;
-
-    User input callback; default None;
-    This function used in "**usrInput2usrOutput**" and "**stdInput2usrOutput**" IO modes and called by the sudio core every 1 / frame_rate second after processing frames and takes the frame data as a numpy array in (Number of channels, Number of data per segment) dimensions numpy array.
-
-    format: 
-    
-    ```py
-    :inputs:    Numpy N-channel data frame in  (Number of channels, Number of data per segment) dimensions.
-    :outputs: customized audio stream.
-    ```
-
-    :memo: **Note:** The data frame in single channel mode has the shape of (Number of data per segment, ).
-
-    <br />
-    
-- **master_mix_callback**: callable, optional
-    This callback is used before the main-processing stage in the master for controlling and mixing all slave channels to a ndarray of shape (master.nchannels, 2, master.nperseg).
-
-    If this parameter is not defined, then the number of audio channels in all slaves must be the same as the master.
-
-    <br />
-    
-- **window**:  string, float, tuple, ndarray, optional
-    The type of window, to create(string) or pre designed window in numpy array format. use None to disable windowing process.
-    Default ("**hann**") Hanning function.
-
-#### Notes
-    
--    **If** the window function requires no parameters, then `window` can be a string otherwise the `window` must be a tuple with the first argument the string name of the window, and the next
-    arguments the needed parameters.
-    <br />
-    If `window` is a floating point number, it is interpreted as the beta parameter of the `kaiser` window.
-    Each of the window types listed above is also the name of a function that can be called directly to create a window of that type.
-    <br />
-    window types:
-        ```py
-        boxcar, triang , blackman, hamming, hann(default), bartlett, flattop, parzen, bohman, blackmanharris
-        nuttall, barthann, cosine, exponential, tukey, taylor, kaiser (needs beta),
-        gaussian (needs standard deviation), general_cosine (needs weighting coefficients),
-        general_gaussian (needs power, width), general_hamming (needs window coefficient),
-        dpss (needs normalized half-bandwidth), chebwin (needs attenuation)
-        ```
- -   "**nonzero** overlap add" (NOLA):
-    This ensures that the normalization factors in the denominator of the overlap-add inversion equation are not zero. Only very pathological windows will fail the NOLA constraint.
+The Master class provides a comprehensive suite of tools for audio processing, making it suitable for a wide range of applications from simple audio playback to complex real-time audio manipulation systems.
 
 
 #### Methods
@@ -623,88 +568,172 @@ The add_file method used to Add an audio file to the local database. None value 
 sudio.Master.add(self, record, safe_load=True)
 ```
 
-Add new record to the local database.
+Adds a new record to the local database of the Master object.
 
-- **parameters**:
+###### Parameters
 
-    - **record**: can be an wrapped record, Record object or an audio file in mp3, WAV, FLAC or VORBIS format.
-    - **safe_load**: optional; load an audio file and modify it according to the 'Master' attributes.
+- `record`: The record to be added. Can be one of the following:
+  - A `Wrap` or `WrapGenerator` object
+  - A string path to an audio file (supported formats: mp3, WAV, FLAC, VORBIS)
+  - A pandas `Series` containing record data
+  - A tuple `(record, name)` where `record` is any of the above, and `name` is a custom name for the record
 
-- **returns** Wrapped(WrapGenerator) object
+- `safe_load`: bool, optional (default=True)
+  - If True, audio files are loaded and modified to match the Master object's current settings
 
-:memo: **Note:** The name of the new record can be changed with the following tuple that is passed to the function: (record object, new name of ), otherwise automatically generated.
+###### Returns
 
-:memo: **Note:** The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance, meaning that, The audio data storage methods can have different execution times based on the cached files.
+- `WrapGenerator`: A wrapped version of the added record
+
+###### Notes
+
+1. **Naming**: If a tuple `(record, name)` is provided, the second element is used as the record name. Otherwise, a name is automatically generated.
+
+2. **Performance**: The method uses cached files to optimize memory usage and performance. This may cause varying execution times depending on the state of these cached files.
+
+3. **Compatibility**: When `safe_load=True`, the method ensures that the added record is compatible with the current audio processing settings of the Master object.
+
+###### Examples
+
+```python
+# Adding an audio file
+master.add("path/to/audio.wav")
+
+# Adding a wrapped record with a custom name
+wrapped_record = some_wrap_generator()
+master.add((wrapped_record, "my_custom_name"))
+
+# Adding a pandas Series record
+series_record = pd.Series({...})  # Record data
+master.add(series_record)
+```
+
+###### Exceptions
+
+- Raises `ValueError` if the record type is not recognized or if there's an issue with the file format.
+- Raises `ImportError` if the number of channels in the record is incompatible with the Master object's settings when `safe_load=True`.
+
+This method provides a flexible way to add various types of audio data to your project, with options for ensuring compatibility and custom naming.
 
 
 <br />
 
 ##### start
 
-start audio streaming, must be called before audio streaming process. 
-**returns** master object.
-
-
-
-
-
-<br />
-
-## Audio Recorder
-
-The `recorder` method provides advanced audio recording capabilities, allowing capture of any signal in the output processing stage.
-
-### Features
-
-- Record audio for a specified duration
-- Automatic naming with timestamp or custom name option
-- Supports multi-channel recording
-- Integrated with the local database for efficient storage and retrieval
-- Channel shuffling for non-mono recordings
-
-### Usage
-
 ```python
-def recorder(self, record_duration: float, name: str = None) -> WrapGenerator:
-    """
-    Record audio for a specified duration.
-
-    Args:
-        record_duration (float): Duration to record in seconds.
-        name (str, optional): Name for the recording. If None, a timestamp-based name will be generated.
-
-    Returns:
-        WrapGenerator: A wrapped version of the recorded audio data.
-
-    Raises:
-        KeyError: If the provided name already exists in the database.
-    """
-
-
-
-<br />
-
-##### load_all
-
-```py
-   sudio.Master.load_all(self, safe_load=True)
+sudio.Master.start(self)
 ```
 
-load all of the saved records from the external database(static memory) to the local database(dynamic memory).
+Initializes and starts the audio processing stream.
 
+###### Description
 
-- **parameters**:
+The `start` method activates the configured audio stream, enabling real-time audio processing based on the Master object's current settings. It should be called after all desired configurations have been made.
 
-    - **safe_load**: if safe load is enabled then load function tries to load a record in the local database based on the master settings, like the frame rate and etc.
-        ```
-- **returns** None
+###### Returns
+
+- `self`: Returns the Master instance, allowing for method chaining.
+
+###### Behavior
+
+1. **Initialization**: Sets up the audio stream with the configured parameters (sample rate, format, channels, etc.).
+2. **Thread Activation**: Starts all processing threads, enabling concurrent audio handling.
+3. **Error Handling**: Raises exceptions if the stream is already started or if there are issues with stream initialization.
+
+###### Usage Notes
+
+- Call this method only once, after all configurations are complete.
+- The audio processing runs in a separate thread after this method is called.
+- Ensure all desired pipelines and audio settings are configured before calling `start`.
+
+###### Examples
+
+```python
+# Basic usage
+master = Master()
+master.start()
+
+# Method chaining
+master = Master().start()
+
+# Start after configuration
+master = Master()
+master.add_pipeline(some_pipeline)
+master.set_window('hamming')
+master.start()
+```
+
+###### Exceptions
+
+- Raises `AssertionError` if the audio stream is already started.
+- May raise other exceptions related to audio stream initialization, depending on the underlying audio library.
+
+This method is crucial for activating the real-time audio processing capabilities of the Master object. Ensure all necessary configurations are done before calling `start`.
+
+<br />
+
+##### recorder
+
+```python
+sudio.Master.recorder(self, record_duration: float, name: str = None)
+```
+
+Records audio for a specified duration and stores it as a new record in the Master object's database.
+
+###### Parameters
+
+- `record_duration`: float
+  - The duration of the recording in seconds.
+- `name`: str, optional
+  - A custom name for the recorded audio. If None, a timestamp-based name is generated.
+
+###### Returns
+
+- `Wrap`: A wrapped version of the recorded audio data.
+
+###### Description
+
+The `recorder` method captures audio input using the current settings of the Master object (sample rate, number of channels, etc.) for the specified duration. The recorded audio is automatically added to the Master's database and can be accessed later using the provided or generated name.
+
+###### Behavior
+
+1. **Initialization**: Sets up a temporary recording state in the Master object.
+2. **Recording**: Captures audio data for the specified duration.
+3. **Processing**: Processes the recorded data, including channel shuffling if necessary.
+4. **Storage**: Writes the recorded data to a cached file and updates the Master's database.
+
+###### Usage Notes
+
+- The recording uses the current audio input settings of the Master object.
+- The method temporarily modifies the internal state of the Master object during recording.
+- Recorded audio is automatically added to the database and can be accessed or manipulated later.
+
+###### Examples
+
+```python
+# Record for 5 seconds with an auto-generated name
+recorded_audio = master.recorder(5)
+
+# Record for 10 seconds with a custom name
+recorded_audio = master.recorder(10, name="my_recording")
+
+# Use the recorded audio
+master.play(recorded_audio)
+```
+
+###### Exceptions
+
+- Raises `KeyError` if the provided name already exists in the database.
+
+This method provides a straightforward way to capture and store audio data within the Master object's ecosystem, making it easy to record and subsequently process or analyze audio segments.
+
 
 <br />
 
 ##### load
 
 ```py
-   sudio.Master.load(self, name: str, load_all: bool=False, safe_load: bool=True,
+   sudio.Master.load(self, name: str, safe_load: bool=True,
                     series: bool=False) -> Union[WrapGenerator, Record])
 ```
 
@@ -715,7 +744,6 @@ the local database(dynamic memory). Trying to load a record that was previously 
 - **parameters**:
 
   - **name**: The name of the predefined record.
-  - **load_all**: used to load all of the saved records from the external database to the local database.
   - **safe_load**: if safe load is enabled this method tries to load a record in the local database, based on the master settings, like the frame rate and etc.
   - **series**: If enabled, attempting to load a record that has already been loaded will output the data series of the named record.
 
@@ -740,23 +768,6 @@ get extra info about the record
 - **returns** information about saved record ['noiseLevel' 'frameRate'  'sizeInByte' 'duration' 'nchannels' 'nperseg' 'name'].
 
 <br />
-
-
-##### get_exrecord_info
-
-```py
-   sudio.Master.get_exrecord_info(self, name: str) -> Record
-```
-
-get extra info about the record 
-
-
-- **parameters**:
-
-  - **name**: name of the registered record on the external database(if exists).
-
-- **returns** information about saved record ['noiseLevel' 'frameRate'  'sizeInByte' 'duration' 'nchannels' 'nperseg' 'name'].
-
 
 
 
@@ -830,10 +841,10 @@ The del_record method used to delete a record from the internal/external databas
 
 <br />
 
-##### save_as
+##### export
 
 ```py
-sudio.Master.save_as(self, record: Union[str, Record, Wrap, WrapGenerator], file_path: str=SAVE_PATH)
+sudio.Master.export(self, record: Union[str, Record, Wrap, WrapGenerator], file_path: str=SAVE_PATH)
 ```
 Convert the record to the wav audio format.
 
@@ -846,55 +857,6 @@ Convert the record to the wav audio format.
 
 <br />
 
-##### save
-
-```py
-sudio.Master.save(self, name: str='None', save_all: bool=False)
-```
-Save the preloaded record to the external database.
-
-- **Parameters**:
-   - **name**: name of the preloaded record
-    - **save_all**: if true then it's tries to save all of the preloaded records
--  **returns** None
-
-<br />
-
-##### save
-
-```py
-sudio.Master.save(self, name: str='None', save_all: bool=False)
-```
-Save the preloaded record to the external database.
-
-- **Parameters**:
-   - **name**: name of the preloaded record
-    - **save_all**: if true then it's tries to save all of the preloaded records
--  **returns** None
-    
-<br />
-
-##### save_all
-
-```py
-sudio.Master.save_all(self)
-```
-
-Save all of the preloaded records to the external database
--  **returns** None    
-
-<br />
-
-##### get_exrecord_names
-
-```py
-sudio.Master.get_exrecord_names(self) -> list
-```
-
-:return: list of the saved records in the external database
-
-
-<br />
 
 ##### get_record_names
 
@@ -1358,10 +1320,10 @@ sudio.WrapGenerator.get_nchannels(self) -> int
 
 <br />
 
-##### get_frame_rate
+##### get_sample_rate
 
 ```py
-sudio.WrapGenerator.get_frame_rate(self) -> int
+sudio.WrapGenerator.get_sample_rate(self) -> int
 ```
 
 Returns frame rate of the current warpped record.
@@ -1644,10 +1606,10 @@ Returns size of the currently processed record on non-volatile memory.
 
 <br />
 
-##### get_frame_rate
+##### get_sample_rate
 
 ```py
-sudio.Wrap.get_frame_rate(self) -> int
+sudio.Wrap.get_sample_rate(self) -> int
 ```
 
 Returns frame rate of the current warpped record.

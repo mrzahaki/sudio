@@ -94,18 +94,18 @@ class Wrap:
         self._file: io.BufferedRandom = self._rec['o']
         self._size = self._rec['size']
         self._duration = record['duration']
-        self._frame_rate = self._rec['frameRate']
+        self._sample_rate = self._rec['frameRate']
         self._nchannels = self._rec['nchannels']
         self._sample_format = self._rec['sampleFormat']
         self._nperseg = self._rec['nperseg']
         self._parent = other
         self._sample_type = self._parent._sample_width_format_str
         self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
-        self._time_calculator = lambda t: int(self._frame_rate *
+        self._time_calculator = lambda t: int(self._sample_rate *
                                               self._nchannels *
                                               self.sample_width *
                                               t)
-        self._itime_calculator = lambda byte: byte / (self._frame_rate *
+        self._itime_calculator = lambda byte: byte / (self._sample_rate *
                                                       self._nchannels *
                                                       self.sample_width)
         self._packed = True
@@ -142,13 +142,13 @@ class Wrap:
         """
         return os.path.getsize(self._file.name)
 
-    def get_frame_rate(self) -> int:
+    def get_sample_rate(self) -> int:
         """
         Get the frame rate of the audio data.
 
         :return: The frame rate of the audio data.
         """
-        return self._frame_rate
+        return self._sample_rate
 
     def get_nchannels(self) -> int:
         """
@@ -175,7 +175,7 @@ class Wrap:
         """
         other = self._parent.sync(*other,
                                   nchannels=self._nchannels,
-                                  sample_rate=self._frame_rate,
+                                  sample_rate=self._sample_rate,
                                   sample_format=LibSampleFormatEnumToSample[self._sample_format],
                                   output='ndarray_data')
         # print(other)
@@ -185,7 +185,7 @@ class Wrap:
                 axis = 1
 
             for series in other:
-                # assert self._frame_rate == other._frame_rate and
+                # assert self._sample_rate == other._sample_rate and
                 # print(series['o'], other)
                 main_data = np.append(main_data, series['o'], axis=axis)
             self.set_data(main_data)
@@ -311,10 +311,10 @@ class Wrap:
                 else:
                     return buffer
 
-                # iir = scisig.firwin(50, freq, fs=self.frame_rate)
+                # iir = scisig.firwin(50, freq, fs=self.sample_rate)
 
                 # print(btype)
-                iir = scisig.iirfilter(filt['order'], freq, btype=btype, fs=self._frame_rate, output='sos',
+                iir = scisig.iirfilter(filt['order'], freq, btype=btype, fs=self._sample_rate, output='sos',
                                        rs=filt['rs'], rp=filt['rp'], ftype=filt['ftype'])
                 if last_item[0] is None:
                     buffer[None] = []

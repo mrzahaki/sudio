@@ -56,12 +56,12 @@ class StreamControl:
         self._stream_loop_mode = loop_mode
 
         self.duration = record['duration']
-        self._time_calculator = lambda t: int(self._master._frame_rate *
+        self._time_calculator = lambda t: int(self._master._sample_rate *
                                               self._master._nchannels *
                                               self._master._sample_width *
                                               t)
 
-        self._itime_calculator = lambda byte: byte / (self._master._frame_rate *
+        self._itime_calculator = lambda byte: byte / (self._master._sample_rate *
                                                       self._master._nchannels *
                                                       self._master._sample_width)
         

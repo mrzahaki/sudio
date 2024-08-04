@@ -52,10 +52,6 @@ def synchronize_audio(rec,
             data = np.vstack([data for i in range(nchannels)])
             rec['nchannels'] = nchannels
 
-    # elif nchannels == 1 or _mono_mode:
-    #     data = np.mean(data.reshape(int(data.shape[-1:][0] / rec['nchannels']),
-    #                                 rec['nchannels']),
-    #                    axis=1)
     else:
         data = [[data[i::rec['nchannels']]] for i in range(nchannels)]
         data = np.append(*data, axis=0)
