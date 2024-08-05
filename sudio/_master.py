@@ -6,13 +6,11 @@
  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 """
 
-# Todo IO mode
 
 import io
 import scipy.signal as scisig
 import threading
 import queue
-import pandas as pd
 import numpy as np
 from typing import Union, Callable
 import warnings
@@ -45,7 +43,7 @@ from sudio.audioutils.channel import shuffle3d_channels, shuffle2d_channels, get
 from sudio.audioutils.sync import synchronize_audio
 from sudio.audioutils.cacheutil import handle_cached_record, write_to_cached_file
 from sudio.pipeline import Pipeline
-
+from sudio.metadata import AudioMetadataDatabase, AudioMetadata
 
 
 
@@ -55,8 +53,6 @@ class Master:
     USER_PATH = DATA_PATH + 'user.sufile'
     SAVE_PATH = DATA_PATH + 'export/'
     CACHE_INFO = 4 * 8
-
-    DATABASE_COLS = ['size', 'noise', 'frameRate', 'o', 'sampleFormat', 'nchannels', 'duration', 'nperseg']
     BUFFER_TYPE = '.bin'
 
     def __init__(self,
@@ -296,7 +292,7 @@ class Master:
 
         # ----------------------------------------------------- User _database define -----------------------------------------------------
 
-        self._local_database = pd.DataFrame(columns=Master.DATABASE_COLS)
+        self._local_database = AudioMetadataDatabase()
 
         # ----------------------------------------------------- Pipeline _database and other definitions section -----------------------------------------------------
 
@@ -396,9 +392,6 @@ class Master:
             for i in self._threads:
                 i.start()
 
-            # The server blocks all active threads
-            # del self._threads[:]
-            # self._queue.join()
 
         except:
             raise
@@ -480,7 +473,7 @@ class Master:
 
         return None, 0
 
-    # user Input mode
+
     def _custom_stream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
 
         if self._exstream_mode.is_set():
@@ -627,13 +620,10 @@ class Master:
         if p1 <= 0:
             p1 = None
         name = filename[p0: p1]
-        if name in self._local_database.index:
+        if name in self._local_database.index():
             raise KeyError('Record with the name of {}'
-                           ' already registered in local or external database'.format(name))
+                           ' already registered in database'.format(name))
 
-
-
-        assert list(record.keys()) == list(self._local_database.columns)
 
         if safe_load and  record['nchannels'] > self._nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
@@ -652,7 +642,8 @@ class Master:
                     decoder=decoder)
         )
 
-        self._local_database.loc[name] = record
+        metadata = AudioMetadata(name, **record)
+        self._local_database.add_record(metadata)
         gc.collect()
         return self.load(name)
 
@@ -666,11 +657,11 @@ class Master:
 
         Parameters:
         -----------
-        record : Union[Wrap, str, pd.Series, WrapGenerator, Tuple[Union[Wrap, str, pd.Series, WrapGenerator], str]]
+        record : Union[Wrap, str, AudioMetadata, WrapGenerator, Tuple[Union[Wrap, str, AudioMetadata, WrapGenerator], str]]
             The record to be added. Can be:
             - A Wrap or WrapGenerator object
             - A string representing the path to an audio file
-            - A pandas Series containing record data
+            - AudioMetadata containing record data
             - A tuple containing the record and a custom name for the record
 
         safe_load : bool, optional
@@ -707,8 +698,8 @@ class Master:
         wrapped_record = some_wrap_generator()
         master.add((wrapped_record, "my_custom_name"))
 
-        # Adding a pandas Series record
-        series_record = pd.Series({...})  # Record data
+        # Adding AudioMetadata record
+        series_record = AudioMetadata({...})  # Record data
         master.add(series_record)
         """
         name_type = type(record)
@@ -723,10 +714,10 @@ class Master:
             if type(record[0]) is WrapGenerator:
                 record = record[0].get_data()
 
-            elif type(record[0]) is pd.Series:
+            elif type(record[0]) is AudioMetadata:
                 pass
             else:
-                raise TypeError
+                raise TypeError('record data should be an instance of AudioMetadata, or WrapGenerator')
 
             if rec_name and type(rec_name) is str:
                 record.name = rec_name
@@ -736,23 +727,22 @@ class Master:
 
             else:
                 raise ValueError('second item in the list is the name of the new record')
+            
             return self.add(record, safe_load=safe_load)
 
         elif name_type is Wrap or name_type is WrapGenerator:
-            series = record.get_data()
-            return self.add(series, safe_load=safe_load)
+            record = record.get_data()
+            return self.add(record, safe_load=safe_load)
 
-        elif name_type is pd.Series:
+        elif name_type is AudioMetadata:
             name = record.name
-            assert list(record.keys()) == list(self._local_database.columns)
-
-            if safe_load  and record['nchannels'] > self._nchannels:
+            if safe_load and record['nchannels'] > self._nchannels:
                 raise ImportError('number of channel for the {name}({ch0})'
-                                  ' is not same as object channels({ch1})'.format(name=name,
-                                                                                  ch0=record['nchannels'],
-                                                                                         ch1=self._nchannels))
+                                ' is not same as object channels({ch1})'.format(name=name,
+                                                                                ch0=record['nchannels'],
+                                                                                ch1=self._nchannels))
             if type(record['o']) is not BufferedRandom:
-                if  record.name in self._local_database.index:
+                if record.name in self._local_database.index():
                     record.name = generate_timestamp_name()
 
                 if safe_load:
@@ -773,11 +763,11 @@ class Master:
                 record['o'] = f
                 record['size'] = newsize
 
-            elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) ==  record.name) or \
-                    record.name in self._local_database.index:
+            elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) == record.name) or \
+                    record.name in self._local_database.index():
                 # new sliced Wrap data
 
-                if  record.name in self._local_database.index:
+                if record.name in self._local_database.index():
                     record.name = generate_timestamp_name()
                 
                 prefile = record['o']
@@ -796,15 +786,14 @@ class Master:
                 )
                 prefile.seek(*prepos)
                 record['size'] = newsize
-
-            self._local_database.loc[record.name] = record
+            self._local_database.add_record(record)
 
             gc.collect()
             return self.wrap(record)
 
         elif name_type is str:
-           gc.collect()
-           return self.add_file(record, safe_load=safe_load)
+            gc.collect()
+            return self.add_file(record, safe_load=safe_load)
 
         else:
             raise TypeError('The record must be an audio file, data frame or a Wrap object')
@@ -857,7 +846,7 @@ class Master:
         """
         if name is None:
             name = generate_timestamp_name('record')
-        elif name in self._local_database.index:
+        elif name in self._local_database.index():
             raise KeyError(f'The name "{name}" is already registered in the database.')
 
         rec_ev, rec_queue = self._recordq
@@ -906,41 +895,40 @@ class Master:
         record_data['size'] += Master.CACHE_INFO
 
         # Add the record to the local database
-        self._local_database.loc[name] = record_data
+        metadata = AudioMetadata(name, **record_data)
+        self._local_database.add_record(metadata)
 
-        return self.wrap(self._local_database.loc[name].copy())
+        return self.wrap(metadata.copy())
 
 
     def load(self, name: str, safe_load: bool=True,
-             series: bool=False) -> Union[WrapGenerator, pd.Series]:
+         series: bool=False) -> Union[WrapGenerator, AudioMetadata]:
         '''
-        This method used to load a predefined recoed from the staable/external database to
-         the local database. Trying to load a record that was previously loaded, outputs a wrapped version
+        This method used to load a predefined recoed from database. 
+         Trying to load a record that was previously loaded, outputs a wrapped version
          of the named record.
 
-        :param name: predefined record name
-        :param load_all: load all of the saved records from the external database
-                        to the local database.
+        :param name: record name
         :param safe_load: if safe load is enabled then load function tries to load a record
          in the local database based on the master  settings, like the frame rate and etc.
         :param series: if enabled then Trying to load a record that was previously loaded, outputs data series
         of the named record.
-        :return: (optional) Wrapped object, pd.Series
+        :return: (optional) Wrapped object, AudioMetadata
         '''
 
-        if name in self._local_database.index:
-            rec = self._local_database.loc[name].copy()
+        if name in self._local_database.index():
+            rec = self._local_database.get_record(name).copy()
             if series:
                 return rec
             return self.wrap(rec)
         else:
-            raise ValueError('can not found the {name} in the local and the external databases'.format(name=name))
+            raise ValueError('can not found the {name} in database'.format(name=name))
 
         if safe_load and not self._mono_mode and rec['nchannels'] > self._nchannels:
             raise ImportError('number of channel for the {name}({ch0})'
-                              ' is not same as object channels({ch1})'.format(name=name,
-                                                                              ch0=rec['nchannels'],
-                                                                              ch1=self._nchannels))
+                            ' is not same as object channels({ch1})'.format(name=name,
+                                                                            ch0=rec['nchannels'],
+                                                                            ch1=self._nchannels))
         if safe_load:
             rec['o'] = file.read()
             rec = self._sync_record(rec)
@@ -951,25 +939,31 @@ class Master:
         else:
             file.seek(Master.CACHE_INFO, 0)
 
-        self._local_database.loc[name] = rec
+        self._local_database.add_record(rec)
         if series:
             return rec
         return self.wrap(rec)
     
 
-    def get_record_info(self, name: str) -> dict:
+    def get_record_info(self, record: Union[str, WrapGenerator, Wrap]) -> dict:
         '''
-        :param name: name of the registered record on the local or external database
-        :return: information about saved record ['noiseLevel' 'frameRate'  'sizeInByte' 'duration'
+        :param name: name of the registered record on database
+        :return: information about saved record ['frameRate'  'sizeInByte' 'duration'
             'nchannels' 'nperseg' 'name'].
         '''
-        if name in self._local_database.index:
-            rec = self._local_database.loc[name]
+        if type(record) is WrapGenerator or Wrap:
+            name = record.name
+        elif type(record) is str:
+            name = record
+        else:
+            raise TypeError('record must be an instance of WrapGenerator, Wrap or str')
+        
+        if name in self._local_database.index():
+            rec = self._local_database.get_record(name)
 
         else:
-            raise ValueError('can not found the {name} in the local and the external databases'.format(name=name))
+            raise ValueError('can not found the {name} in database'.format(name=name))
         return {
-            'noiseLevel': str(rec['noise']) + ' <dbm>',
             'frameRate': rec['frameRate'],
             'sizeInByte': rec['size'],
             'duration': rec['duration'],
@@ -1031,11 +1025,11 @@ class Master:
 
 
     def sync(self,
-             *targets,
-             nchannels: int=None,
-             sample_rate: int=None,
-             sample_format: SampleFormat=SampleFormat.formatUnknown,
-             output='wrapped'):
+            *targets,
+            nchannels: int=None,
+            sample_rate: int=None,
+            sample_format: SampleFormat=SampleFormat.formatUnknown,
+            output='wrapped'):
         '''
         Synchronizes targets in the Wrap object format with the specified properties
         :param targets: wrapped object\s
@@ -1045,22 +1039,16 @@ class Master:
         :param output: can be 'wrapped', 'series' or 'ndarray_data'
         :return: returns synchronized objects.
         '''
-        # syncable = list((self.syncable(*records,
-        #                         nchannels=nchannels,
-        #                         sample_rate=sample_rate,
-        #                         sample_format=sample_format), ))
-
-
         nchannels = nchannels if nchannels else self._nchannels
         sample_format = self._sample_format if sample_format == SampleFormat.formatUnknown else sample_format.value
-        sample_rate =  sample_rate if sample_rate else self._sample_rate
+        sample_rate = sample_rate if sample_rate else self._sample_rate
 
         out_type = 'ndarray' if output.startswith('n') else 'byte'
 
         buffer = []
         for record in targets:
-            record: pd.Series = record.get_data().copy()
-            assert type(record) is pd.Series
+            record: AudioMetadata = record.get_data().copy()
+            assert isinstance(record, AudioMetadata)
             main_file: io.BufferedRandom = record['o']
             main_seek = main_file.tell(), 0
             record['o'] = main_file.read()
@@ -1077,19 +1065,27 @@ class Master:
     def _sync_record(self, rec):
         return synchronize_audio(rec, self._nchannels, self._sample_rate, self._sample_format)
 
-    def del_record(self, name: str):
+    def del_record(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator]):
         '''
         This function is used to delete a record from the internal database.
-        :param name str: the name of preloaded record.
+        :param name Union[str, AudioMetadata]: preloaded record.
         :return: None
         '''
-        local = name in self._local_database.index
+
+        if type(record) is AudioMetadata or type(record) is Wrap or type(record) is WrapGenerator:
+            name = record.name
+        elif type(record) is str:
+            name = record
+        else:
+            raise TypeError('please control the type of record')
+
+        local = name in self._local_database.index()
 
         ex = ''
         assert local, ValueError(f'can not found the {name} in the '
                                             f'local {ex}databases'.format(name=name, ex=ex))
         if local:
-            file = self._local_database.loc[name, 'o']
+            file = self._local_database.get_record(name)['o']
             if not file.closed:
                 file.close()
 
@@ -1107,15 +1103,15 @@ class Master:
                 os.remove(file.name)
             except PermissionError:
                 pass
-            self._local_database.drop(name, inplace=True)
+            self._local_database.remove_record(name)
 
         gc.collect()
 
 
-    def export(self, record: Union[str, pd.Series, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
+    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
         '''
         Convert the record to the wav audio format.
-        :param record: record can be the name of registered record, a pandas series or an wrap object
+        :param record: record can be the name of registered record, an AudioMetadata or an wrap object
         :param file_path: The name or path of the wav file(auto detection).
         A new name for the record to be converted can be placed at the end of the address.
         :return:None
@@ -1125,7 +1121,7 @@ class Master:
             record = self.load(record, series=True)
         elif rec_type is Wrap or rec_type is WrapGenerator:
             record = record.get_data()
-        elif rec_type is pd.Series:
+        elif rec_type is AudioMetadata:
             pass
         else:
             raise TypeError('please control the type of record')
@@ -1162,7 +1158,7 @@ class Master:
         '''
         :return: list of the saved records in database
         '''
-        return list(self._local_database.index)
+        return list(self._local_database.index())
 
 
 
@@ -1175,7 +1171,7 @@ class Master:
     def get_sample_rate(self):
         return self._sample_rate
 
-    def stream(self, record: Union[str, Wrap, pd.Series, WrapGenerator],
+    def stream(self, record: Union[str, Wrap, AudioMetadata, WrapGenerator],
                block_mode: bool=False,
                safe_load: bool=False,
                on_stop: callable=None,
@@ -1192,7 +1188,7 @@ class Master:
         Note:
         The recorder can only capture normal streams(Non-optimized streams)
 
-        :param record: It could be a predefined record name, a wrapped record, or a pandas series.
+        :param record: It could be a predefined record name, a wrapped record, or an AudioMetadata type object.
         :param block_mode: This can be true, in which case the current thread will be
          blocked as long as the stream is busy.
         :param safe_load: load an audio file and modify it according to the 'Master' attributes(like the frame rate
@@ -1213,7 +1209,7 @@ class Master:
                 assert rec_type is WrapGenerator or record.is_packed(), BufferError('The {} is not packed!'.format(record))
                 record = record.get_data()
 
-            elif rec_type is pd.Series:
+            elif rec_type is AudioMetadata:
                 record = record.copy()
             else:
                 raise TypeError('please control the type of record')
@@ -1324,7 +1320,7 @@ class Master:
         return self._master_mute_mode.is_set()
 
 
-    def echo(self, record: Union[Wrap, str, pd.Series, WrapGenerator]=None,
+    def echo(self, record: Union[Wrap, str, AudioMetadata, WrapGenerator]=None,
              enable: bool=None, main_output_enable: bool=False):
         """
         Play "Record" on the operating system's default audio output.
@@ -1335,7 +1331,7 @@ class Master:
 
         :param record: optional, default None;
          It could be a predefined record name, a wrapped record,
-         or a pandas series.
+         or AudioMetadata.
 
         :param enable: optional, default None(trigger mode)
             determines that the standard output of the master is enable or not.
@@ -1345,7 +1341,6 @@ class Master:
         :return: self
         """
         # Enable echo to system's default output or echo an pre recorded data
-        # from local or external database
         if record is None:
             if enable is None:
                 if self._echo_flag.is_set():
@@ -1365,7 +1360,7 @@ class Master:
             else:
                 if type(record) is str:
                     record = self.load(record, series=True)
-                elif type(record) is pd.Series:
+                elif type(record) is AudioMetadata:
                     pass
                 else:
                     ValueError('unknown type')
@@ -1401,10 +1396,10 @@ class Master:
         return  self.echo(enable=False)
 
 
-    def wrap(self, record: Union[str, pd.Series]):
+    def wrap(self, record: Union[str, AudioMetadata]):
         '''
         Create a Wrap object
-        :param record: preloaded record or pandas series
+        :param record: preloaded record or AudioMetadata
         :return: Wrap object
         '''
         return WrapGenerator(self, record)
@@ -1413,17 +1408,16 @@ class Master:
         path = []
         expath = []
         base_len = len(Master.DATA_PATH)
-        for i in self._local_database.index:
-            expath.append(self._local_database.loc[i, 'o'].name[base_len:])
-        path += [i for i in expath if not i in path]
+        for i in self._local_database.index():
+            record = self._local_database.get_record(i)
+            expath.append(record['o'].name[base_len:])
+        path += [i for i in expath if i not in path]
 
         listdir = os.listdir(Master.DATA_PATH)
         listdir = list([Master.DATA_PATH + item for item in listdir if item.endswith(Master.BUFFER_TYPE)])
-        # listdir = [Master.DATA_PATH + item  for item in listdir if not item in path]
         for i in path:
             j = 0
             while j < len(listdir):
-
                 if i in listdir[j]:
                     del(listdir[j])
                 else:
@@ -1474,9 +1468,6 @@ class Master:
 
         self._overlap_buffer = [np.zeros(win_len) for i in range(self._nchannels)]
         self._windowing_buffer = [[np.zeros(win_len), np.zeros(win_len)] for i in range(self._nchannels)]
-        # format specifier used in struct.unpack    2
-        # rms constant value                        3
-        # sampwidth = ['c', 'h', 'i', 'q'][[1, 2, 4, 8].index(self._sample_width)]  # 1 2 4 8
 
         self._refresh_ev.set()
 

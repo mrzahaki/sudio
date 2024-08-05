@@ -51,22 +51,28 @@ su.echo('baroon')
 
 the record with the name of baroon will be played on the stdout audio stream. 
 
-#### Audio slicing
+#### Audio Manipulation
 
-##### Time domain
+##### Time Domain Slicing
 
-###### simple slicing
 
-The following example is used to play the audio record with the name of baroon from 12 to 27.66 seconds on the stdout audio stream.
+You can easily slice audio files to play specific segments:
 
 ```python
 su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[12: 27.66])
+song = su.add('baroon.mp3')
+su.echo(song[12: 27.66])
+
+# Play from 30 seconds to the end
+su.echo(song[30:])
+
+# Play the first 15 seconds
+su.echo(song[:15])
 ```
 
-###### slice & merge
+##### Combining Audio Segments
 
+You can join multiple segments of audio: 
 
 ```python
 su = sudio.Master()
@@ -76,39 +82,56 @@ rec = su.add('baroon.mp3')
 su.echo(rec[12: 27.66, 65: 90])
 
 # method 2
-su.echo(rec[12: 27.66] + rec[65: 90])
+result = rec[12: 27.66].join(rec[65: 90])
+
+# Combine multiple segments
+medley = song[10:20].join(song[40:50], song[70:80])
+su.echo(medley)
 ```
 
 The audio record is split into two parts, the first one 12-27.66 seconds, and the last one 65-90 seconds, then the sliced records are merged and played in the stream.
 
+##### Audio Basic Effects
 
-##### Frequency domain
+###### Volume Adjustment
 
-###### LPF 100Hz
-
-```python
-su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon[: '100'])
-```
-
-###### HPF 1KHz
+Adjust the volume of an audio segment:
 
 ```python
 su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon['1000':])
+song = su.add('song.mp3')
+
+# Double the volume
+loud_segment = song[10:20] * 2
+
+# Halve the volume
+quiet_segment = song[30:40] / 2
+
+su.echo(loud_segment.join(quiet_segment))
 ```
 
-###### BPF 500Hz - 1KHz
+###### Applying Filters
+
+Apply frequency filters to audio:
+
 
 ```python
 su = sudio.Master()
-baroon = su.add('baroon.mp3')
-su.echo(baroon['500':'1000'])
+song = su.add('song.mp3')
+
+# Apply a low-pass filter (keep frequencies below 1000 Hz)
+low_pass = song[:'1000Hz']
+
+# Apply a high-pass filter (keep frequencies above 500 Hz)
+high_pass = song['500Hz':]
+
+# Apply a band-pass filter (keep frequencies between 500 Hz and 2000 Hz)
+band_pass = song['500Hz':'2000Hz']
+
+su.echo(low_pass.join(high_pass, band_pass))
 ```
 
-##### Complex Slicing
+###### Complex Slicing
 
 ```python
 su = sudio.Master()
@@ -117,6 +140,117 @@ su.echo(baroon[5:10, :'1000', 10: 20, '1000': '5000'])
 ```
 
 In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5 to 10 seconds, then a band-pass filter is applied from 10 to 20 seconds, and finally they are merged.
+
+######  Custom Fade-In and Mixing
+
+```python
+import numpy as np
+import sudio
+
+su = sudio.Master()
+song = su.add('example.mp3')
+
+fade_length = int(song.get_sample_rate() * 5)  # 5-second fade
+fade_in = np.linspace(0, 1, fade_length)
+
+with song.unpack() as data:
+    data = data.astype(np.float64)
+    data[:, :fade_length] *= fade_in
+    song.set_data(data)
+
+modified = song[:30] + song[:15, :'100'] * 3
+su.echo(modified)
+su.export(modified, 'modified_song.wav')
+```
+
+This example demonstrates advanced audio manipulation techniques:
+
+1. **Fade-In Effect**: We create a 5-second linear fade-in effect.
+
+2. **Data Type Conversion**: The audio data is converted to float64 for precise calculations.
+
+3. **Unpacking and Repacking**: We use `unpack()` to access raw audio data, modify it, and then `set_data()` to apply changes.
+
+4. **Audio Slicing and Mixing**:
+   - `song[:30]`: Takes the first 30 seconds of the audio.
+   - `song[:15, :'100']`: Takes the first 15 seconds and applies a low-pass filter at 100 Hz.
+   - The `* 3` multiplies the amplitude of the filtered segment.
+   - These segments are then added together.
+
+5. **Playback and Export**: The modified audio is played and exported to a new file.
+
+This example showcases the library's capability to perform complex audio manipulations, combining time-domain operations (fade-in, slicing) with frequency-domain filtering and amplitude adjustments.
+
+
+##### Audio Analysis
+
+Perform simple analysis on audio files:
+
+```python
+su = sudio.Master()
+song = su.add('song.mp3')
+
+# Get audio duration
+duration = song.get_duration()
+print(f"Song duration: {duration} seconds")
+
+# Get sample rate
+sample_rate = song.get_sample_rate()
+print(f"Sample rate: {sample_rate} Hz")
+
+# Get number of channels
+channels = song.get_nchannels()
+print(f"Number of channels: {channels}")
+```
+
+##### Exporting Modified Audio
+
+After manipulating audio, you can save the results:
+
+```python
+su = sudio.Master()
+song = su.add('song.mp3')
+
+# Create a modified version
+modified = song[30:60] * 1.5  # 30 seconds from 30s mark, amplified
+
+# Export to a new file
+su.export(modified, 'modified_song.wav')
+```
+
+##### Mixing and Shifting Tracks
+
+When adding two Wrap objects, the combined audio will be as long as the longer one, mixing overlapping parts. Adding a constant shifts the waveform up while keeping the original duration. This allows for flexible audio mixing and simple DC offset adjustments.
+
+```python
+import sudio
+import numpy as np
+
+su = sudio.Master()
+
+# Add two audio files
+song1 = su.add('song1.mp3')  # Assuming this is a 30-second audio
+song2 = su.add('song2.mp3')  # Assuming this is a 40-second audio
+
+# Add the two songs
+combined = song1 + song2
+
+# Play the combined audio
+su.echo(combined)
+
+# Add a constant value to shift the audio
+shifted = song1 + 0.1
+
+# Play the shifted audio
+su.echo(shifted)
+
+# Print durations
+print(f"Song1 duration: {song1.get_duration()} seconds")
+print(f"Song2 duration: {song2.get_duration()} seconds")
+print(f"Combined duration: {combined.get_duration()} seconds")
+print(f"Shifted duration: {shifted.get_duration()} seconds")
+```
+
 
 
 
@@ -271,15 +405,17 @@ This example introduces a more complex setup using a custom pipeline to dynamica
         - [Latest development release on GitHub](#latest-development-release-on-github)
   - [Quick start](#quick-start)
       - [Audio playback](#audio-playback)
-      - [Audio slicing](#audio-slicing)
-        - [Time domain](#time-domain)
-          - [simple slicing](#simple-slicing)
-          - [slice \& merge](#slice--merge)
-        - [Frequency domain](#frequency-domain)
-          - [LPF 100Hz](#lpf-100hz)
-          - [HPF 1KHz](#hpf-1khz)
-          - [BPF 500Hz - 1KHz](#bpf-500hz---1khz)
-        - [Complex Slicing](#complex-slicing)
+      - [Audio Manipulation](#audio-manipulation)
+        - [Time Domain Slicing](#time-domain-slicing)
+        - [Combining Audio Segments](#combining-audio-segments)
+        - [Audio Basic Effects](#audio-basic-effects)
+          - [Volume Adjustment](#volume-adjustment)
+          - [Applying Filters](#applying-filters)
+          - [Complex Slicing](#complex-slicing)
+          - [Custom Fade-In and Mixing](#custom-fade-in-and-mixing)
+        - [Audio Analysis](#audio-analysis)
+        - [Exporting Modified Audio](#exporting-modified-audio)
+        - [Mixing and Shifting Tracks](#mixing-and-shifting-tracks)
       - [Audio Streaming](#audio-streaming)
         - [Basic Streaming with Pause and Resume](#basic-streaming-with-pause-and-resume)
         - [Basic Streaming with Jumping to Specific Times in the Audio](#basic-streaming-with-jumping-to-specific-times-in-the-audio)
@@ -575,7 +711,7 @@ Adds a new record to the local database of the Master object.
 - `record`: The record to be added. Can be one of the following:
   - A `Wrap` or `WrapGenerator` object
   - A string path to an audio file (supported formats: mp3, WAV, FLAC, VORBIS)
-  - A pandas `Series` containing record data
+  - AudioMetadata containing record data
   - A tuple `(record, name)` where `record` is any of the above, and `name` is a custom name for the record
 
 - `safe_load`: bool, optional (default=True)
@@ -603,8 +739,8 @@ master.add("path/to/audio.wav")
 wrapped_record = some_wrap_generator()
 master.add((wrapped_record, "my_custom_name"))
 
-# Adding a pandas Series record
-series_record = pd.Series({...})  # Record data
+# Adding AudioMetadata record
+series_record = AudioMetadata(...) # Record data
 master.add(series_record)
 ```
 
@@ -737,13 +873,12 @@ This method provides a straightforward way to capture and store audio data withi
                     series: bool=False) -> Union[WrapGenerator, Record])
 ```
 
-The load method used to load a predefined recoed from the external database (static memoty) to
-the local database(dynamic memory). Trying to load a record that was previously loaded, outputs a wrapped version of the named record.
+The load method used to load a predefined record from database. Trying to load a record that was previously loaded, outputs a wrapped version of the named record.
 
 
 - **parameters**:
 
-  - **name**: The name of the predefined record.
+  - **name**: The name of the record.
   - **safe_load**: if safe load is enabled this method tries to load a record in the local database, based on the master settings, like the frame rate and etc.
   - **series**: If enabled, attempting to load a record that has already been loaded will output the data series of the named record.
 
@@ -755,7 +890,7 @@ the local database(dynamic memory). Trying to load a record that was previously 
 ##### get_record_info
 
 ```py
-   sudio.Master.get_record_info(self, name: str) -> Record
+   def get_record_info(self, record: Union[str, WrapGenerator, Wrap]) -> dict:
 ```
 
 get extra info about the record 
@@ -763,9 +898,9 @@ get extra info about the record
 
 - **parameters**:
 
-  - **name**: name of the registered record on the local or external 
+  - **name** Union[str, WrapGenerator, Wrap]): registered record on the database
 
-- **returns** information about saved record ['noiseLevel' 'frameRate'  'sizeInByte' 'duration' 'nchannels' 'nperseg' 'name'].
+- **returns** information about saved record ['frameRate'  'sizeInByte' 'duration' 'nchannels' 'nperseg' 'name'].
 
 <br />
 
@@ -826,17 +961,16 @@ This method used to Synchronize wrapped record/s with the specified properties.
 ##### del_record
 
 ```py
-sudio.Master.del_record(self, name: str, deep: bool=False)
+sudio.Master.del_record(self, name: str)
 
 ```
 
-The del_record method used to delete a record from the internal/external database.
+The del_record method used to delete a record from database.
 
 
 - **parameters**:
 
-- **name** str: the name of preloaded record.
-- **deep** bool: deep delete mode is used to remove the record  and its corresponding caches from the external database.
+- **name** str: name of record.
 -  **returns** None
 
 <br />
@@ -861,11 +995,10 @@ Convert the record to the wav audio format.
 ##### get_record_names
 
 ```py
-sudio.Master.get_record_names(self, local_database: bool=True) -> list
+sudio.Master.get_record_names(self) -> list
 ```
 
-**param** local_database: if false then external database will be selected
-**returns**: a list of the saved records in the external or internal database
+**returns**: a list of the saved records in database
 
 <br />
 
@@ -1242,7 +1375,7 @@ Set the current time of streamed record.
 ### WrapGenerator
 
 ```py
-sudio.WrapGenerator(self, master: Master, record: Union[str, pd.Series])
+sudio.WrapGenerator(self, master: Master, record: Union[str, AudioMetadata])
 ```
 
 Generates a Wrap object, which wraps the raw record.
@@ -1556,7 +1689,7 @@ Synchronize the current object with the master (optional) and create a new Wrap 
 ### Wrap
 
 ```py
-sudio.Wrap(self, master: Master, record: pd.Series, generator: WrapGenerator)
+sudio.Wrap(self, master: Master, record: AudioMetadata, generator: WrapGenerator)
 ```
 
 <br />
@@ -1678,7 +1811,7 @@ master.echo(wrap)
 ##### get_data
 
 ```py
-sudio.Wrap.get_data(self) -> Union[pd.Series, numpy.ndarray]
+sudio.Wrap.get_data(self) -> Union[AudioMetadata, numpy.ndarray]
 ```
 if the current object is unpacked:
 - Returns the audio data in a ndarray format with shape of (number of audio channels, block size).

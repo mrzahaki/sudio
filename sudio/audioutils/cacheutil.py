@@ -1,7 +1,6 @@
 import io
 import os
 from builtins import ValueError
-import pandas as pd
 import numpy as np
 from typing import Union,Tuple
 
@@ -9,6 +8,7 @@ from sudio.audioutils.audio import Audio
 from sudio.audioutils.sync import synchronize_audio
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import DecodeError
+from sudio.metadata import AudioMetadata
 
 
 def write_to_cached_file(*head,
@@ -85,19 +85,19 @@ def write_to_cached_file(*head,
     return file
 
 
-def handle_cached_record(record: Union[pd.Series, dict],
+def handle_cached_record(record: Union[AudioMetadata, dict],
                          path_server: TimedIndexedString,
                          master_obj,
                          decoder: callable = None,
                          sync_sample_format_id: int = None,
                          sync_nchannels: int = None,
                          sync_sample_rate: int = None,
-                         safe_load: bool = True) -> pd.Series:
+                         safe_load: bool = True) -> AudioMetadata:
     """
     Handles caching of audio records, ensuring synchronization and safe loading.
 
     Parameters:
-    - record: Audio record as a pandas Series or dictionary.
+    - record: Audio record as AudioMetadata or dictionary.
     - path_server: TimedIndexedString object for generating unique paths.
     - master_obj: Object managing the audio cache.
     - decoder: Callable function for decoding audio if needed.
@@ -107,7 +107,7 @@ def handle_cached_record(record: Union[pd.Series, dict],
     - safe_load: If True, ensures safe loading in case of errors.
 
     Returns:
-    - Modified audio record as a pandas Series.
+    - Modified audio record as AudioMetadata.
     """
     sync_sample_format_id = master_obj._sample_format if sync_sample_format_id is None else sync_sample_format_id
     sync_nchannels = master_obj._nchannels if sync_nchannels is None else sync_nchannels
@@ -210,7 +210,7 @@ def handle_cached_record(record: Union[pd.Series, dict],
     record['duration'] = record['size'] / (record['frameRate'] *
                                            record['nchannels'] *
                                            Audio.get_sample_size(record['sampleFormat']))
-    if isinstance(record, pd.Series):
+    if isinstance(record, AudioMetadata):
         # Extract name information from file path for Series
         post = record['o'].name.index(master_obj.__class__.BUFFER_TYPE)
         pre = max(record['o'].name.rfind('\\'), record['o'].name.rfind('/'))

@@ -4,13 +4,12 @@ import numpy as np
 import scipy.signal as scisig
 from contextlib import contextmanager
 from typing import Union
-import pandas as pd
 
 from sudio.types.name import Name
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio.audioutils.audio import Audio
 from sudio.extras.strtool import parse_dictionary_string
-
+from sudio.metadata import AudioMetadata
 
 class Wrap:
     name = Name()
@@ -20,7 +19,7 @@ class Wrap:
         Initialize the Wrap object.
 
         :param other: The parent object.
-        :param record: Preloaded record or pandas series.
+        :param record: Preloaded record or AudioMetadata.
         :param generator: The audio generator associated with the record.
 
         Slicing:
@@ -441,12 +440,24 @@ class Wrap:
         :param other: The other object or constant to be added.
         :return: The modified Wrap object after addition.
         """
+        assert self._packed, AttributeError('The Wrap object must be packed')
+        
         if type(other) is float or type(other) is int:
-            assert self._packed, AttributeError('The Wrap object must be packed')
             with self.unpack() as data:
                 self._data = data + other
         else:
-            self.join(other)
+            assert self._nchannels == other._nchannels, ValueError('channels must be equal')
+            assert other._packed, AttributeError('The Wrap object must be packed')
+
+            with self.unpack() as data:
+                with other.unpack() as otherdata:
+                    if data.shape[-1] > otherdata.shape[-1]:
+                        common_data = data[:, :otherdata.shape[-1]] + otherdata
+                        self._data = np.concatenate((common_data, data[:, otherdata.shape[-1]:]), axis=1)
+
+                    else:
+                        common_data = data + otherdata[:, :data.shape[-1]]
+                        self._data = np.concatenate((common_data, otherdata[:, data.shape[-1]:]), axis=1)
         return self
 
     def __sub__(self, other):
@@ -456,10 +467,24 @@ class Wrap:
         :param other: The constant to be subtracted.
         :return: The modified Wrap object after subtraction.
         """
-        assert type(other) is float or type(other) is int
         assert self._packed, AttributeError('The Wrap object must be packed')
-        with self.unpack() as data:
-            self._data = data // other
+        
+        if type(other) is float or type(other) is int:
+            with self.unpack() as data:
+                self._data = data - other
+        else:
+            assert self._nchannels == other._nchannels, ValueError('channels must be equal')
+            assert other._packed, AttributeError('The Wrap object must be packed')
+
+            with self.unpack() as data:
+                with other.unpack() as otherdata:
+                    if data.shape[-1] > otherdata.shape[-1]:
+                        common_data = data[:, :otherdata.shape[-1]] - otherdata
+                        self._data = np.concatenate((common_data, data[:, otherdata.shape[-1]:]), axis=1)
+
+                    else:
+                        common_data = data - otherdata[:, :data.shape[-1]]
+                        self._data = np.concatenate((common_data, otherdata[:, data.shape[-1]:]), axis=1)
         return self
 
     def _from_buffer(self, data: bytes):
@@ -527,7 +552,7 @@ class Wrap:
 
             self._data = self._file
 
-    def get_data(self) -> Union[pd.Series, np.ndarray]:
+    def get_data(self) -> Union[AudioMetadata, np.ndarray]:
         """
         Get the audio data either from cached files or dynamic memory.
 

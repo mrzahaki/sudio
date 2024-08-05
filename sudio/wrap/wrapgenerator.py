@@ -1,6 +1,5 @@
 import io
 import os
-import pandas as pd
 from contextlib import contextmanager
 
 from sudio.wrap.wrap import Wrap
@@ -9,7 +8,8 @@ from sudio.audioutils.audio import Audio
 from sudio.audioutils.cacheutil import write_to_cached_file, handle_cached_record
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
-
+from sudio.metadata import AudioMetadata
+import numpy as np
 
 class WrapGenerator:
     # Class variable to store the name
@@ -25,8 +25,8 @@ class WrapGenerator:
         '''
         # Check the type of record and handle accordingly
         rec_type = type(record)
-        if rec_type is pd.Series:
-            self._rec: pd.Series = record
+        if rec_type is AudioMetadata:
+            self._rec: AudioMetadata = record
             # Convert bytes to cache and update the record
             if type(record['o']) is bytes:
                 record['o'] = (
@@ -44,7 +44,7 @@ class WrapGenerator:
 
         elif rec_type is str:
             # Load record if it's a string
-            self._rec: pd.Series = master.load(record, series=True)
+            self._rec: AudioMetadata = master.load(record, series=True)
 
         self._parent = master
         self._file: io.BufferedRandom = self._rec['o']
@@ -60,6 +60,9 @@ class WrapGenerator:
         self._sample_type = self._parent._sample_width_format_str
         self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
         self._seek = 0
+        self._data = self._rec['o']
+        self._packed = True
+
 
     def __call__(self,
                  *args,
@@ -94,12 +97,12 @@ class WrapGenerator:
                     record,
                     self)
 
-    def get_data(self) -> pd.Series:
+    def get_data(self) -> AudioMetadata:
         '''
         Get the data of the WrapGenerator instance.
 
         Returns:
-            pd.Series: The data.
+            AudioMetadata: The data.
         '''
         return self._rec.copy()
 
@@ -332,3 +335,68 @@ class WrapGenerator:
             Wrap: A Wrap instance.
         '''
         return self.__call__().__sub__(other)
+
+    def _from_buffer(self, data: bytes):
+        """
+        Convert binary data to a NumPy array.
+
+        :param data: Binary data to be converted.
+        :return: The NumPy array representing the data.
+        """
+        data = np.frombuffer(data, self._sample_type)
+        if self._nchannels > 1:
+            data = np.append(*[[data[i::self._nchannels]] for i in range(self._nchannels)],
+                             axis=0)
+        return data
+
+    def _to_buffer(self, data: np.array):
+        """
+        Convert a NumPy array to binary data.
+
+        :param data: The NumPy array to be converted.
+        :return: Binary data representing the array.
+        """
+        if self._nchannels > 1:
+            data = data.T.reshape(np.prod(data.shape))
+        return data.astype(self._sample_type).tobytes()
+
+    @contextmanager
+    def unpack(self, reset=False) -> np.ndarray:
+        '''
+        Unpacks audio data from cached files to dynamic memory.
+
+        :param reset: Resets the audio pointer to time 0 (Equivalent to slice '[:]').
+        :return: Audio data in ndarray format with shape (number of audio channels, block size).
+
+        Notes:
+        - All calculations within the unpacked block are performed on the pre-cached
+        files, not on the original audio data.
+
+        EXAMPLES
+        --------
+        >>> master = Master()
+        >>> wrap = master.add('file.mp3')
+        >>> with wrap.unpack() as data:
+        >>>     wrap.set_data(data * 0.7)
+        >>> master.echo(wrap)
+        '''
+        try:
+            self._packed = False
+            if reset:
+                self.reset()
+
+            with self.get() as f:
+                data = self._from_buffer(f.read())
+                self._data = data
+            yield data
+
+        finally:
+            self._packed = True
+            data = self._to_buffer(self._data)
+
+            with self.get(self._parent.__class__.CACHE_INFO, 0) as file:
+                file.truncate()
+                file.write(data)
+                file.flush()
+
+            self._data = self._file

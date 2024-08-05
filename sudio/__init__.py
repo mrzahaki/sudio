@@ -7,3 +7,4 @@
 """
 from sudio.pipeline import Pipeline
 from sudio._master import Master
+import sudio.types
