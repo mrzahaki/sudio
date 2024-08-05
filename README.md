@@ -23,6 +23,16 @@ Sudio is a comprehensive library for mixing, editing, and recording audio conten
 The sudio used additional cached files to reduce dynamic memory usage and improve performance, meaning that audio data storage methods could have different execution times based on the stored files. Thanks to that, 
 Sudo can manage various audio streams from audio files or operating systems without any size limitation.
 
+</br>
+</br>
+</br>
+</br>
+<div align="center"> 🎵 <b>Sudio</b> is like a <b>budding musician</b> finding its rhythm. Your support can help it <b>compose a symphony</b>. 🎶</div>
+</br>
+</br>
+</br>
+</br>
+
 ## Installation
 
 
