@@ -3,7 +3,7 @@
 **/__pycache__/*
 sudio/*.jpg
 lab
-dist
+
 
 !examples
 !.gitignore
@@ -11,5 +11,4 @@ dist
 !sudio
 !README.md
 
-!dist
 !img
