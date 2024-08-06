@@ -54,7 +54,7 @@ def synchronize_audio(rec,
 
     else:
         data = [[data[i::rec['nchannels']]] for i in range(nchannels)]
-        data = np.append(*data, axis=0)
+        data = np.concatenate(data, axis=0)
 
     if not sample_rate == rec['frameRate']:
         scale = sample_rate / rec['frameRate']

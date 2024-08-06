@@ -1,14 +1,51 @@
 import io
 import os
+import time
 from builtins import ValueError
 import numpy as np
 from typing import Union,Tuple
+import platform
 
 from sudio.audioutils.audio import Audio
 from sudio.audioutils.sync import synchronize_audio
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import DecodeError
 from sudio.metadata import AudioMetadata
+
+
+def is_file_locked(file_path):
+    # Determine the operating system
+    is_windows = platform.system() == "Windows"
+
+    if not is_windows:
+        try:
+            import fcntl
+        except ImportError:
+            fcntl = None
+
+    if is_windows:
+        try:
+            # On Windows, try to open the file in read-write mode
+            with open(file_path, 'r+') as f:
+                return False
+        except IOError:
+            return True
+    else:
+        if fcntl:
+            try:
+                with open(file_path, 'rb') as file:
+                    fcntl.flock(file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    fcntl.flock(file.fileno(), fcntl.LOCK_UN)
+                return False
+            except IOError:
+                return True
+        else:
+            # Fallback method if fcntl is not available
+            try:
+                with open(file_path, 'r+') as f:
+                    return False
+            except IOError:
+                return True
 
 
 def write_to_cached_file(*head,
@@ -92,7 +129,8 @@ def handle_cached_record(record: Union[AudioMetadata, dict],
                          sync_sample_format_id: int = None,
                          sync_nchannels: int = None,
                          sync_sample_rate: int = None,
-                         safe_load: bool = True) -> AudioMetadata:
+                         safe_load: bool = True,
+                         max_attempts=5) -> AudioMetadata:
     """
     Handles caching of audio records, ensuring synchronization and safe loading.
 
@@ -117,29 +155,30 @@ def handle_cached_record(record: Union[AudioMetadata, dict],
     cache = master_obj._cache()
     try:
         if path in cache:
-            try:
-                os.rename(path, path)
-                f = record['o'] = open(path, 'rb+')
-            except OSError:
-                while True:
-                    new_path: str = path_server()
-                    try:
-                        if os.path.exists(new_path):
-                            os.rename(new_path, new_path)
-                            f = record['o'] = open(new_path, 'rb+')
-                        else:
+            attempt = 0
+            while attempt < max_attempts:
+                try:
+                    if not is_file_locked(path):
+                        f = record['o'] = open(path, 'rb+')
+                        break
+                    else:
+                        new_path = path_server()
+                        if not os.path.exists(new_path) or not is_file_locked(new_path):
                             # Write a new file based on the new path
                             data_chunk = int(1e7)
-                            with open(path, 'rb+') as pre_file:
+                            with open(path, 'rb') as pre_file:
                                 f = record['o'] = open(new_path, 'wb+')
                                 data = pre_file.read(data_chunk)
                                 while data:
                                     f.write(data)
                                     data = pre_file.read(data_chunk)
                             break
-                    except OSError:
-                        # If data already opened in another process, continue trying
-                        continue
+                except (IOError, OSError) as e:
+                    attempt += 1
+                    time.sleep(0.1)  # Short delay before retrying
+
+            if attempt >= max_attempts:
+                raise IOError(f"Unable to access the file after {max_attempts} attempts")
 
             f.seek(0, 0)
             cache_info = f.read(master_obj.__class__.CACHE_INFO)
