@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='sudio',
-    version='1.0.9.341',
+    version='1.0.9.343',
     packages=[
         'sudio', 
         'sudio.extras', 

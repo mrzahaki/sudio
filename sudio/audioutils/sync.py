@@ -53,8 +53,11 @@ def synchronize_audio(rec,
             rec['nchannels'] = nchannels
 
     else:
-        data = [[data[i::rec['nchannels']]] for i in range(nchannels)]
-        data = np.concatenate(data, axis=0)
+        # Safety update: Ensure all arrays have the same size
+        channel_data = [data[i::rec['nchannels']] for i in range(nchannels)]
+        min_length = min(len(channel) for channel in channel_data)
+        channel_data = [channel[:min_length] for channel in channel_data]
+        data = np.array(channel_data)
 
     if not sample_rate == rec['frameRate']:
         scale = sample_rate / rec['frameRate']

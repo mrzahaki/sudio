@@ -42,6 +42,7 @@ from sudio.audioutils.codec import decode_audio_file
 from sudio.audioutils.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
 from sudio.audioutils.sync import synchronize_audio
 from sudio.audioutils.cacheutil import handle_cached_record, write_to_cached_file
+from sudio.audioutils.typeconversion import get_format_from_width
 from sudio.pipeline import Pipeline
 from sudio.metadata import AudioMetadataDatabase, AudioMetadata
 
@@ -177,7 +178,7 @@ class Master:
         # Set initial values for various attributes
         self._sound_buffer_size = buffer_size
         self._stream_type = StreamMode.optimized
-        data_format = data_format.value
+        self._sample_format_type = data_format
         self.input_dev_callback = None
         self.output_dev_callback = None
         self._default_stream_callback = self._stream_callback
@@ -224,6 +225,7 @@ class Master:
             self._sample_rate = int(dev['defaultSampleRate'])
 
 
+        data_format = data_format.value
         # Set number of output channels to a large value initially
         self._sample_width = Audio.get_sample_size(data_format)
         self._sample_format = data_format
@@ -1763,6 +1765,8 @@ class Master:
         self._windowing_buffer = [[np.zeros(self._nperseg), np.zeros(self._nperseg)] for i in range(self._nchannels)]
         self._main_stream.clear()
 
+    def get_sample_format(self)->SampleFormat:
+        return self._sample_format_type
 
     @staticmethod
     def get_default_input_device_info():

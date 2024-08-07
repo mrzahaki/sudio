@@ -154,8 +154,9 @@ In the example above, a low-pass filter with a cutoff frequency of 1 kHz is appl
 ######  Custom Fade-In and Mixing
 
 ```python
-import numpy as np
 import sudio
+from sudio.types import SampleFormat
+import numpy as np
 
 su = sudio.Master()
 song = su.add('example.mp3')
@@ -163,8 +164,7 @@ song = su.add('example.mp3')
 fade_length = int(song.get_sample_rate() * 5)  # 5-second fade
 fade_in = np.linspace(0, 1, fade_length)
 
-with song.unpack() as data:
-    data = data.astype(np.float64)
+with song.unpack(astype=SampleFormat.formatFloat32) as data:
     data[:, :fade_length] *= fade_in
     song.set_data(data)
 
@@ -177,7 +177,7 @@ This example demonstrates advanced audio manipulation techniques:
 
 1. **Fade-In Effect**: We create a 5-second linear fade-in effect.
 
-2. **Data Type Conversion**: The audio data is converted to float64 for precise calculations.
+2. **Data Type Conversion**: The audio data is converted to float32 for precise calculations.
 
 3. **Unpacking and Repacking**: We use `unpack()` to access raw audio data, modify it, and then `set_data()` to apply changes.
 
@@ -1796,7 +1796,8 @@ Returns a new wrapped record by joining and synchronizing all the elements of th
 
 ```py
 @contextmanager
-sudio.Wrap.unpack(self, reset=False) -> np.ndarray
+    def unpack(self, reset=False, astype:SampleFormat=SampleFormat.formatUnknown) -> np.ndarray:
+
 ```
 
 Unpack audio data  from cached files to the dynamic memory.

@@ -1,4 +1,6 @@
-from sudio.types import LibSampleFormat, MiniaudioError
+from sudio.types import LibSampleFormat, MiniaudioError, SampleFormat
+import numpy as np
+
 
 def get_sample_width_from_format(sample_format: LibSampleFormat) -> int:
     """
@@ -58,3 +60,28 @@ def get_format_from_width(sample_width: int, is_float: bool = False) -> LibSampl
 
 
 
+def convert_array_type(arr:np.ndarray, sample_format:SampleFormat):
+    """
+    Convert the data type of a NumPy array based on the given SampleFormat.
+    
+    Args:
+    arr (np.ndarray): Input NumPy array
+    sample_format (SampleFormat): Desired output format
+    
+    Returns:
+    np.ndarray: Converted NumPy array
+    """
+    if sample_format == SampleFormat.formatFloat32:
+        return arr.astype(np.float32)
+    elif sample_format == SampleFormat.formatInt32:
+        return arr.astype(np.int32)
+    elif sample_format == SampleFormat.formatInt16:
+        return arr.astype(np.int16)
+    elif sample_format == SampleFormat.formatInt8:
+        return arr.astype(np.int8)
+    elif sample_format == SampleFormat.formatUInt8:
+        return arr.astype(np.uint8)
+    elif sample_format == SampleFormat.formatUnknown:
+        return arr  # Return the original array without conversion
+    else:
+        raise ValueError("Unsupported sample format")

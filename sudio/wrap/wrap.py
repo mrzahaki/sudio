@@ -8,6 +8,7 @@ from typing import Union
 from sudio.types.name import Name
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio.audioutils.audio import Audio
+from sudio.audioutils.typeconversion import convert_array_type
 from sudio.extras.strtool import parse_dictionary_string
 from sudio.metadata import AudioMetadata
 
@@ -186,7 +187,7 @@ class Wrap:
             for series in other:
                 # assert self._sample_rate == other._sample_rate and
                 # print(series['o'], other)
-                main_data = np.append(main_data, series['o'], axis=axis)
+                main_data = np.concatenate((main_data, series['o']), axis=axis)
             self.set_data(main_data)
         return self
 
@@ -496,7 +497,7 @@ class Wrap:
         """
         data = np.frombuffer(data, self._sample_type)
         if self._nchannels > 1:
-            data = np.append(*[[data[i::self._nchannels]] for i in range(self._nchannels)],
+            data = np.concatenate([[data[i::self._nchannels]] for i in range(self._nchannels)],
                              axis=0)
         return data
 
@@ -512,7 +513,7 @@ class Wrap:
         return data.astype(self._sample_type).tobytes()
 
     @contextmanager
-    def unpack(self, reset=False) -> np.ndarray:
+    def unpack(self, reset=False, astype:SampleFormat=SampleFormat.formatUnknown) -> np.ndarray:
         '''
         Unpacks audio data from cached files to dynamic memory.
 
@@ -531,6 +532,8 @@ class Wrap:
         >>>     wrap.set_data(data * 0.7)
         >>> master.echo(wrap)
         '''
+        astype_backup = None
+
         try:
             self._packed = False
             if reset:
@@ -539,10 +542,16 @@ class Wrap:
             with self.get() as f:
                 data = self._from_buffer(f.read())
                 self._data = data
+            if not astype == SampleFormat.formatUnknown:
+                astype_backup = self._sample_type
+                data = convert_array_type(data, astype)
             yield data
 
         finally:
             self._packed = True
+            if astype_backup is not None:
+                data = data.astype(astype_backup)
+
             data = self._to_buffer(self._data)
 
             with self.get(self._parent.__class__.CACHE_INFO, 0) as file:

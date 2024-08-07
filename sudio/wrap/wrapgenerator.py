@@ -6,6 +6,7 @@ from sudio.wrap.wrap import Wrap
 from sudio.types.name import Name
 from sudio.audioutils.audio import Audio
 from sudio.audioutils.cacheutil import write_to_cached_file, handle_cached_record
+from sudio.audioutils.typeconversion import convert_array_type
 from sudio.extras.timed_indexed_string import TimedIndexedString
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio.metadata import AudioMetadata
@@ -345,7 +346,7 @@ class WrapGenerator:
         """
         data = np.frombuffer(data, self._sample_type)
         if self._nchannels > 1:
-            data = np.append(*[[data[i::self._nchannels]] for i in range(self._nchannels)],
+            data = np.concatenate([[data[i::self._nchannels]] for i in range(self._nchannels)],
                              axis=0)
         return data
 
@@ -361,7 +362,7 @@ class WrapGenerator:
         return data.astype(self._sample_type).tobytes()
 
     @contextmanager
-    def unpack(self, reset=False) -> np.ndarray:
+    def unpack(self, reset=False, astype:SampleFormat=SampleFormat.formatUnknown) -> np.ndarray:
         '''
         Unpacks audio data from cached files to dynamic memory.
 
@@ -380,6 +381,8 @@ class WrapGenerator:
         >>>     wrap.set_data(data * 0.7)
         >>> master.echo(wrap)
         '''
+        astype_backup = None
+
         try:
             self._packed = False
             if reset:
@@ -388,10 +391,16 @@ class WrapGenerator:
             with self.get() as f:
                 data = self._from_buffer(f.read())
                 self._data = data
+            if not astype == SampleFormat.formatUnknown:
+                astype_backup = self._sample_type
+                data = convert_array_type(data, astype)
             yield data
 
         finally:
             self._packed = True
+            if astype_backup is not None:
+                data = data.astype(astype_backup)
+
             data = self._to_buffer(self._data)
 
             with self.get(self._parent.__class__.CACHE_INFO, 0) as file:
