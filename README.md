@@ -130,13 +130,13 @@ su = sudio.Master()
 song = su.add('song.mp3')
 
 # Apply a low-pass filter (keep frequencies below 1000 Hz)
-low_pass = song[:'1000Hz']
+low_pass = song[:'1000']
 
 # Apply a high-pass filter (keep frequencies above 500 Hz)
-high_pass = song['500Hz':]
+high_pass = song['500':]
 
 # Apply a band-pass filter (keep frequencies between 500 Hz and 2000 Hz)
-band_pass = song['500Hz':'2000Hz']
+band_pass = song['500':'2000']
 
 su.echo(low_pass.join(high_pass, band_pass))
 ```

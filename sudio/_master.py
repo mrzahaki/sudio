@@ -50,9 +50,6 @@ from sudio.metadata import AudioMetadataDatabase, AudioMetadata
 
 class Master:
 
-    DATA_PATH = './data/'
-    USER_PATH = DATA_PATH + 'user.sufile'
-    SAVE_PATH = DATA_PATH + 'export/'
     CACHE_INFO = 4 * 8
     BUFFER_TYPE = '.bin'
 
@@ -69,7 +66,9 @@ class Master:
                  input_dev_callback: Callable = None,
                  output_dev_nchannels:int = None,
                  output_dev_callback: Callable = None,
-                 buffer_size: int = 30):
+                 buffer_size: int = 30,
+                 audio_data_directory: str = './data/'
+                 ):
         
         """
         Initialize the Master audio processing object.
@@ -165,16 +164,6 @@ class Master:
         """
         # ----------------------------------------------------- First Initialization Section -----------------------------------------------------
 
-        # Create necessary directories if they don't exist
-        try:
-            os.mkdir(Master.DATA_PATH)
-        except FileExistsError:
-            pass
-        try:
-            os.mkdir(Master.SAVE_PATH)
-        except:
-            pass
-        
         # Set initial values for various attributes
         self._sound_buffer_size = buffer_size
         self._stream_type = StreamMode.optimized
@@ -193,7 +182,14 @@ class Master:
         self._stream_file = None
         self._nchannels = None
         self._sample_rate = None
+        self._audio_data_directory = audio_data_directory
 
+        # Create necessary directories if they don't exist
+        try:
+            os.mkdir(self._audio_data_directory)
+        except FileExistsError:
+            pass
+        
         # Suppress warnings
         warnings.filterwarnings("ignore")
 
@@ -623,8 +619,7 @@ class Master:
             p1 = None
         name = filename[p0: p1]
         if name in self._local_database.index():
-            raise KeyError('Record with the name of {}'
-                           ' already registered in database'.format(name))
+            name = name + generate_timestamp_name()
 
 
         if safe_load and  record['nchannels'] > self._nchannels:
@@ -637,7 +632,7 @@ class Master:
 
         record = (
         handle_cached_record(record,
-                    TimedIndexedString(Master.DATA_PATH + name + Master.BUFFER_TYPE,
+                    TimedIndexedString(self._audio_data_directory + name + Master.BUFFER_TYPE,
                                       start_before=Master.BUFFER_TYPE),
                     self,
                     safe_load = safe_load,
@@ -755,7 +750,7 @@ class Master:
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
-                                file_name=Master.DATA_PATH + record.name + Master.BUFFER_TYPE,
+                                file_name=self._audio_data_directory + record.name + Master.BUFFER_TYPE,
                                 data=record['o'],
                                 pre_truncate=True,
                                 after_seek=(Master.CACHE_INFO, 0),
@@ -765,7 +760,7 @@ class Master:
                 record['o'] = f
                 record['size'] = newsize
 
-            elif (not (Master.DATA_PATH + record.name + Master.BUFFER_TYPE) == record.name) or \
+            elif (not (self._audio_data_directory + record.name + Master.BUFFER_TYPE) == record.name) or \
                     record.name in self._local_database.index():
                 # new sliced Wrap data
 
@@ -780,7 +775,7 @@ class Master:
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
-                                file_name=Master.DATA_PATH + record.name + Master.BUFFER_TYPE,
+                                file_name=self._audio_data_directory + record.name + Master.BUFFER_TYPE,
                                 data=prefile.read(),
                                 after_seek=prepos,
                                 after_flush=True,
@@ -886,7 +881,7 @@ class Master:
             record_data['frameRate'],
             record_data['sampleFormat'],
             record_data['nchannels'],
-            file_name=f"{Master.DATA_PATH}{name}{Master.BUFFER_TYPE}",
+            file_name=f"{self._audio_data_directory}{name}{Master.BUFFER_TYPE}",
             data=sample.tobytes(),
             pre_truncate=True,
             after_seek=(Master.CACHE_INFO, 0),
@@ -1110,7 +1105,7 @@ class Master:
         gc.collect()
 
 
-    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str=SAVE_PATH):
+    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str='./'):
         '''
         Convert the record to the wav audio format.
         :param record: record can be the name of registered record, an AudioMetadata or an wrap object
@@ -1145,7 +1140,8 @@ class Master:
         if p0:
             file_path = file_path[0: p0 + 1] + name
         else:
-            file_path = Master.SAVE_PATH + name
+            file_path =  name
+            
         file = record['o']
         file_pos = file.tell()
         data = file.read()
@@ -1409,14 +1405,14 @@ class Master:
     def _cache(self):
         path = []
         expath = []
-        base_len = len(Master.DATA_PATH)
+        base_len = len(self._audio_data_directory)
         for i in self._local_database.index():
             record = self._local_database.get_record(i)
             expath.append(record['o'].name[base_len:])
         path += [i for i in expath if i not in path]
 
-        listdir = os.listdir(Master.DATA_PATH)
-        listdir = list([Master.DATA_PATH + item for item in listdir if item.endswith(Master.BUFFER_TYPE)])
+        listdir = os.listdir(self._audio_data_directory)
+        listdir = list([self._audio_data_directory + item for item in listdir if item.endswith(Master.BUFFER_TYPE)])
         for i in path:
             j = 0
             while j < len(listdir):

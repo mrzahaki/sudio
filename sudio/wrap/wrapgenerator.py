@@ -35,7 +35,7 @@ class WrapGenerator:
                                 record['frameRate'],
                                 record['sampleFormat'] if record['sampleFormat'] else 0,
                                 record['nchannels'],
-                                file_name=master.__class__.DATA_PATH + record.name + master.__class__.BUFFER_TYPE,
+                                file_name=master._audio_data_directory + record.name + master.__class__.BUFFER_TYPE,
                                 data=record['o'],
                                 pre_truncate=True,
                                 after_seek=(master.__class__.CACHE_INFO, 0),
