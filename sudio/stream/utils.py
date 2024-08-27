@@ -4,10 +4,10 @@ from typing import Generator, Optional, Any, Callable
 from _miniaudio import ffi, lib
 
 from sudio.types import LibSampleFormat, DitherMode, DecodeError
-from sudio.audioutils.typeconversion import get_sample_width_from_format
-from sudio.extras.arraytool import get_array_proto_from_format
-from sudio.extras.io import get_encoded_filename_bytes
-from sudio.audioutils.audio import Audio
+from sudio.audiosys.typeconversion import get_sample_width_from_format
+from sudio.utils.arraytool import get_array_proto_from_format
+from sudio.utils.io import get_encoded_filename_bytes
+from sudio.audiosys.audio import Audio
 
 
 def generate_samples_stream(frames_to_read: int, 

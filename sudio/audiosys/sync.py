@@ -1,9 +1,8 @@
 import numpy as np
-import samplerate
-
+from sudio.rateshift import rateshift
 from sudio.types import SampleFormat
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.channel import shuffle2d_channels
+from sudio.audiosys.audio import Audio
+from sudio.audiosys.channel import shuffle2d_channels
 
 
 def synchronize_audio(rec,
@@ -62,17 +61,15 @@ def synchronize_audio(rec,
     if not sample_rate == rec['frameRate']:
         scale = sample_rate / rec['frameRate']
 
-        # firwin = scisig.firwin(23, fc)
-        # firdn = lambda firwin, data,  scale: samplerate.resample(data, )
         if len(data.shape) == 1:
             # mono
-            data = samplerate.resample(data, scale, converter_type='sinc_fastest')
+            data = rateshift.resample(data, scale, rateshift.ConverterType.sinc_fastest, 1)
         else:
             # multi channel
-            res = samplerate.resample(data[0], scale, converter_type='sinc_fastest')
+            res = rateshift.resample(data[0], scale, rateshift.ConverterType.sinc_fastest, 1)
             for i in data[1:]:
                 res = np.vstack((res,
-                                 samplerate.resample(i, scale, converter_type='sinc_fastest')))
+                                 rateshift.resample(i, scale, rateshift.ConverterType.sinc_fastest, 1)))
             data = res
 
     if output_data.startswith('b') and rec['nchannels'] > 1:

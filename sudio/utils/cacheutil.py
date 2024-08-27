@@ -6,9 +6,9 @@ import numpy as np
 from typing import Union,Tuple
 import platform
 
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.sync import synchronize_audio
-from sudio.extras.timed_indexed_string import TimedIndexedString
+from sudio.audiosys.audio import Audio
+from sudio.audiosys.sync import synchronize_audio
+from sudio.utils.timed_indexed_string import TimedIndexedString
 from sudio.types import DecodeError
 from sudio.metadata import AudioMetadata
 

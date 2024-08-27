@@ -26,23 +26,23 @@ from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, Di
 from sudio.types import LibSampleFormatEnumToSample, PipelineProcessType
 from sudio.wrap.wrapgenerator import WrapGenerator
 from sudio.wrap.wrap import Wrap
-from sudio.extras.exmath import voltage_to_dBu
-from sudio.extras.strtool import generate_timestamp_name 
-from sudio.extras.timed_indexed_string import TimedIndexedString 
+from sudio.utils.exmath import voltage_to_dBu
+from sudio.utils.strtool import generate_timestamp_name 
+from sudio.utils.timed_indexed_string import TimedIndexedString 
 from sudio.stream.stream import Stream
 from sudio.stream.streamcontrol import StreamControl
 from sudio.stream.utils import stdout_stream
-from sudio.audioutils.window import multi_channel_overlap, single_channel_overlap
-from sudio.audioutils.window import multi_channel_windowing, single_channel_windowing
-from sudio.audioutils.codecinfo import get_file_info
-from sudio.audioutils import interface as audiointerface
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.io import write_wav_file
-from sudio.audioutils.codec import decode_audio_file
-from sudio.audioutils.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
-from sudio.audioutils.sync import synchronize_audio
-from sudio.audioutils.cacheutil import handle_cached_record, write_to_cached_file
-from sudio.audioutils.typeconversion import get_format_from_width
+from sudio.audiosys.window import multi_channel_overlap, single_channel_overlap
+from sudio.audiosys.window import multi_channel_windowing, single_channel_windowing
+from sudio.audiosys.codecinfo import get_file_info
+from sudio.audiosys import interface as audiointerface
+from sudio.audiosys.audio import Audio
+from sudio.audiosys.io import write_wav_file
+from sudio.audiosys.codec import decode_audio_file
+from sudio.audiosys.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
+from sudio.audiosys.sync import synchronize_audio
+from sudio.utils.cacheutil import handle_cached_record, write_to_cached_file
+from sudio.audiosys.typeconversion import get_format_from_width
 from sudio.pipeline import Pipeline
 from sudio.metadata import AudioMetadataDatabase, AudioMetadata
 

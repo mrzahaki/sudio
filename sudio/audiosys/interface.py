@@ -1,4 +1,4 @@
-from sudio.audioutils.audio import Audio
+from sudio.audiosys.audio import Audio
 
 def get_default_input_device_info():
     """

@@ -1,4 +1,4 @@
-from sudio.extras.strtool import generate_timestamp_name
+from sudio.utils.strtool import generate_timestamp_name
 
 
 class TimedIndexedString:

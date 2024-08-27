@@ -1,5 +1,5 @@
 import numpy as np
-from sudio.extras.arraytool import push
+from sudio.utils.arraytool import push
 
 
 def win_parser_mono(window, win_num):

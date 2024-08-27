@@ -2,7 +2,7 @@ import threading
 import queue
 import numpy as np
 
-from sudio.extras.arraytool import push
+from sudio.utils.arraytool import push
 from sudio.types import StreamError, PipelineProcessType
 
 

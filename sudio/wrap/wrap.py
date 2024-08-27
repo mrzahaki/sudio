@@ -7,9 +7,9 @@ from typing import Union
 
 from sudio.types.name import Name
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.typeconversion import convert_array_type
-from sudio.extras.strtool import parse_dictionary_string
+from sudio.audiosys.audio import Audio
+from sudio.audiosys.typeconversion import convert_array_type
+from sudio.utils.strtool import parse_dictionary_string
 from sudio.metadata import AudioMetadata
 
 class Wrap:

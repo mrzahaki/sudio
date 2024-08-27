@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2", "wheel", "cmake>=3.18"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sudio"
+dynamic = ["version"]
+description = "Audio Processing Platform"
+authors = [{name = "mrzahaki"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "scipy>=1.9.1",
+    "numpy>=1.23.3",
+    "pyaudio>=0.2.12",
+    "miniaudio>=1.52",
+]
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Apache License 2.0"}
+[tool.setuptools_scm]
+write_to = "sudio/_version.py"

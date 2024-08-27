@@ -4,10 +4,10 @@ from contextlib import contextmanager
 
 from sudio.wrap.wrap import Wrap
 from sudio.types.name import Name
-from sudio.audioutils.audio import Audio
-from sudio.audioutils.cacheutil import write_to_cached_file, handle_cached_record
-from sudio.audioutils.typeconversion import convert_array_type
-from sudio.extras.timed_indexed_string import TimedIndexedString
+from sudio.audiosys.audio import Audio
+from sudio.utils.cacheutil import write_to_cached_file, handle_cached_record
+from sudio.audiosys.typeconversion import convert_array_type
+from sudio.utils.timed_indexed_string import TimedIndexedString
 from sudio.types import SampleFormat, LibSampleFormatEnumToSample
 from sudio.metadata import AudioMetadata
 import numpy as np

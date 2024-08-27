@@ -1,8 +1,8 @@
 from _miniaudio import ffi, lib
 
 from sudio.types import LibSampleFormat, DitherMode, DecodeError
-from sudio.audioutils.typeconversion import get_sample_width_from_format
-from sudio.extras.io import get_encoded_filename_bytes
+from sudio.audiosys.typeconversion import get_sample_width_from_format
+from sudio.utils.io import get_encoded_filename_bytes
 
 
 
