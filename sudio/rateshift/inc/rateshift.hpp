@@ -10,6 +10,7 @@
 #include <samplerate.h>
 #include <functional>
 #include <vector>
+#include <cstddef>
 
 namespace rateshift {
 
