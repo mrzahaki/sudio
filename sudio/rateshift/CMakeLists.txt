@@ -17,6 +17,8 @@ cmake_policy(SET CMP0094 NEW)
 # Find Python
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "Found Python: ${Python_EXECUTABLE}")
+message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 
 # Add Python to prefix path
 list(PREPEND CMAKE_PREFIX_PATH ${Python_PREFIX})
@@ -35,6 +37,7 @@ target_include_directories(python-rateshift
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/external/libsamplerate/include
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
+        ${Python_INCLUDE_DIRS}
 )
 
 # Set compiler options
@@ -65,6 +68,7 @@ set_target_properties(python-rateshift
 target_link_libraries(python-rateshift
     PRIVATE
         samplerate
+        ${Python_LIBRARIES}
 )
 
 # Install rules
