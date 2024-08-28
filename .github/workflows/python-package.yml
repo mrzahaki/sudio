@@ -13,47 +13,56 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-2019, macos-11]
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.2
+    - name: Print Python version info
+      run: |
+        python --version
+        python -c "import sys; print(sys.executable)"
 
-      - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_SKIP: cp36-* pp*
-          CIBW_BEFORE_BUILD: >
-            pip install cmake setuptools_scm[toml] wheel
-          CIBW_BUILD_VERBOSITY: 3
+    - name: Install cibuildwheel
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install cibuildwheel==2.16.2
 
-      - name: List wheelhouse contents
-        run: ls -l wheelhouse
+    - name: Build wheels
+      run: |
+        python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_BUILD: cp${{ matrix.python-version/./}}-*
+        CIBW_SKIP: pp*
+        CIBW_BEFORE_BUILD: >
+          pip install cmake setuptools_scm[toml] wheel pybind11
+        CIBW_BUILD_VERBOSITY: 3
+        CIBW_ENVIRONMENT: >
+          CMAKE_ARGS="-DPython3_ROOT_DIR=$pythonLocation"
 
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl
+    - name: List wheelhouse contents
+      run: ls -l wheelhouse
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: ./wheelhouse/*.whl
 
   upload_pypi:
     needs: [build_wheels]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifact
-          path: dist
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
