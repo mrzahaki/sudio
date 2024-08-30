@@ -18,7 +18,18 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Clean previous builds
-      run: rm -rf dist wheelhouse
+      run: |
+        if [ -d dist ]; then rm -rf dist; fi
+        if [ -d wheelhouse ]; then rm -rf wheelhouse; fi
+      shell: bash
+      if: runner.os != 'Windows'
+
+    - name: Clean previous builds (Windows)
+      run: |
+        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
+        if (Test-Path wheelhouse) { Remove-Item -Recurse -Force wheelhouse }
+      shell: pwsh
+      if: runner.os == 'Windows'
       
     - name: Set up Python
       uses: actions/setup-python@v3
