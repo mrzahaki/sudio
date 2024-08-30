@@ -32,6 +32,12 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS",
 ]
+dependencies = [
+    "scipy>=1.9.1",
+    "numpy>=1.23.3",
+    "pyaudio>=0.2.12",
+    "miniaudio>=1.52",
+]
 [project.urls]
 source = "https://github.com/MrZahaki/sudio"
 
