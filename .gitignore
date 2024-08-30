@@ -28,9 +28,11 @@ parts/
 sdist/
 var/
 wheels/
+wheelhouse/
 *.egg-info/
 .installed.cfg
 *.egg
+sudio/rateshift/libsamplerate/
 
 # PyInstaller
 *.manifest

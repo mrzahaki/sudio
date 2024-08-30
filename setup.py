@@ -45,7 +45,7 @@ class CMakeBuild(build_ext):
         else:
             self._setup_windows_build(cmake_generator, cmake_args, build_args, cfg, extdir)
 
-        self._setup_cross_platform_args(build_args)
+        self._setup_cross_platform_args(build_args, cmake_args)
 
         build_temp = Path(self.build_temp) / ext.name
         build_temp.mkdir(parents=True, exist_ok=True)
@@ -75,7 +75,7 @@ class CMakeBuild(build_ext):
             cmake_args.append(f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}")
             build_args.extend(["--config", cfg])
 
-    def _setup_cross_platform_args(self, build_args):
+    def _setup_cross_platform_args(self, build_args, cmake_args):
         if "universal2" in self.plat_name:
             cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
 
@@ -94,36 +94,10 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", ".", *build_args], cwd=build_temp, check=True
         )
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 setup(
-    name='sudio',
-    version='1.0.9.35',
-    author="mrzahaki",
-    author_email="mrzahaki@gmail.com",
-    description="Audio Processing Platform",
-    long_description=read('README.md'),
-    long_description_content_type="text/markdown",
-    url="https://github.com/MrZahaki/sudio",
     packages=find_packages(),
     package_dir={'': '.'},
     ext_modules=[CMakeExtension('sudio.rateshift')],
     cmdclass={'build_ext': CMakeBuild},
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: Apache Software License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-    ],
-    python_requires='>=3.7',
-    license='Apache License 2.0',
-    license_files=['LICENSE'],
     zip_safe=False,
 )

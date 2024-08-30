@@ -1,71 +1,68 @@
 cmake_minimum_required(VERSION 3.15)
 
+include(FetchContent)
+
 # Set project name and language
-project(python-rateshift LANGUAGES CXX)
+project(python_rateshift LANGUAGES CXX)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# Fetch libsamplerate if not present
+set(BUILD_TESTING OFF CACHE BOOL "Disable libsamplerate test build")
+set(LIBSAMPLERATE_VERSION 0.2.2 CACHE STRING "libsamplerate version")
 
-# Enable export compile commands for tooling
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate")
+    message(STATUS "Fetching libsamplerate...")
+    FetchContent_Declare(
+        libsamplerate
+        GIT_REPOSITORY https://github.com/libsndfile/libsamplerate
+        GIT_TAG c96f5e3de9c4488f4e6c97f59f5245f22fda22f7 # 0.2.2
+    )
+    FetchContent_MakeAvailable(libsamplerate)
+else()
+    message(STATUS "Using existing libsamplerate in ${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate")
+    add_subdirectory(libsamplerate)
+endif()
 
-# Set CMake policies
-cmake_policy(SET CMP0094 NEW)
-
-# Find Python
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
-message(STATUS "Found Python: ${Python_EXECUTABLE}")
-message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
-
-# Add Python to prefix path
-list(PREPEND CMAKE_PREFIX_PATH ${Python_PREFIX})
-
-# Add external dependencies
-add_subdirectory(external)
-
-# Define the python module
-pybind11_add_module(python-rateshift
+# Define the Python module
+pybind11_add_module(python_rateshift
     src/python_bindings.cpp
     src/rateshift.cpp
 )
 
-# Set include directories
-target_include_directories(python-rateshift
+# Include directories
+target_include_directories(python_rateshift
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/external/libsamplerate/include
         ${CMAKE_CURRENT_SOURCE_DIR}/inc
         ${Python_INCLUDE_DIRS}
 )
 
-# Set compiler options
+# Compiler options
 if(MSVC)
-    target_compile_options(python-rateshift PRIVATE /EHsc /MP /bigobj)
+    target_compile_options(python_rateshift PRIVATE /EHsc /MP /bigobj)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else()
-    target_compile_options(python-rateshift PRIVATE -O3 -Wall -Wextra)
+    target_compile_options(python_rateshift PRIVATE -O3 -Wall -Wextra)
 endif()
 
-# Set compile definitions
-target_compile_definitions(python-rateshift
+# Compile definitions
+target_compile_definitions(python_rateshift
     PUBLIC
         LIBSAMPLERATE_VERSION="${LIBSAMPLERATE_VERSION}"
     PRIVATE
         $<$<BOOL:${PACKAGE_VERSION_INFO}>:VERSION_INFO="${PACKAGE_VERSION_INFO}">
 )
 
-# Set target properties
-set_target_properties(python-rateshift
+# Target properties
+set_target_properties(python_rateshift
     PROPERTIES
         PREFIX ""
         OUTPUT_NAME "rateshift"
-        LINKER_LANGUAGE C
+        LINKER_LANGUAGE CXX
 )
 
 # Link libraries
-target_link_libraries(python-rateshift
+target_link_libraries(python_rateshift
     PRIVATE
         samplerate
         ${Python_LIBRARIES}
@@ -73,7 +70,7 @@ target_link_libraries(python-rateshift
 
 # Install rules
 include(GNUInstallDirs)
-install(TARGETS python-rateshift
+install(TARGETS python_rateshift
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

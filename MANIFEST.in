@@ -5,11 +5,12 @@ include pyproject.toml
 include MANIFEST.in
 include CMakeLists.txt
 
+recursive-include .cache *
 recursive-include sudio *.py
 recursive-include sudio *.hpp
 recursive-include sudio *.cpp
 recursive-include sudio *.txt
-recursive-include sudio/rateshift/external *
+recursive-include sudio/rateshift *
 
 recursive-include tests *.py
 

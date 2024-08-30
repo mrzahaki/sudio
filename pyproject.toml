@@ -2,33 +2,48 @@
 requires = [
     "setuptools>=61.0",
     "setuptools_scm[toml]>=6.2",
-    "wheel",
-    "cmake>=3.18",
-    "ninja",
-    "pybind11>=2.10.0",
+    "cmake>=3.15",
+    "pybind11>=2.6.0",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sudio"
-dynamic = ["version"]
+license = {file = "LICENSE"}
+version = '1.0.9.35'
 description = "Audio Processing Platform"
-authors = [{name = "mrzahaki", email = "mrzahaki@gmail.com"}]
+authors = [{name = "Hossein Zahaki", email = "mrzahaki@gmail.com"}]
+readme = "README.md"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: C",
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3 :: Only',
+    "Typing :: Typed",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
 ]
-readme = "README.md"
-requires-python = ">=3.7"
-license = {text = "Apache License 2.0"}
+[project.urls]
+source = "https://github.com/MrZahaki/sudio"
 
-[tool.setuptools_scm]
-write_to = "sudio/_version.py"
+[tool.cibuildwheel]
+build-frontend = "build"
+skip = "cp36-* cp37-* cp38-* pp37-* *-manylinux_i686 *_ppc64le *_s390x *_universal2"
+# The build will use openblas64 everywhere, except on arm64 macOS >=14.0 (uses Accelerate)
+config-settings = "setup-args=-Duse-ilp64=true setup-args=-Dallow-noblas=false build-dir=build"
+build-verbosity = 1
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
+musllinux-x86_64-image = "musllinux_1_2"
+# before-all = "yum install -y python3-devel"
