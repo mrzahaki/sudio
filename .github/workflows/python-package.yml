@@ -15,26 +15,11 @@ jobs:
         os: [ubuntu-20.04, windows-2019]
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Clean previous builds
-      run: |
-        if [ -d dist ]; then rm -rf dist; fi
-        if [ -d wheelhouse ]; then rm -rf wheelhouse; fi
-      shell: bash
-      if: runner.os != 'Windows'
-
-    - name: Clean previous builds (Windows)
-      run: |
-        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
-        if (Test-Path wheelhouse) { Remove-Item -Recurse -Force wheelhouse }
-      shell: pwsh
-      if: runner.os == 'Windows'
-      
+    - uses: actions/checkout@v4      
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.9'
+        python-version: '3.10'
 
     - name: Print Python version info
       run: |
@@ -63,10 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.9'
+        python-version: '3.10'
         
     - name: Build sdist
       run: |
