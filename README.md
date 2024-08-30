@@ -40,12 +40,6 @@ Sudo can manage various audio streams from audio files or operating systems with
 
     pip install sudio
 
-##### Latest development release on GitHub
-
-Pull and install pre-release `main` branch  (recommended):
-
-    pip install git+https://github.com/MrZahaki/sudio.git
-
 
 ## Quick start
 
