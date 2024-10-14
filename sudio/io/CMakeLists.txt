@@ -68,11 +68,6 @@ else()
 endif()
 
 
-set(OGG_LIBRARIES ogg)
-set(OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
-set(OGG_FOUND TRUE)
-
-
 set(BUILD_TESTING OFF CACHE BOOL "Disable FLAC tests" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable FLAC examples" FORCE)
 set(BUILD_DOCS OFF CACHE BOOL "Disable FLAC documentation" FORCE)
@@ -107,6 +102,8 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vorbis")
         GIT_REPOSITORY https://github.com/xiph/vorbis.git
         GIT_TAG v1.3.7
     )
+    set(OGG_LIBRARY ogg)
+    set(OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
     FetchContent_MakeAvailable(vorbis)
 else()
     message(STATUS "Using existing Vorbis in ${CMAKE_CURRENT_SOURCE_DIR}/vorbis")
@@ -136,7 +133,7 @@ target_include_directories(sudio_io PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/portaudio/include"
     "${MINIAUDIO_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/libmp3lame-CMAKE/include"
-    "${OGG_INCLUDE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/flac/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/vorbis/include"
 )
@@ -157,7 +154,7 @@ set_target_properties(sudio_io PROPERTIES
 
 target_link_libraries(sudio_io PRIVATE
     mp3lame
-    ${OGG_LIBRARIES}
+    ogg
     FLAC
     vorbis
     vorbisenc
