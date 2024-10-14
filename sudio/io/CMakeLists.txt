@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.15)
 project(sudio_io LANGUAGES CXX C)
 
+
 set(MINIAUDIO_VERSION 0.11.21)
 set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 
 include(FetchContent)
 
-# MiniAudio setup
+
 if(NOT EXISTS "${MINIAUDIO_SOURCE_DIR}")
     FetchContent_Declare(
         miniaudio
@@ -18,7 +19,6 @@ else()
     message(STATUS "Using existing MiniAudio in ${MINIAUDIO_SOURCE_DIR}")
 endif()
 
-# PortAudio setup
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build PortAudio as a static library")
 set(PA_DISABLE_INSTALL ON CACHE BOOL "Disable installation of PortAudio")
 
@@ -34,7 +34,7 @@ else()
     add_subdirectory(portaudio)
 endif()
 
-# LAME setup
+
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libmp3lame-CMAKE")
     message(STATUS "Fetching LAME...")
     FetchContent_Declare(
@@ -47,7 +47,8 @@ else()
     add_subdirectory(libmp3lame-CMAKE)
 endif()
 
-# Ogg setup
+
+
 set(BUILD_TESTING OFF CACHE BOOL "Disable Ogg tests" FORCE)
 set(INSTALL_DOCS OFF CACHE BOOL "Disable Ogg documentation" FORCE)
 set(INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "Disable Ogg Installation of ogg.pc file" FORCE)
@@ -66,7 +67,9 @@ else()
     add_subdirectory(ogg)
 endif()
 
-# FLAC setup
+
+
+
 set(BUILD_TESTING OFF CACHE BOOL "Disable FLAC tests" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable FLAC examples" FORCE)
 set(BUILD_DOCS OFF CACHE BOOL "Disable FLAC documentation" FORCE)
@@ -90,7 +93,7 @@ else()
     add_subdirectory(flac)
 endif()
 
-# Vorbis setup
+
 set(BUILD_TESTING OFF CACHE BOOL "Disable Vorbis tests" FORCE)
 set(BUILD_FRAMEWORK OFF CACHE BOOL "Disable Vorbis Build Framework bundle for OSX" FORCE)
 
@@ -107,6 +110,13 @@ else()
     add_subdirectory(vorbis)
 endif()
 
+
+if(TARGET ogg)
+    set(OGG_LIBRARIES ogg)
+    set(OGG_INCLUDE_DIRS $<TARGET_PROPERTY:ogg,INTERFACE_INCLUDE_DIRECTORIES>)
+endif()
+
+
 # Create a separate target for MiniAudio
 add_library(miniaudio STATIC ${MINIAUDIO_SOURCE_DIR}/miniaudio.c)
 target_include_directories(miniaudio PUBLIC ${MINIAUDIO_SOURCE_DIR})
@@ -114,9 +124,8 @@ target_compile_definitions(
     miniaudio 
     PRIVATE 
     MINIAUDIO_IMPLEMENTATION
-)
+    )
 
-# Main target
 pybind11_add_module(sudio_io
     src/codec.cpp
     src/stdstream.cpp
