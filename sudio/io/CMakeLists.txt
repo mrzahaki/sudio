@@ -68,6 +68,9 @@ else()
 endif()
 
 
+set(OGG_LIBRARIES ogg)
+set(OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
+set(OGG_FOUND TRUE)
 
 
 set(BUILD_TESTING OFF CACHE BOOL "Disable FLAC tests" FORCE)
@@ -111,11 +114,6 @@ else()
 endif()
 
 
-if(TARGET ogg)
-    set(OGG_LIBRARIES ogg)
-    set(OGG_INCLUDE_DIRS $<TARGET_PROPERTY:ogg,INTERFACE_INCLUDE_DIRECTORIES>)
-endif()
-
 
 # Create a separate target for MiniAudio
 add_library(miniaudio STATIC ${MINIAUDIO_SOURCE_DIR}/miniaudio.c)
@@ -138,7 +136,7 @@ target_include_directories(sudio_io PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/portaudio/include"
     "${MINIAUDIO_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/libmp3lame-CMAKE/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include"
+    "${OGG_INCLUDE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/flac/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/vorbis/include"
 )
@@ -159,7 +157,7 @@ set_target_properties(sudio_io PROPERTIES
 
 target_link_libraries(sudio_io PRIVATE
     mp3lame
-    ogg
+    ${OGG_LIBRARIES}
     FLAC
     vorbis
     vorbisenc
