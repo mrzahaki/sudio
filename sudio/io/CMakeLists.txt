@@ -123,6 +123,8 @@ target_compile_definitions(
     MINIAUDIO_IMPLEMENTATION
     )
 
+set_target_properties(sudio_io PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 pybind11_add_module(sudio_io
     src/codec.cpp
     src/stdstream.cpp
