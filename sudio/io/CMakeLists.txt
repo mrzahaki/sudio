@@ -123,7 +123,7 @@ target_compile_definitions(
     MINIAUDIO_IMPLEMENTATION
     )
 
-set_target_properties(sudio_io PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 pybind11_add_module(sudio_io
     src/codec.cpp
@@ -156,6 +156,19 @@ set_target_properties(sudio_io PROPERTIES
     OUTPUT_NAME "suio"
     LINKER_LANGUAGE CXX
 )
+
+
+set_target_properties(
+    miniaudio 
+    PortAudio 
+    mp3lame 
+    ${OGG_LIBRARY} 
+    FLAC 
+    vorbis 
+    vorbisenc 
+    vorbisfile
+    PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 target_link_libraries(sudio_io PRIVATE
     miniaudio
