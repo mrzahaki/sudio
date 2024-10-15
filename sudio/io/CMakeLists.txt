@@ -2,23 +2,22 @@ cmake_minimum_required(VERSION 3.15)
 project(sudio_io LANGUAGES CXX C)
 
 
-set(MINIAUDIO_VERSION 0.11.21)
-set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 
 include(FetchContent)
 
 
-if(NOT EXISTS "${MINIAUDIO_SOURCE_DIR}")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio")
     FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
-        GIT_TAG ${MINIAUDIO_VERSION}
+        GIT_TAG 0.11.21
     )
     FetchContent_MakeAvailable(miniaudio)
 else()
-    message(STATUS "Using existing MiniAudio in ${MINIAUDIO_SOURCE_DIR}")
+    message(STATUS "Using existing MiniAudio in /miniaudio")
 endif()
 
+set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build PortAudio as a static library")
 set(PA_DISABLE_INSTALL ON CACHE BOOL "Disable installation of PortAudio")
 
@@ -94,6 +93,8 @@ endif()
 
 set(BUILD_TESTING OFF CACHE BOOL "Disable Vorbis tests" FORCE)
 set(BUILD_FRAMEWORK OFF CACHE BOOL "Disable Vorbis Build Framework bundle for OSX" FORCE)
+set(OGG_LIBRARY ogg)
+set(OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vorbis")
     message(STATUS "Fetching Vorbis...")
@@ -102,8 +103,6 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vorbis")
         GIT_REPOSITORY https://github.com/xiph/vorbis.git
         GIT_TAG v1.3.7
     )
-    set(OGG_LIBRARY ogg)
-    set(OGG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include")
     FetchContent_MakeAvailable(vorbis)
 else()
     message(STATUS "Using existing Vorbis in ${CMAKE_CURRENT_SOURCE_DIR}/vorbis")
@@ -133,7 +132,7 @@ target_include_directories(sudio_io PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/portaudio/include"
     "${MINIAUDIO_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/libmp3lame-CMAKE/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ogg/include"
+    "${OGG_INCLUDE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/flac/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/vorbis/include"
 )
@@ -153,14 +152,14 @@ set_target_properties(sudio_io PROPERTIES
 )
 
 target_link_libraries(sudio_io PRIVATE
+    miniaudio
+    PortAudio
     mp3lame
-    ogg
+    ${OGG_LIBRARY}
     FLAC
     vorbis
     vorbisenc
     vorbisfile
-    miniaudio
-    PortAudio
     ${Python_LIBRARIES}
 )
 
