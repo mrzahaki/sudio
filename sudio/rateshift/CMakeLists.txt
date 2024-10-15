@@ -37,7 +37,7 @@ if(MSVC)
     target_compile_options(python_rateshift PRIVATE /EHsc /MP /bigobj)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else()
-    target_compile_options(python_rateshift PRIVATE -O3 -Wall -Wextra)
+    target_compile_options(python_rateshift PRIVATE -O3 -Wall -Wextra -fPIC)
 endif()
 
 target_compile_definitions(python_rateshift
