@@ -3,6 +3,8 @@ name: Build and Publish Python Package
 on:
   push:
     branches: [ "Master" ]
+    tags:
+      - '*'
   pull_request:
     branches: [ "Master" ]
 
