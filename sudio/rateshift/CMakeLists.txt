@@ -1,4 +1,4 @@
-# sudio\rateshift\CMakeLists.txt
+
 
 cmake_minimum_required(VERSION 3.15)
 project(python_rateshift LANGUAGES CXX)
@@ -19,6 +19,8 @@ else()
     message(STATUS "Using existing libsamplerate in ${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate")
     add_subdirectory(libsamplerate)
 endif()
+
+set_target_properties(samplerate PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 pybind11_add_module(python_rateshift
     src/python_bindings.cpp
