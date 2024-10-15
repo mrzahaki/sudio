@@ -12,12 +12,12 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio")
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
         GIT_TAG 0.11.21
     )
-    FetchContent_MakeAvailable(miniaudio)
+    set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 else()
     message(STATUS "Using existing MiniAudio in /miniaudio")
+    set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 endif()
 
-set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build PortAudio as a static library")
 set(PA_DISABLE_INSTALL ON CACHE BOOL "Disable installation of PortAudio")
 
