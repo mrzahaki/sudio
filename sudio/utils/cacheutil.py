@@ -1,3 +1,11 @@
+
+#  W.T.A
+#  SUDIO (https://github.com/MrZahaki/sudio)
+#  The Audio Processing Platform
+#  Mail: mrzahaki@gmail.com
+#  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+
+
 import io
 import os
 import time
@@ -6,12 +14,11 @@ import numpy as np
 from typing import Union,Tuple
 import platform
 
-from sudio.audiosys.audio import Audio
 from sudio.audiosys.sync import synchronize_audio
 from sudio.utils.timed_indexed_string import TimedIndexedString
 from sudio.types import DecodeError
 from sudio.metadata import AudioMetadata
-
+from sudio.io import SampleFormat, get_sample_size
 
 def is_file_locked(file_path):
     # Determine the operating system
@@ -183,7 +190,9 @@ def handle_cached_record(record: Union[AudioMetadata, dict],
             f.seek(0, 0)
             cache_info = f.read(master_obj.__class__.CACHE_INFO)
             try:
-                csize, csample_rate, csample_format, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
+                csize, csample_rate, csample_format_id, cnchannels = np.frombuffer(cache_info, dtype='u8').tolist()
+                csample_format = SampleFormat(csample_format_id) if csample_format_id else SampleFormat.UNKNOWN
+                
             except ValueError:
                 # Handle bad cache error
                 f.close()
@@ -248,7 +257,7 @@ def handle_cached_record(record: Union[AudioMetadata, dict],
 
     record['duration'] = record['size'] / (record['frameRate'] *
                                            record['nchannels'] *
-                                           Audio.get_sample_size(record['sampleFormat']))
+                                           get_sample_size(record['sampleFormat']))
     if isinstance(record, AudioMetadata):
         # Extract name information from file path for Series
         post = record['o'].name.index(master_obj.__class__.BUFFER_TYPE)

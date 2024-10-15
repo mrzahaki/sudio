@@ -97,7 +97,10 @@ class CMakeBuild(build_ext):
 setup(
     packages=find_packages(),
     package_dir={'': '.'},
-    ext_modules=[CMakeExtension('sudio.rateshift')],
+    ext_modules=[CMakeExtension('sudio.rateshift'), CMakeExtension('sudio.suio')],
     cmdclass={'build_ext': CMakeBuild},
     zip_safe=False,
+    package_data={
+        "": ["*.pyi"],
+    },
 )

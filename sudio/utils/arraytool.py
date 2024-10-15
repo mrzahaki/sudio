@@ -1,5 +1,14 @@
+
+#  W.T.A
+#  SUDIO (https://github.com/MrZahaki/sudio)
+#  The Audio Processing Platform
+#  Mail: mrzahaki@gmail.com
+#  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+
+
 import array
-from sudio.types import LibSampleFormat, MiniaudioError
+from sudio.types import MiniaudioError
+from sudio.io import SampleFormat
 
 
 def push(obj, data):
@@ -65,12 +74,12 @@ def create_integer_array_of_size(itemsize: int) -> array.array:
     raise ValueError("Cannot create array with the specified item size.")
 
 
-def get_array_proto_from_format(sample_format: LibSampleFormat) -> array.array:
+def get_array_proto_from_format(sample_format: SampleFormat) -> array.array:
     """
-    Get the array prototype based on the specified LibSampleFormat.
+    Get the array prototype based on the specified SampleFormat.
 
     Args:
-        sample_format (LibSampleFormat): The sample format.
+        sample_format (SampleFormat): The sample format.
 
     Returns:
         array.array: The array prototype for the specified sample format.
@@ -79,10 +88,10 @@ def get_array_proto_from_format(sample_format: LibSampleFormat) -> array.array:
         MiniaudioError: If the sample format cannot be used directly and needs conversion.
     """
     arrays = {
-        LibSampleFormat.UNSIGNED8: create_integer_array_of_size(1),
-        LibSampleFormat.SIGNED16: create_integer_array_of_size(2),
-        LibSampleFormat.SIGNED32: create_integer_array_of_size(4),
-        LibSampleFormat.FLOAT32: array.array('f')
+        SampleFormat.UNSIGNED8: create_integer_array_of_size(1),
+        SampleFormat.SIGNED16: create_integer_array_of_size(2),
+        SampleFormat.SIGNED32: create_integer_array_of_size(4),
+        SampleFormat.FLOAT32: array.array('f')
     }
     if sample_format in arrays:
         return arrays[sample_format]

@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File python_bindings.cpp &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File python_bindings.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-python-bindings-cpp">
+<span id="program-listing-file-sudio-rateshift-src-python-bindings-cpp"></span><h1>Program Listing for File python_bindings.cpp<a class="headerlink" href="#program-listing-for-file-python-bindings-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_sudio_rateshift_src_python_bindings.cpp.html#file-sudio-rateshift-src-python-bindings-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">sudio\rateshift\src\python_bindings.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> -- W.T.A</span>
+<span class="cm"> -- SUDIO (https://github.com/MrZahaki/sudio)</span>
+<span class="cm"> -- The Audio Processing Platform</span>
+<span class="cm"> -- Mail: mrzahaki@gmail.com</span>
+<span class="cm"> -- Software license: &quot;Apache License 2.0&quot;.</span>
+<span class="cm">*/</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/pybind11.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/stl.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/functional.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;pybind11/numpy.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;rateshift.hpp&quot;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">py</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">pybind11</span><span class="p">;</span>
+
+<span class="n">PYBIND11_MODULE</span><span class="p">(</span><span class="n">rateshift</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="n">py</span><span class="o">::</span><span class="n">enum_</span><span class="o">&lt;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ConverterType&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="s">&quot;sinc_best&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">::</span><span class="n">sinc_best</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="s">&quot;sinc_medium&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">::</span><span class="n">sinc_medium</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="s">&quot;sinc_fastest&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">::</span><span class="n">sinc_fastest</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="s">&quot;zero_order_hold&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">::</span><span class="n">zero_order_hold</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">value</span><span class="p">(</span><span class="s">&quot;linear&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="o">::</span><span class="n">linear</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">export_values</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">py</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">Resampler</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Resampler&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">py</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">             </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;converter_type&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;channels&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">             </span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;process&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[](</span><span class="n">rateshift</span><span class="o">::</span><span class="n">Resampler</span><span class="o">&amp;</span><span class="w"> </span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">array_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">sr_ratio</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">end_of_input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">py</span><span class="o">::</span><span class="n">buffer_info</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">request</span><span class="p">();</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">input_vec</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">ptr</span><span class="p">),</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">.</span><span class="n">process</span><span class="p">(</span><span class="n">input_vec</span><span class="p">,</span><span class="w"> </span><span class="n">sr_ratio</span><span class="p">,</span><span class="w"> </span><span class="n">end_of_input</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">array_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;input&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;sr_ratio&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;end_of_input&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;set_ratio&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">Resampler</span><span class="o">::</span><span class="n">set_ratio</span><span class="p">,</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;ratio&quot;</span><span class="p">),</span>
+<span class="w">             </span><span class="s">&quot;Set a new resampling ratio.&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;reset&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">Resampler</span><span class="o">::</span><span class="n">reset</span><span class="p">,</span>
+<span class="w">             </span><span class="s">&quot;Reset the internal state of the resampler.&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">py</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">CallbackResampler</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;CallbackResampler&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">py</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">CallbackResampler</span><span class="o">::</span><span class="n">callback_t</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">             </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;callback&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;ratio&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;converter_type&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;channels&quot;</span><span class="p">)</span>
+<span class="w">             </span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;read&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[](</span><span class="n">rateshift</span><span class="o">::</span><span class="n">CallbackResampler</span><span class="o">&amp;</span><span class="w"> </span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">frames</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">array_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;frames&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;set_starting_ratio&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">CallbackResampler</span><span class="o">::</span><span class="n">set_starting_ratio</span><span class="p">,</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;ratio&quot;</span><span class="p">),</span>
+<span class="w">             </span><span class="s">&quot;Set a new starting ratio for the resampler.&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;reset&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rateshift</span><span class="o">::</span><span class="n">CallbackResampler</span><span class="o">::</span><span class="n">reset</span><span class="p">,</span>
+<span class="w">             </span><span class="s">&quot;Reset the internal state of the resampler.&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;resample&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[](</span><span class="n">py</span><span class="o">::</span><span class="n">array_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">sr_ratio</span><span class="p">,</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">ConverterType</span><span class="w"> </span><span class="n">converter_type</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">channels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">py</span><span class="o">::</span><span class="n">buffer_info</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">request</span><span class="p">();</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">input_vec</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">ptr</span><span class="p">),</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rateshift</span><span class="o">::</span><span class="n">resample</span><span class="p">(</span><span class="n">input_vec</span><span class="p">,</span><span class="w"> </span><span class="n">sr_ratio</span><span class="p">,</span><span class="w"> </span><span class="n">converter_type</span><span class="p">,</span><span class="w"> </span><span class="n">channels</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">array_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">data</span><span class="p">());</span>
+<span class="w">    </span><span class="p">},</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;input&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;sr_ratio&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;converter_type&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">py</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;channels&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

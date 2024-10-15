@@ -1,16 +1,17 @@
+# ./CMakeLists.txt
 cmake_minimum_required(VERSION 3.15)
-include(FetchContent)
 
-project(sudio)
+project(sudio LANGUAGES CXX)
 
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Enable export compile commands for tooling
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+enable_language(C)
+enable_language(CXX)
 
 if (POLICY CMP0094)
     cmake_policy(SET CMP0094 NEW)
@@ -35,6 +36,7 @@ message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 list(PREPEND CMAKE_PREFIX_PATH ${Python_PREFIX})
 
 
+include(FetchContent)
 # Fetch pybind11 if not present
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.cache/pybind11")
     message(STATUS "Fetching pybind11...")
@@ -50,5 +52,6 @@ else()
 endif()
 
 
-
+include_directories(${PYTHON_INCLUDE_DIRS})
 add_subdirectory(sudio/rateshift)
+add_subdirectory(sudio/io)

@@ -1,0 +1,14 @@
+.. _exhale_enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61:
+
+Enum FileFormat
+===============
+
+- Defined in :ref:`file_sudio_io_inc_codec.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: suio::FileFormat
+   :project: sudio

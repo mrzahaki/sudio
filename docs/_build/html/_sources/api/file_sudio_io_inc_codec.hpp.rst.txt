@@ -1,0 +1,71 @@
+
+.. _file_sudio_io_inc_codec.hpp:
+
+File codec.hpp
+==============
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_io_inc>` (``sudio\io\inc``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``sudio\io\inc\codec.hpp``)
+---------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_sudio_io_inc_codec.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``functional``
+
+- ``memory``
+
+- ``miniaudio.h``
+
+- ``string``
+
+- ``vector``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_suio`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structsuio_1_1_audio_file_info`
+
+- :ref:`exhale_class_classsuio_1_1_audio_codec`
+
+- :ref:`exhale_class_classsuio_1_1_audio_codec_1_1_audio_file_stream`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61`
+

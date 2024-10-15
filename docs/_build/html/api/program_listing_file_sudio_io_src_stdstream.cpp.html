@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File stdstream.cpp &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File stdstream.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-stdstream-cpp">
+<span id="program-listing-file-sudio-io-src-stdstream-cpp"></span><h1>Program Listing for File stdstream.cpp<a class="headerlink" href="#program-listing-for-file-stdstream-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_sudio_io_src_stdstream.cpp.html#file-sudio-io-src-stdstream-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">sudio\io\src\stdstream.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> -- W.T.A</span>
+<span class="cm"> -- SUDIO (https://github.com/MrZahaki/sudio)</span>
+<span class="cm"> -- The Audio Processing Platform</span>
+<span class="cm"> -- Mail: mrzahaki@gmail.com</span>
+<span class="cm"> -- Software license: &quot;Apache License 2.0&quot;.</span>
+<span class="cm"> -- file stdstream.cpp</span>
+<span class="cm">*/</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;stdstream.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdexcept&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;thread&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;chrono&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">stdstream</span><span class="w"> </span><span class="p">{</span>
+
+<span class="n">AudioStream</span><span class="o">::</span><span class="n">AudioStream</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">stream</span><span class="p">(</span><span class="k">nullptr</span><span class="p">),</span><span class="w"> </span><span class="n">isBlockingMode</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span><span class="w"> </span><span class="n">inputEnabled</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span><span class="w"> </span><span class="n">outputEnabled</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_Initialize</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;PortAudio initialization failed: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">AudioStream</span><span class="o">::~</span><span class="n">AudioStream</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">close</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">open</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">inputDeviceIndex</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outputDeviceIndex</span><span class="p">,</span>
+<span class="w">                       </span><span class="kt">double</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span><span class="w"> </span><span class="n">PaSampleFormat</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                       </span><span class="kt">int</span><span class="w"> </span><span class="n">inputChannels</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outputChannels</span><span class="p">,</span>
+<span class="w">                       </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesPerBuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">enableInput</span><span class="p">,</span>
+<span class="w">                       </span><span class="kt">bool</span><span class="w"> </span><span class="n">enableOutput</span><span class="p">,</span><span class="w"> </span><span class="n">PaStreamFlags</span><span class="w"> </span><span class="n">streamFlags</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">InputCallback</span><span class="w"> </span><span class="n">inputCallback</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">OutputCallback</span><span class="w"> </span><span class="n">outputCallback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PaStreamParameters</span><span class="w"> </span><span class="n">inputParameters</span><span class="p">,</span><span class="w"> </span><span class="n">outputParameters</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PaStreamParameters</span><span class="w"> </span><span class="o">*</span><span class="n">inputParamsPtr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PaStreamParameters</span><span class="w"> </span><span class="o">*</span><span class="n">outputParamsPtr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">enableInput</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">enableOutput</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;At least one of input or output must be enabled&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">inputEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enableInput</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputEnabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enableOutput</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">enableInput</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">inputDeviceIndex</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="n">inputDeviceIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultInputDevice</span><span class="p">();</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">inputInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">inputDeviceIndex</span><span class="p">);</span>
+<span class="w">        </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputDeviceIndex</span><span class="p">;</span>
+<span class="w">        </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">channelCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputChannels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">inputChannels</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">inputInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">;</span>
+<span class="w">        </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">sampleFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">format</span><span class="p">;</span>
+<span class="w">        </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">suggestedLatency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputInfo</span><span class="o">-&gt;</span><span class="n">defaultLowInputLatency</span><span class="p">;</span>
+<span class="w">        </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">hostApiSpecificStreamInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="n">inputParamsPtr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">inputParameters</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">enableOutput</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">outputDeviceIndex</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="n">outputDeviceIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultOutputDevice</span><span class="p">();</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">outputInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">outputDeviceIndex</span><span class="p">);</span>
+<span class="w">        </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputDeviceIndex</span><span class="p">;</span>
+<span class="w">        </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">channelCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputChannels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">outputChannels</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">outputInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">;</span>
+<span class="w">        </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">sampleFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">format</span><span class="p">;</span>
+<span class="w">        </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">suggestedLatency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputInfo</span><span class="o">-&gt;</span><span class="n">defaultHighOutputLatency</span><span class="p">;</span>
+<span class="w">        </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">hostApiSpecificStreamInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="n">outputParamsPtr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">outputParameters</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sampleRate</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sampleRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enableInput</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">inputDeviceIndex</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                                   </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">outputDeviceIndex</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">userInputCallback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputCallback</span><span class="p">;</span>
+<span class="w">    </span><span class="n">userOutputCallback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputCallback</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">outputChannels</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">channelCount</span><span class="p">;</span>
+<span class="w">    </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">inputChannels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputParameters</span><span class="p">.</span><span class="n">channelCount</span><span class="p">;</span>
+
+
+<span class="w">    </span><span class="n">isBlockingMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">inputCallback</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">outputCallback</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PaStreamCallback</span><span class="w"> </span><span class="o">*</span><span class="n">callbackPtr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isBlockingMode</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">&amp;</span><span class="n">AudioStream</span><span class="o">::</span><span class="n">paCallback</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_OpenStream</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">inputParamsPtr</span><span class="p">,</span><span class="w"> </span><span class="n">outputParamsPtr</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span><span class="w"> </span><span class="n">framesPerBuffer</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">streamFlags</span><span class="p">,</span><span class="w"> </span><span class="n">callbackPtr</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open PortAudio stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to create a valid PortAudio stream&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">streamFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">format</span><span class="p">;</span>
+<span class="w">    </span><span class="n">continueStreaming</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">start</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Stream is not open&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_StartStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to start PortAudio stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">stop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_StopStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Warning: Failed to stop PortAudio stream: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">close</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">stop</span><span class="p">();</span>
+<span class="w">        </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Warning: Failed to close PortAudio stream: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">AudioDeviceInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getInputDevices</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">AudioDeviceInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">devices</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">numDevices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceCount</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">defaultInputDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultInputDevice</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numDevices</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span>
+<span class="w">                </span><span class="n">i</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">,</span>
+<span class="w">                </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">defaultInputDevice</span><span class="p">),</span>
+<span class="w">                </span><span class="nb">false</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">devices</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">AudioDeviceInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getOutputDevices</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">AudioDeviceInfo</span><span class="o">&gt;</span><span class="w"> </span><span class="n">devices</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">numDevices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceCount</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">defaultOutputDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultOutputDevice</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numDevices</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span>
+<span class="w">                </span><span class="n">i</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">,</span>
+<span class="w">                </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">,</span>
+<span class="w">                </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">                </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">defaultOutputDevice</span><span class="p">)</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">devices</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getDefaultInputDevice</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">defaultInputDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultInputDevice</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">defaultInputDevice</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">defaultInputDevice</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">false</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getDefaultOutputDevice</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">defaultOutputDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultOutputDevice</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">defaultOutputDevice</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">defaultOutputDevice</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">,</span>
+<span class="w">        </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">true</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="kt">long</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">readStream</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Stream is not open&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isBlockingMode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Write operation is only available in blocking mode&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">outputEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Output is not enabled for this stream&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">frames</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// No frames to write</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Invalid buffer pointer&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_ReadStream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">frames</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">paOutputUnderflowed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// Indicate no frames were written</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error writing to stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">frames</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">writeStream</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Stream is not open&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isBlockingMode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Write operation is only available in blocking mode&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">outputEnabled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Output is not enabled for this stream&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">frames</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1">// No frames to write</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Invalid buffer pointer&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">*</span><span class="w"> </span><span class="n">currentBuffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">framesWritten</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">frames</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">availableFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetStreamWriteAvailable</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">availableFrames</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// No space available, wait a bit</span>
+<span class="w">            </span><span class="n">Pa_Sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesToWrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">availableFrames</span><span class="p">),</span><span class="w"> </span><span class="n">frames</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">framesWritten</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_WriteStream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">currentBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">framesToWrite</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">paOutputUnderflowed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Warning: Output underflowed&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">                </span><span class="c1">// In case of underflow, we&#39;ll try to continue</span>
+<span class="w">                </span><span class="n">Pa_Sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error writing to stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">framesToWrite</span><span class="p">;</span>
+<span class="w">        </span><span class="n">currentBuffer</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">framesToWrite</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">outputChannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Pa_GetSampleSize</span><span class="p">(</span><span class="n">streamFormat</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">framesWritten</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">long</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getStreamReadAvailable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Pa_GetStreamReadAvailable</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">long</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getStreamWriteAvailable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Pa_GetStreamWriteAvailable</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">paCallback</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">inputBuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">outputBuffer</span><span class="p">,</span>
+<span class="w">                            </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesPerBuffer</span><span class="p">,</span>
+<span class="w">                            </span><span class="k">const</span><span class="w"> </span><span class="n">PaStreamCallbackTimeInfo</span><span class="o">*</span><span class="w"> </span><span class="n">timeInfo</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">PaStreamCallbackFlags</span><span class="w"> </span><span class="n">statusFlags</span><span class="p">,</span>
+<span class="w">                            </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">userData</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">AudioStream</span><span class="o">*</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">AudioStream</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">userData</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">stream</span><span class="o">-&gt;</span><span class="n">handleCallback</span><span class="p">(</span><span class="n">inputBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">outputBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">framesPerBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">timeInfo</span><span class="p">,</span><span class="w"> </span><span class="n">statusFlags</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">handleCallback</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">inputBuffer</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">outputBuffer</span><span class="p">,</span>
+<span class="w">                                </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesPerBuffer</span><span class="p">,</span>
+<span class="w">                                </span><span class="k">const</span><span class="w"> </span><span class="n">PaStreamCallbackTimeInfo</span><span class="o">*</span><span class="w"> </span><span class="n">timeInfo</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">PaStreamCallbackFlags</span><span class="w"> </span><span class="n">statusFlags</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">shouldContinue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">inputEnabled</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">userInputCallback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">shouldContinue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userInputCallback</span><span class="p">((</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">inputBuffer</span><span class="p">),</span>
+<span class="w">                                           </span><span class="n">framesPerBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">streamFormat</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">shouldContinue</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">outputEnabled</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">userOutputCallback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">shouldContinue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userOutputCallback</span><span class="p">((</span><span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">outputBuffer</span><span class="p">),</span>
+<span class="w">                                            </span><span class="n">framesPerBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">streamFormat</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">shouldContinue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">continueStreaming</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">continueStreaming</span><span class="p">.</span><span class="n">load</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">paContinue</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">paComplete</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getDeviceCount</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Pa_GetDeviceCount</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">AudioStream</span><span class="o">::</span><span class="n">getDeviceInfoByIndex</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">index</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">deviceInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Invalid device index&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">AudioDeviceInfo</span><span class="w"> </span><span class="n">info</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">index</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">maxInputChannels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxInputChannels</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">maxOutputChannels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">defaultSampleRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">isDefaultInput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Pa_GetDefaultInputDevice</span><span class="p">());</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">isDefaultOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Pa_GetDefaultOutputDevice</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">info</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+<span class="kt">void</span><span class="w"> </span><span class="n">writeToDefaultOutput</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">PaSampleFormat</span><span class="w"> </span><span class="n">sampleFormat</span><span class="p">,</span>
+<span class="w">                          </span><span class="kt">int</span><span class="w"> </span><span class="n">channels</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PaError</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_Initialize</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;PortAudio initialization failed: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">outputDeviceIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDefaultOutputDevice</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">outputDeviceIndex</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">paNoDevice</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;No default output device found&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">PaDeviceInfo</span><span class="o">*</span><span class="w"> </span><span class="n">deviceInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetDeviceInfo</span><span class="p">(</span><span class="n">outputDeviceIndex</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">deviceInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to get device info for default output device&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">channels</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">channels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">maxOutputChannels</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sampleRate</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">sampleRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultSampleRate</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">PaStreamParameters</span><span class="w"> </span><span class="n">outputParameters</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputDeviceIndex</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">channelCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">channels</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">sampleFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sampleFormat</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">suggestedLatency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deviceInfo</span><span class="o">-&gt;</span><span class="n">defaultLowOutputLatency</span><span class="p">;</span>
+<span class="w">    </span><span class="n">outputParameters</span><span class="p">.</span><span class="n">hostApiSpecificStreamInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">PaStream</span><span class="o">*</span><span class="w"> </span><span class="n">stream</span><span class="p">;</span>
+<span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_OpenStream</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">outputParameters</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span><span class="w"> </span><span class="n">paFramesPerBufferUnspecified</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">paClipOff</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open PortAudio stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_StartStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to start PortAudio stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">*</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">data</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">channels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Pa_GetSampleSize</span><span class="p">(</span><span class="n">sampleFormat</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">framesWritten</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">availableFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_GetStreamWriteAvailable</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">availableFrames</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Pa_StopStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error getting available write frames: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">availableFrames</span><span class="p">)));</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">framesToWrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">availableFrames</span><span class="p">),</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">framesWritten</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">framesToWrite</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_WriteStream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">channels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Pa_GetSampleSize</span><span class="p">(</span><span class="n">sampleFormat</span><span class="p">),</span><span class="w"> </span><span class="n">framesToWrite</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Pa_StopStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error writing to stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">framesToWrite</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_StopStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error stopping stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pa_CloseStream</span><span class="p">(</span><span class="n">stream</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">paNoError</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error closing stream: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">Pa_GetErrorText</span><span class="p">(</span><span class="n">err</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Pa_Terminate</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="p">}</span><span class="w"> </span><span class="c1">// namespace stdstream</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

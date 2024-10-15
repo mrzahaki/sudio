@@ -1,0 +1,74 @@
+
+.. _file_sudio_rateshift_inc_rateshift.hpp:
+
+File rateshift.hpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_rateshift_inc>` (``sudio\rateshift\inc``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``sudio\rateshift\inc\rateshift.hpp``)
+--------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_sudio_rateshift_inc_rateshift.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``cstddef``
+
+- ``functional``
+
+- ``samplerate.h``
+
+- ``vector``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rateshift`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrateshift_1_1_callback_resampler`
+
+- :ref:`exhale_class_classrateshift_1_1_resampler`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a`
+

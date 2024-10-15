@@ -1,16 +1,13 @@
+# sudio\rateshift\CMakeLists.txt
+
 cmake_minimum_required(VERSION 3.15)
-
-include(FetchContent)
-
-# Set project name and language
 project(python_rateshift LANGUAGES CXX)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-# Fetch libsamplerate if not present
+set(LIBSAMPLERATE_VERSION 0.2.2)
 set(BUILD_TESTING OFF CACHE BOOL "Disable libsamplerate test build")
-set(LIBSAMPLERATE_VERSION 0.2.2 CACHE STRING "libsamplerate version")
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libsamplerate")
+    include(FetchContent)
     message(STATUS "Fetching libsamplerate...")
     FetchContent_Declare(
         libsamplerate
@@ -23,13 +20,11 @@ else()
     add_subdirectory(libsamplerate)
 endif()
 
-# Define the Python module
 pybind11_add_module(python_rateshift
     src/python_bindings.cpp
     src/rateshift.cpp
 )
 
-# Include directories
 target_include_directories(python_rateshift
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/external/libsamplerate/include
@@ -45,7 +40,6 @@ else()
     target_compile_options(python_rateshift PRIVATE -O3 -Wall -Wextra)
 endif()
 
-# Compile definitions
 target_compile_definitions(python_rateshift
     PUBLIC
         LIBSAMPLERATE_VERSION="${LIBSAMPLERATE_VERSION}"
@@ -53,7 +47,6 @@ target_compile_definitions(python_rateshift
         $<$<BOOL:${PACKAGE_VERSION_INFO}>:VERSION_INFO="${PACKAGE_VERSION_INFO}">
 )
 
-# Target properties
 set_target_properties(python_rateshift
     PROPERTIES
         PREFIX ""
@@ -61,14 +54,12 @@ set_target_properties(python_rateshift
         LINKER_LANGUAGE CXX
 )
 
-# Link libraries
 target_link_libraries(python_rateshift
     PRIVATE
         samplerate
         ${Python_LIBRARIES}
 )
 
-# Install rules
 include(GNUInstallDirs)
 install(TARGETS python_rateshift
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -1,0 +1,17 @@
+.. _exhale_struct_structsuio_1_1_audio_file_info:
+
+Struct AudioFileInfo
+====================
+
+- Defined in :ref:`file_sudio_io_inc_codec.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: suio::AudioFileInfo
+   :project: sudio
+   :members:
+   :protected-members:
+   :undoc-members:

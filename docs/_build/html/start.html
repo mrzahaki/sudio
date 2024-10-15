@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick start &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Master Module" href="core.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#audio-playback">Audio playback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-manipulation">Audio Manipulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#time-domain-slicing">Time Domain Slicing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combining-audio-segments">Combining Audio Segments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-basic-effects">Audio Basic Effects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#volume-adjustment">Volume Adjustment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#applying-filters">Applying Filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#complex-slicing">Complex Slicing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-fade-in-and-mixing">Custom Fade-In and Mixing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-analysis">Audio Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-format-conversion-and-encoding">Audio Format Conversion and Encoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mixing-and-shifting-tracks">Mixing and Shifting Tracks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#audio-streaming">Audio Streaming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-streaming-with-pause-and-resume">Basic Streaming with Pause and Resume</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic-streaming-with-jumping-to-specific-times-in-the-audio">Basic Streaming with Jumping to Specific Times in the Audio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#streaming-with-volume-control">Streaming with Volume Control</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quick start</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quick-start">
+<h1>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><section id="audio-playback">
+<h2>Audio playback<a class="headerlink" href="#audio-playback" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;baroon.mp3&#39;</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;baroon&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The record with the name of baroon will be played on the stdout audio stream.</p>
+</section>
+<section id="audio-manipulation">
+<h2>Audio Manipulation<a class="headerlink" href="#audio-manipulation" title="Link to this heading"></a></h2>
+<section id="time-domain-slicing">
+<h3>Time Domain Slicing<a class="headerlink" href="#time-domain-slicing" title="Link to this heading"></a></h3>
+<p>You can easily slice audio files to play specific segments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">song</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;baroon.mp3&#39;</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">song</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span> <span class="mf">27.66</span><span class="p">])</span>
+
+<span class="c1"># Play from 30 seconds to the end</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">song</span><span class="p">[</span><span class="mi">30</span><span class="p">:])</span>
+
+<span class="c1"># Play the first 15 seconds</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">song</span><span class="p">[:</span><span class="mi">15</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="combining-audio-segments">
+<h3>Combining Audio Segments<a class="headerlink" href="#combining-audio-segments" title="Link to this heading"></a></h3>
+<p>You can join multiple segments of audio:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">rec</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;baroon.mp3&#39;</span><span class="p">)</span>
+
+<span class="c1"># method 1</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span> <span class="mf">27.66</span><span class="p">,</span> <span class="mi">65</span><span class="p">:</span> <span class="mi">90</span><span class="p">])</span>
+
+<span class="c1"># method 2</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">rec</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span> <span class="mf">27.66</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="mi">65</span><span class="p">:</span> <span class="mi">90</span><span class="p">])</span>
+
+<span class="c1"># Combine multiple segments</span>
+<span class="n">medley</span> <span class="o">=</span> <span class="n">song</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">song</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">50</span><span class="p">],</span> <span class="n">song</span><span class="p">[</span><span class="mi">70</span><span class="p">:</span><span class="mi">80</span><span class="p">])</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">medley</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The audio record is split into two parts, the first one 12-27.66 seconds, and the last one 65-90 seconds, then the sliced records are merged and played in the stream.</p>
+</section>
+</section>
+<section id="audio-basic-effects">
+<h2>Audio Basic Effects<a class="headerlink" href="#audio-basic-effects" title="Link to this heading"></a></h2>
+<section id="volume-adjustment">
+<h3>Volume Adjustment<a class="headerlink" href="#volume-adjustment" title="Link to this heading"></a></h3>
+<p>Adjust the volume of an audio segment:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">song</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;song.mp3&#39;</span><span class="p">)</span>
+
+<span class="c1"># Double the volume</span>
+<span class="n">loud_segment</span> <span class="o">=</span> <span class="n">song</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+
+<span class="c1"># Halve the volume</span>
+<span class="n">quiet_segment</span> <span class="o">=</span> <span class="n">song</span><span class="p">[</span><span class="mi">30</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">loud_segment</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">quiet_segment</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="applying-filters">
+<h3>Applying Filters<a class="headerlink" href="#applying-filters" title="Link to this heading"></a></h3>
+<p>Apply frequency filters to audio:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">song</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;song.mp3&#39;</span><span class="p">)</span>
+
+<span class="c1"># Apply a low-pass filter (keep frequencies below 1000 Hz)</span>
+<span class="n">low_pass</span> <span class="o">=</span> <span class="n">song</span><span class="p">[:</span><span class="s1">&#39;1000&#39;</span><span class="p">]</span>
+
+<span class="c1"># Apply a high-pass filter (keep frequencies above 500 Hz)</span>
+<span class="n">high_pass</span> <span class="o">=</span> <span class="n">song</span><span class="p">[</span><span class="s1">&#39;500&#39;</span><span class="p">:]</span>
+
+<span class="c1"># Apply a band-pass filter (keep frequencies between 500 Hz and 2000 Hz)</span>
+<span class="n">band_pass</span> <span class="o">=</span> <span class="n">song</span><span class="p">[</span><span class="s1">&#39;500&#39;</span><span class="p">:</span><span class="s1">&#39;2000&#39;</span><span class="p">]</span>
+
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">low_pass</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">high_pass</span><span class="p">,</span> <span class="n">band_pass</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="complex-slicing">
+<h3>Complex Slicing<a class="headerlink" href="#complex-slicing" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">baroon</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;baroon.mp3&#39;</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">baroon</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:</span><span class="s1">&#39;1000&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;1000&#39;</span><span class="p">:</span> <span class="s1">&#39;5000&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>In the example above, a low-pass filter with a cutoff frequency of 1 kHz is applied to the record from 5 to 10 seconds, then a band-pass filter is applied from 10 to 20 seconds, and finally they are merged.</p>
+</section>
+<section id="custom-fade-in-and-mixing">
+<h3>Custom Fade-In and Mixing<a class="headerlink" href="#custom-fade-in-and-mixing" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">from</span> <span class="nn">sudio.types</span> <span class="kn">import</span> <span class="n">SampleFormat</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">song</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;example.mp3&#39;</span><span class="p">)</span>
+
+<span class="n">fade_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">song</span><span class="o">.</span><span class="n">get_sample_rate</span><span class="p">()</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># 5-second fade</span>
+<span class="n">fade_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fade_length</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">song</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">astype</span><span class="o">=</span><span class="n">SampleFormat</span><span class="o">.</span><span class="n">FLOAT32</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+    <span class="n">data</span><span class="p">[:,</span> <span class="p">:</span><span class="n">fade_length</span><span class="p">]</span> <span class="o">*=</span> <span class="n">fade_in</span>
+    <span class="n">song</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">modified</span> <span class="o">=</span> <span class="n">song</span><span class="p">[:</span><span class="mi">30</span><span class="p">]</span> <span class="o">+</span> <span class="n">song</span><span class="p">[:</span><span class="mi">15</span><span class="p">,</span> <span class="p">:</span><span class="s1">&#39;100&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">modified</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">modified</span><span class="p">,</span> <span class="s1">&#39;modified_song.ogg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This example demonstrates advanced audio manipulation techniques:</p>
+<ol class="arabic simple">
+<li><p><strong>Fade-In Effect</strong>: We create a 5-second linear fade-in effect.</p></li>
+<li><p><strong>Data Type Conversion</strong>: The audio data is converted to float32 for precise calculations.</p></li>
+<li><p><strong>Unpacking and Repacking</strong>: We use <code class="docutils literal notranslate"><span class="pre">unpack()</span></code> to access raw audio data, modify it, and then <code class="docutils literal notranslate"><span class="pre">set_data()</span></code> to apply changes.</p></li>
+<li><p><strong>Audio Slicing and Mixing</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">song[:30]</span></code>: Takes the first 30 seconds of the audio.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">song[:15,</span> <span class="pre">:'100']</span></code>: Takes the first 15 seconds and applies a low-pass filter at 100 Hz.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">3</span></code> multiplies the amplitude of the filtered segment.</p></li>
+<li><p>These segments are then added together.</p></li>
+</ul>
+</li>
+<li><p><strong>Playback and Export</strong>: The modified audio is played and exported to a new file.</p></li>
+</ol>
+<p>This example showcases the library’s capability to perform complex audio manipulations, combining time-domain operations (fade-in, slicing) with frequency-domain filtering and amplitude adjustments.</p>
+</section>
+</section>
+<section id="audio-analysis">
+<h2>Audio Analysis<a class="headerlink" href="#audio-analysis" title="Link to this heading"></a></h2>
+<p>Perform simple analysis on audio files:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">song</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;song.mp3&#39;</span><span class="p">)</span>
+
+<span class="c1"># Get audio duration</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="n">get_duration</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Song duration: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get sample rate</span>
+<span class="n">sample_rate</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="n">get_sample_rate</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sample rate: </span><span class="si">{</span><span class="n">sample_rate</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get number of channels</span>
+<span class="n">channels</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="n">get_nchannels</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of channels: </span><span class="si">{</span><span class="n">channels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-format-conversion-and-encoding">
+<h2>Audio Format Conversion and Encoding<a class="headerlink" href="#audio-format-conversion-and-encoding" title="Link to this heading"></a></h2>
+<p>Let’s explore how sudio handles different audio formats. We’ll convert between MP3, WAV, FLAC, and OGG, and throw in some audio tweaks along the way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">from</span> <span class="nn">sudio.types</span> <span class="kn">import</span> <span class="n">FileFormat</span>
+
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+
+<span class="c1"># Load any audio file - MP3, WAV, OGG, or FLAC</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;original_song.mp3&#39;</span><span class="p">)</span>
+
+<span class="c1"># Slice and save as WAV</span>
+<span class="n">su</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="mf">10.5</span><span class="p">:</span> <span class="mi">30</span><span class="p">],</span> <span class="s1">&#39;cool_snippet.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># Quiet it down and save as high-quality FLAC</span>
+<span class="n">su</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">record</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">FileFormat</span><span class="o">.</span><span class="n">FLAC</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="c1"># Convert to medium-quality OGG</span>
+<span class="n">su</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s1">&#39;medium_quality.ogg&#39;</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="c1"># Convert to medium-quality mp3</span>
+<span class="n">su</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s1">&#39;medium_quality.mp3&#39;</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">bitrate</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Pro tip: The second export creates a file named after the original, but with a .flac extension.</p>
+<p>Remember, converting between lossy formats (like MP3 to OGG) might not sound great. For best results, start with high-quality or lossless files when possible.</p>
+</section>
+<section id="mixing-and-shifting-tracks">
+<h2>Mixing and Shifting Tracks<a class="headerlink" href="#mixing-and-shifting-tracks" title="Link to this heading"></a></h2>
+<p>When adding two Wrap objects, the combined audio will be as long as the longer one, mixing overlapping parts. Adding a constant shifts the waveform up while keeping the original duration. This allows for flexible audio mixing and simple DC offset adjustments.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+
+<span class="c1"># Add two audio files</span>
+<span class="n">song1</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;song1.mp3&#39;</span><span class="p">)</span>  <span class="c1"># Assuming this is a 30-second audio</span>
+<span class="n">song2</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;song2.mp3&#39;</span><span class="p">)</span>  <span class="c1"># Assuming this is a 40-second audio</span>
+
+<span class="c1"># Add the two songs</span>
+<span class="n">combined</span> <span class="o">=</span> <span class="n">song1</span> <span class="o">+</span> <span class="n">song2</span>
+
+<span class="c1"># Play the combined audio</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+
+<span class="c1"># Add a constant value to shift the audio</span>
+<span class="n">shifted</span> <span class="o">=</span> <span class="n">song1</span> <span class="o">+</span> <span class="mf">0.1</span>
+
+<span class="c1"># Play the shifted audio</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">shifted</span><span class="p">)</span>
+
+<span class="c1"># Print durations</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Song1 duration: </span><span class="si">{</span><span class="n">song1</span><span class="o">.</span><span class="n">get_duration</span><span class="p">()</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Song2 duration: </span><span class="si">{</span><span class="n">song2</span><span class="o">.</span><span class="n">get_duration</span><span class="p">()</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Combined duration: </span><span class="si">{</span><span class="n">combined</span><span class="o">.</span><span class="n">get_duration</span><span class="p">()</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shifted duration: </span><span class="si">{</span><span class="n">shifted</span><span class="o">.</span><span class="n">get_duration</span><span class="p">()</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="audio-streaming">
+<h2>Audio Streaming<a class="headerlink" href="#audio-streaming" title="Link to this heading"></a></h2>
+<section id="basic-streaming-with-pause-and-resume">
+<h3>Basic Streaming with Pause and Resume<a class="headerlink" href="#basic-streaming-with-pause-and-resume" title="Link to this heading"></a></h3>
+<p>This example demonstrates how to control audio playback using the sudio library, including starting, pausing, resuming, and stopping a stream.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c1"># Initialize the audio master</span>
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">su</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># Add an audio file to the master</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;example.mp3&#39;</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+<span class="c1"># Enable stdout echo</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">()</span>
+
+<span class="c1"># Start the audio stream</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current playback time: </span><span class="si">{</span><span class="n">stream</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="c1"># Pause the playback after 5 seconds</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Paused playback&quot;</span><span class="p">)</span>
+
+<span class="c1"># Resume playback after 2 seconds</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resumed playback&quot;</span><span class="p">)</span>
+
+<span class="c1"># Stop playback after 5 more seconds</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stopped playback&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This script showcases basic audio control operations, allowing you to manage playback with precise timing.</p>
+</section>
+<section id="basic-streaming-with-jumping-to-specific-times-in-the-audio">
+<h3>Basic Streaming with Jumping to Specific Times in the Audio<a class="headerlink" href="#basic-streaming-with-jumping-to-specific-times-in-the-audio" title="Link to this heading"></a></h3>
+<p>This example illustrates how to start playback and jump to a specific time in an audio file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c1"># Initialize the audio master</span>
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">()</span>
+<span class="n">su</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># Add a long audio file to the master</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;long_audio.mp3&#39;</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+<span class="c1"># Enable stdout echo</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">()</span>
+
+<span class="c1"># Start the audio stream</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting playback at: </span><span class="si">{</span><span class="n">stream</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="c1"># Jump to 30 seconds into the audio after 5 seconds of playback</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Jumped to: </span><span class="si">{</span><span class="n">stream</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="c1"># Continue playback for 10 more seconds</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current playback time: </span><span class="si">{</span><span class="n">stream</span><span class="o">.</span><span class="n">time</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="c1"># Stop the audio stream</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This script demonstrates how to navigate within an audio file, which is useful for long audio content or when specific sections need to be accessed quickly.</p>
+</section>
+<section id="streaming-with-volume-control">
+<h3>Streaming with Volume Control<a class="headerlink" href="#streaming-with-volume-control" title="Link to this heading"></a></h3>
+<p>This example shows how to dynamically control the volume of an audio stream using a custom pipeline.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sudio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sudio.types</span>
+
+<span class="c1"># Initialize the audio master with a specific input device</span>
+<span class="n">su</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Master</span><span class="p">(</span><span class="n">std_input_dev_id</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># Add an audio file to the master</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;example.mp3&#39;</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+<span class="c1"># Define a function to adjust the volume</span>
+<span class="k">def</span> <span class="nf">adjust_volume</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span> <span class="o">*</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span>
+
+<span class="c1"># Create a pipeline and append the volume adjustment function</span>
+<span class="n">pip</span> <span class="o">=</span> <span class="n">sudio</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">()</span>
+<span class="n">pip</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adjust_volume</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+
+<span class="c1"># Start the pipeline</span>
+<span class="n">pip</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># Add the pipeline to the master</span>
+<span class="n">pipeline_id</span> <span class="o">=</span> <span class="n">su</span><span class="o">.</span><span class="n">add_pipeline</span><span class="p">(</span><span class="n">pip</span><span class="p">,</span> <span class="n">process_type</span><span class="o">=</span><span class="n">sudio</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">PipelineProcessType</span><span class="o">.</span><span class="n">MAIN</span><span class="p">)</span>
+<span class="n">su</span><span class="o">.</span><span class="n">set_pipeline</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">)</span>
+
+<span class="c1"># Enable stdout echo</span>
+<span class="n">su</span><span class="o">.</span><span class="n">echo</span><span class="p">()</span>
+
+<span class="c1"># Start the audio stream</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Playing at normal volume&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Adjust the volume to 50%</span>
+<span class="n">pip</span><span class="o">.</span><span class="n">update_args</span><span class="p">(</span><span class="n">adjust_volume</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reduced volume to 50%&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Restore the volume to normal</span>
+<span class="n">pip</span><span class="o">.</span><span class="n">update_args</span><span class="p">(</span><span class="n">adjust_volume</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Restored normal volume&quot;</span><span class="p">)</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Stop the audio stream</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This example introduces a more complex setup using a custom pipeline to dynamically adjust the audio volume during playback. It’s particularly useful for applications requiring real-time audio processing or user-controlled volume adjustments.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.html" class="btn btn-neutral float-right" title="Master Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

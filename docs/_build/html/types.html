@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Types &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RateShift Module" href="rateshift.html" />
+    <link rel="prev" title="Stream Module" href="stream.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stream.html">Stream Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.enum.StreamMode"><code class="docutils literal notranslate"><span class="pre">StreamMode</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.enum.StreamMode.normal"><code class="docutils literal notranslate"><span class="pre">StreamMode.normal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.enum.StreamMode.optimized"><code class="docutils literal notranslate"><span class="pre">StreamMode.optimized</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.error.RefreshError"><code class="docutils literal notranslate"><span class="pre">RefreshError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.error.MiniaudioError"><code class="docutils literal notranslate"><span class="pre">MiniaudioError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.error.DecodeError"><code class="docutils literal notranslate"><span class="pre">DecodeError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.error.StreamError"><code class="docutils literal notranslate"><span class="pre">StreamError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType"><code class="docutils literal notranslate"><span class="pre">PipelineOnBusyType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType.DROP"><code class="docutils literal notranslate"><span class="pre">PipelineOnBusyType.DROP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType.BLOCK"><code class="docutils literal notranslate"><span class="pre">PipelineOnBusyType.BLOCK</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.types.pipelineprocesstype.PipelineProcessType"><code class="docutils literal notranslate"><span class="pre">PipelineProcessType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineprocesstype.PipelineProcessType.MAIN"><code class="docutils literal notranslate"><span class="pre">PipelineProcessType.MAIN</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineprocesstype.PipelineProcessType.MULTI_STREAM"><code class="docutils literal notranslate"><span class="pre">PipelineProcessType.MULTI_STREAM</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineprocesstype.PipelineProcessType.BRANCH"><code class="docutils literal notranslate"><span class="pre">PipelineProcessType.BRANCH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.types.pipelineprocesstype.PipelineProcessType.QUEUE"><code class="docutils literal notranslate"><span class="pre">PipelineProcessType.QUEUE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Core Types</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core-types">
+<h1>Core Types<a class="headerlink" href="#core-types" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><dl class="py class" id="module-sudio.types.enum">
+<dt class="sig sig-object py" id="sudio.types.enum.StreamMode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.enum.</span></span><span class="sig-name descname"><span class="pre">StreamMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.types.enum.StreamMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enumeration representing different stream modes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.enum.StreamMode.normal">
+<span class="sig-name descname"><span class="pre">normal</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#sudio.types.enum.StreamMode.normal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.enum.StreamMode.optimized">
+<span class="sig-name descname"><span class="pre">optimized</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#sudio.types.enum.StreamMode.optimized" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception" id="module-sudio.types.error">
+<dt class="sig sig-object py" id="sudio.types.error.RefreshError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.error.</span></span><span class="sig-name descname"><span class="pre">RefreshError</span></span><a class="headerlink" href="#sudio.types.error.RefreshError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised when a refresh operation encounters an error.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="sudio.types.error.MiniaudioError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.error.</span></span><span class="sig-name descname"><span class="pre">MiniaudioError</span></span><a class="headerlink" href="#sudio.types.error.MiniaudioError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base exception class for errors related to miniaudio.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="sudio.types.error.DecodeError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.error.</span></span><span class="sig-name descname"><span class="pre">DecodeError</span></span><a class="headerlink" href="#sudio.types.error.DecodeError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sudio.types.error.MiniaudioError" title="sudio.types.error.MiniaudioError"><code class="xref py py-class docutils literal notranslate"><span class="pre">MiniaudioError</span></code></a></p>
+<p>Exception raised when an error occurs during audio decoding.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="sudio.types.error.StreamError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.error.</span></span><span class="sig-name descname"><span class="pre">StreamError</span></span><a class="headerlink" href="#sudio.types.error.StreamError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors related to audio streaming.</p>
+</dd></dl>
+
+<dl class="py class" id="module-sudio.types.pipelineonbusytype">
+<dt class="sig sig-object py" id="sudio.types.pipelineonbusytype.PipelineOnBusyType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.pipelineonbusytype.</span></span><span class="sig-name descname"><span class="pre">PipelineOnBusyType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enumeration representing different Pipeline Process Types</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineonbusytype.PipelineOnBusyType.DROP">
+<span class="sig-name descname"><span class="pre">DROP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType.DROP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineonbusytype.PipelineOnBusyType.BLOCK">
+<span class="sig-name descname"><span class="pre">BLOCK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#sudio.types.pipelineonbusytype.PipelineOnBusyType.BLOCK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-sudio.types.pipelineprocesstype">
+<dt class="sig sig-object py" id="sudio.types.pipelineprocesstype.PipelineProcessType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.types.pipelineprocesstype.</span></span><span class="sig-name descname"><span class="pre">PipelineProcessType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.types.pipelineprocesstype.PipelineProcessType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enumeration representing different Pipeline Process Types</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineprocesstype.PipelineProcessType.MAIN">
+<span class="sig-name descname"><span class="pre">MAIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#sudio.types.pipelineprocesstype.PipelineProcessType.MAIN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineprocesstype.PipelineProcessType.MULTI_STREAM">
+<span class="sig-name descname"><span class="pre">MULTI_STREAM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#sudio.types.pipelineprocesstype.PipelineProcessType.MULTI_STREAM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineprocesstype.PipelineProcessType.BRANCH">
+<span class="sig-name descname"><span class="pre">BRANCH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#sudio.types.pipelineprocesstype.PipelineProcessType.BRANCH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.types.pipelineprocesstype.PipelineProcessType.QUEUE">
+<span class="sig-name descname"><span class="pre">QUEUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#sudio.types.pipelineprocesstype.PipelineProcessType.QUEUE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="stream.html" class="btn btn-neutral float-left" title="Stream Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rateshift.html" class="btn btn-neutral float-right" title="RateShift Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

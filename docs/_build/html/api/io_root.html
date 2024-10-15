@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Namespace rateshift" href="namespace_rateshift.html" />
+    <link rel="prev" title="Audiosys Module" href="../audiosys.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#class-hierarchy">Class Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-hierarchy">File Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#full-api">Full API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#namespaces">Namespaces</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="namespace_rateshift.html">Namespace rateshift</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_stdstream.html">Namespace stdstream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_suio.html">Namespace suio</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#classes-and-structs">Classes and Structs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html">Struct AudioDeviceInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html">Struct AudioFileInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html">Class CallbackResampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html">Class Resampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html">Class AudioStream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html">Class AudioCodec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html">Class AudioCodec::AudioFileStream</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#enums">Enums</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html">Enum ConverterType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html">Enum FileFormat</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a.html">Function rateshift::resample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html">Function stdstream::writeToDefaultOutput</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
+<section id="class-hierarchy">
+<h2>Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Link to this heading"></a></h2>
+<ul class="treeView" id="class-treeView">
+  <li>
+    <ul class="collapsibleList">
+      <li>Namespace <a href="namespace_rateshift.html#namespace-rateshift">rateshift</a><ul><li>Class <a href="classrateshift_1_1_callback_resampler.html#exhale-class-classrateshift-1-1-callback-resampler">CallbackResampler</a></li><li>Class <a href="classrateshift_1_1_resampler.html#exhale-class-classrateshift-1-1-resampler">Resampler</a></li><li class="lastChild">Enum <a href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#exhale-enum-rateshift-8hpp-1a4f51376d8b1da9e9cdcbf19887cd5dd9">ConverterType</a></li></ul></li><li>Namespace <a href="namespace_stdstream.html#namespace-stdstream">stdstream</a><ul><li>Struct <a href="structstdstream_1_1_audio_device_info.html#exhale-struct-structstdstream-1-1-audio-device-info">AudioDeviceInfo</a></li><li class="lastChild">Class <a href="classstdstream_1_1_audio_stream.html#exhale-class-classstdstream-1-1-audio-stream">AudioStream</a></li></ul></li><li class="lastChild">Namespace <a href="namespace_suio.html#namespace-suio">suio</a><ul><li>Struct <a href="structsuio_1_1_audio_file_info.html#exhale-struct-structsuio-1-1-audio-file-info">AudioFileInfo</a></li><li>Class <a href="classsuio_1_1_audio_codec.html#exhale-class-classsuio-1-1-audio-codec">AudioCodec</a><ul><li class="lastChild">Class <a href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#exhale-class-classsuio-1-1-audio-codec-1-1-audio-file-stream">AudioCodec::AudioFileStream</a></li></ul></li><li class="lastChild">Enum <a href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#exhale-enum-codec-8hpp-1a39ec6885353a688bc194a12728d84e61">FileFormat</a></li></ul></li>
+    </ul>
+  </li><!-- only tree view element -->
+</ul><!-- /treeView class-treeView --></section>
+<section id="file-hierarchy">
+<h2>File Hierarchy<a class="headerlink" href="#file-hierarchy" title="Link to this heading"></a></h2>
+<ul class="treeView" id="file-treeView">
+  <li>
+    <ul class="collapsibleList">
+      <li class="lastChild">Directory <a href="dir_sudio.html#dir-sudio">sudio</a><ul><li>Directory <a href="dir_sudio_io.html#dir-sudio-io">io</a><ul><li>Directory <a href="dir_sudio_io_inc.html#dir-sudio-io-inc">inc</a><ul><li>File <a href="file_sudio_io_inc_codec.hpp.html#file-sudio-io-inc-codec.hpp">codec.hpp</a></li><li class="lastChild">File <a href="file_sudio_io_inc_stdstream.hpp.html#file-sudio-io-inc-stdstream.hpp">stdstream.hpp</a></li></ul></li><li class="lastChild">Directory <a href="dir_sudio_io_src.html#dir-sudio-io-src">src</a><ul><li>File <a href="file_sudio_io_src_codec.cpp.html#file-sudio-io-src-codec.cpp">codec.cpp</a></li><li>File <a href="file_sudio_io_src_stdstream.cpp.html#file-sudio-io-src-stdstream.cpp">stdstream.cpp</a></li><li class="lastChild">File <a href="file_sudio_io_src_suiobind.cpp.html#file-sudio-io-src-suiobind.cpp">suiobind.cpp</a></li></ul></li></ul></li><li class="lastChild">Directory <a href="dir_sudio_rateshift.html#dir-sudio-rateshift">rateshift</a><ul><li>Directory <a href="dir_sudio_rateshift_inc.html#dir-sudio-rateshift-inc">inc</a><ul><li class="lastChild">File <a href="file_sudio_rateshift_inc_rateshift.hpp.html#file-sudio-rateshift-inc-rateshift.hpp">rateshift.hpp</a></li></ul></li><li class="lastChild">Directory <a href="dir_sudio_rateshift_src.html#dir-sudio-rateshift-src">src</a><ul><li>File <a href="file_sudio_rateshift_src_python_bindings.cpp.html#file-sudio-rateshift-src-python-bindings.cpp">python_bindings.cpp</a></li><li class="lastChild">File <a href="file_sudio_rateshift_src_rateshift.cpp.html#file-sudio-rateshift-src-rateshift.cpp">rateshift.cpp</a></li></ul></li></ul></li></ul></li>
+    </ul>
+  </li><!-- only tree view element -->
+</ul><!-- /treeView file-treeView --></section>
+<section id="full-api">
+<h2>Full API<a class="headerlink" href="#full-api" title="Link to this heading"></a></h2>
+<section id="namespaces">
+<h3>Namespaces<a class="headerlink" href="#namespaces" title="Link to this heading"></a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="namespace_rateshift.html">Namespace rateshift</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="namespace_rateshift.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="namespace_rateshift.html#enums">Enums</a></li>
+<li class="toctree-l2"><a class="reference internal" href="namespace_rateshift.html#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="namespace_stdstream.html">Namespace stdstream</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="namespace_stdstream.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="namespace_stdstream.html#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="namespace_suio.html">Namespace suio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="namespace_suio.html#classes">Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="namespace_suio.html#enums">Enums</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="classes-and-structs">
+<h3>Classes and Structs<a class="headerlink" href="#classes-and-structs" title="Link to this heading"></a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html">Struct AudioDeviceInfo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#struct-documentation">Struct Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfoE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo5indexE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::index</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo4nameE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo16maxInputChannelsE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::maxInputChannels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo17maxOutputChannelsE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::maxOutputChannels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo17defaultSampleRateE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::defaultSampleRate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo14isDefaultInputE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::isDefaultInput</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstdstream_1_1_audio_device_info.html#_CPPv4N9stdstream15AudioDeviceInfo15isDefaultOutputE"><code class="docutils literal notranslate"><span class="pre">AudioDeviceInfo::isDefaultOutput</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="structsuio_1_1_audio_file_info.html">Struct AudioFileInfo</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#struct-documentation">Struct Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfoE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo4nameE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo10fileFormatE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::fileFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo9nchannelsE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::nchannels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo10sampleRateE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::sampleRate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo12sampleFormatE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::sampleFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo9numFramesE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::numFrames</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="structsuio_1_1_audio_file_info.html#_CPPv4N4suio13AudioFileInfo8durationE"><code class="docutils literal notranslate"><span class="pre">AudioFileInfo::duration</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html">Class CallbackResampler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#class-documentation">Class Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResamplerE"><code class="docutils literal notranslate"><span class="pre">CallbackResampler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResampler10callback_tE"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::callback_t</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResampler17CallbackResamplerE10callback_td13ConverterType6size_t"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::CallbackResampler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResamplerD0Ev"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::~CallbackResampler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResampler4readE6size_t"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResampler18set_starting_ratioEd"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::set_starting_ratio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_callback_resampler.html#_CPPv4N9rateshift17CallbackResampler5resetEv"><code class="docutils literal notranslate"><span class="pre">CallbackResampler::reset()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classrateshift_1_1_resampler.html">Class Resampler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classrateshift_1_1_resampler.html#class-documentation">Class Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9ResamplerE"><code class="docutils literal notranslate"><span class="pre">Resampler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9Resampler9ResamplerE13ConverterTypei"><code class="docutils literal notranslate"><span class="pre">Resampler::Resampler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9ResamplerD0Ev"><code class="docutils literal notranslate"><span class="pre">Resampler::~Resampler()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9Resampler7processERKNSt6vectorIfEEdb"><code class="docutils literal notranslate"><span class="pre">Resampler::process()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9Resampler9set_ratioEd"><code class="docutils literal notranslate"><span class="pre">Resampler::set_ratio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrateshift_1_1_resampler.html#_CPPv4N9rateshift9Resampler5resetEv"><code class="docutils literal notranslate"><span class="pre">Resampler::reset()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classstdstream_1_1_audio_stream.html">Class AudioStream</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#class-documentation">Class Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStreamE"><code class="docutils literal notranslate"><span class="pre">AudioStream</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream13InputCallbackE"><code class="docutils literal notranslate"><span class="pre">AudioStream::InputCallback</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream14OutputCallbackE"><code class="docutils literal notranslate"><span class="pre">AudioStream::OutputCallback</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream11AudioStreamEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::AudioStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStreamD0Ev"><code class="docutils literal notranslate"><span class="pre">AudioStream::~AudioStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream4openEiid14PaSampleFormatiimbb13PaStreamFlags13InputCallback14OutputCallback"><code class="docutils literal notranslate"><span class="pre">AudioStream::open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream5startEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream4stopEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream5closeEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream15getInputDevicesEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getInputDevices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream16getOutputDevicesEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getOutputDevices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream21getDefaultInputDeviceEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getDefaultInputDevice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream22getDefaultOutputDeviceEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getDefaultOutputDevice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream14getDeviceCountEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getDeviceCount()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream20getDeviceInfoByIndexEi"><code class="docutils literal notranslate"><span class="pre">AudioStream::getDeviceInfoByIndex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream10readStreamEP7uint8_tm"><code class="docutils literal notranslate"><span class="pre">AudioStream::readStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream11writeStreamEPK7uint8_tm"><code class="docutils literal notranslate"><span class="pre">AudioStream::writeStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream22getStreamReadAvailableEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getStreamReadAvailable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream23getStreamWriteAvailableEv"><code class="docutils literal notranslate"><span class="pre">AudioStream::getStreamWriteAvailable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream14outputChannelsE"><code class="docutils literal notranslate"><span class="pre">AudioStream::outputChannels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream13inputChannelsE"><code class="docutils literal notranslate"><span class="pre">AudioStream::inputChannels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classstdstream_1_1_audio_stream.html#_CPPv4N9stdstream11AudioStream12streamFormatE"><code class="docutils literal notranslate"><span class="pre">AudioStream::streamFormat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classsuio_1_1_audio_codec.html">Class AudioCodec</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classsuio_1_1_audio_codec.html#nested-relationships">Nested Relationships</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classsuio_1_1_audio_codec.html#nested-types">Nested Types</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="classsuio_1_1_audio_codec.html#class-documentation">Class Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodecE"><code class="docutils literal notranslate"><span class="pre">AudioCodec</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec15decodeAudioFileERKNSt6stringE9ma_format8uint32_t8uint32_t14ma_dither_mode"><code class="docutils literal notranslate"><span class="pre">AudioCodec::decodeAudioFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec16decodeVorbisFileERKNSt6stringE9ma_format8uint32_t8uint32_t"><code class="docutils literal notranslate"><span class="pre">AudioCodec::decodeVorbisFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec13encodeWavFileERKNSt6stringERKNSt6vectorI7uint8_tEE9ma_format8uint32_t8uint32_t"><code class="docutils literal notranslate"><span class="pre">AudioCodec::encodeWavFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec13encodeMP3FileERKNSt6stringERKNSt6vectorI7uint8_tEE9ma_format8uint32_t8uint32_tii"><code class="docutils literal notranslate"><span class="pre">AudioCodec::encodeMP3File()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec14encodeFlacFileERKNSt6stringERKNSt6vectorI7uint8_tEE9ma_format8uint32_t8uint32_ti"><code class="docutils literal notranslate"><span class="pre">AudioCodec::encodeFlacFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec16encodeVorbisFileERKNSt6stringERKNSt6vectorI7uint8_tEE9ma_format8uint32_t8uint32_tf"><code class="docutils literal notranslate"><span class="pre">AudioCodec::encodeVorbisFile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec11getFileInfoERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">AudioCodec::getFileInfo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec17initializeDecoderERKNSt6stringE9ma_format8uint32_t8uint32_t14ma_dither_mode"><code class="docutils literal notranslate"><span class="pre">AudioCodec::initializeDecoder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec17readDecoderFramesEP10ma_decoder8uint64_t"><code class="docutils literal notranslate"><span class="pre">AudioCodec::readDecoderFrames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec15AudioFileStreamE"><code class="docutils literal notranslate"><span class="pre">AudioCodec::AudioFileStream</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec15AudioFileStream15AudioFileStreamERKNSt6stringE9ma_format8uint32_t8uint32_t8uint64_t14ma_dither_mode8uint64_t"><code class="docutils literal notranslate"><span class="pre">AudioCodec::AudioFileStream::AudioFileStream()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec15AudioFileStreamD0Ev"><code class="docutils literal notranslate"><span class="pre">AudioCodec::AudioFileStream::~AudioFileStream()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="classsuio_1_1_audio_codec.html#_CPPv4N4suio10AudioCodec15AudioFileStream10readFramesE8uint64_t"><code class="docutils literal notranslate"><span class="pre">AudioCodec::AudioFileStream::readFrames()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html">Class AudioCodec::AudioFileStream</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#nested-relationships">Nested Relationships</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#class-documentation">Class Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#_CPPv4N4suio10AudioCodec15AudioFileStreamE"><code class="docutils literal notranslate"><span class="pre">AudioFileStream</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#_CPPv4N4suio10AudioCodec15AudioFileStream15AudioFileStreamERKNSt6stringE9ma_format8uint32_t8uint32_t8uint64_t14ma_dither_mode8uint64_t"><code class="docutils literal notranslate"><span class="pre">AudioFileStream::AudioFileStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#_CPPv4N4suio10AudioCodec15AudioFileStreamD0Ev"><code class="docutils literal notranslate"><span class="pre">AudioFileStream::~AudioFileStream()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="classsuio_1_1_audio_codec_1_1_audio_file_stream.html#_CPPv4N4suio10AudioCodec15AudioFileStream10readFramesE8uint64_t"><code class="docutils literal notranslate"><span class="pre">AudioFileStream::readFrames()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="enums">
+<h3>Enums<a class="headerlink" href="#enums" title="Link to this heading"></a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html">Enum ConverterType</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#enum-documentation">Enum Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterTypeE"><code class="docutils literal notranslate"><span class="pre">ConverterType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterType9sinc_bestE"><code class="docutils literal notranslate"><span class="pre">ConverterType::sinc_best</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterType11sinc_mediumE"><code class="docutils literal notranslate"><span class="pre">ConverterType::sinc_medium</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterType12sinc_fastestE"><code class="docutils literal notranslate"><span class="pre">ConverterType::sinc_fastest</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterType15zero_order_holdE"><code class="docutils literal notranslate"><span class="pre">ConverterType::zero_order_hold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9.html#_CPPv4N9rateshift13ConverterType6linearE"><code class="docutils literal notranslate"><span class="pre">ConverterType::linear</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html">Enum FileFormat</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#enum-documentation">Enum Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormatE"><code class="docutils literal notranslate"><span class="pre">FileFormat</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormat7UNKNOWNE"><code class="docutils literal notranslate"><span class="pre">FileFormat::UNKNOWN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormat3WAVE"><code class="docutils literal notranslate"><span class="pre">FileFormat::WAV</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormat4FLACE"><code class="docutils literal notranslate"><span class="pre">FileFormat::FLAC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormat6VORBISE"><code class="docutils literal notranslate"><span class="pre">FileFormat::VORBIS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_codec_8hpp_1a39ec6885353a688bc194a12728d84e61.html#_CPPv4N4suio10FileFormat3MP3E"><code class="docutils literal notranslate"><span class="pre">FileFormat::MP3</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a.html">Function rateshift::resample</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a.html#function-documentation">Function Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a.html#_CPPv4N9rateshift8resampleERKNSt6vectorIfEEd13ConverterTypei"><code class="docutils literal notranslate"><span class="pre">resample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html">Function stdstream::writeToDefaultOutput</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html#function-documentation">Function Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html#_CPPv4N9stdstream20writeToDefaultOutputERKNSt6vectorI7uint8_tEE14PaSampleFormatid"><code class="docutils literal notranslate"><span class="pre">writeToDefaultOutput()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../audiosys.html" class="btn btn-neutral float-left" title="Audiosys Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="namespace_rateshift.html" class="btn btn-neutral float-right" title="Namespace rateshift" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

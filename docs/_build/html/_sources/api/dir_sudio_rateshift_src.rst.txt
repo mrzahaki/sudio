@@ -1,0 +1,22 @@
+.. _dir_sudio_rateshift_src:
+
+
+Directory src
+=============
+
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_rateshift>` (``sudio\rateshift``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``sudio\rateshift\src``
+
+
+Files
+-----
+
+- :ref:`file_sudio_rateshift_src_python_bindings.cpp`
+- :ref:`file_sudio_rateshift_src_rateshift.cpp`
+
+

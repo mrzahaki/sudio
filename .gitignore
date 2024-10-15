@@ -2,8 +2,6 @@
 sudio/*.jpg
 lab
 dist
-!examples
-!img
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/*
@@ -33,6 +31,16 @@ wheelhouse/
 .installed.cfg
 *.egg
 sudio/rateshift/libsamplerate/
+sudio/io/miniaudio/
+sudio/io/portaudio/
+sudio/io/libmp3lame-CMAKE/
+sudio/io/lame/
+sudio/io/flac/
+sudio/io/ogg/
+sudio/io/vorbis/
+docs/_build/doctrees
+docs/doxyoutput
+docs/api
 
 # PyInstaller
 *.manifest
@@ -80,8 +88,3 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
-sudio/rateshift/external/**/*
-# But don't ignore CMakeLists.txt files
-!sudio/rateshift/external/**/CMakeLists.txt
-# Don't ignore the external directory itself
-!sudio/rateshift/external/

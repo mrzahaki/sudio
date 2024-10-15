@@ -1,0 +1,23 @@
+.. _dir_sudio_io_src:
+
+
+Directory src
+=============
+
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_io>` (``sudio\io``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``sudio\io\src``
+
+
+Files
+-----
+
+- :ref:`file_sudio_io_src_codec.cpp`
+- :ref:`file_sudio_io_src_stdstream.cpp`
+- :ref:`file_sudio_io_src_suiobind.cpp`
+
+

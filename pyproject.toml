@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sudio"
 license = {file = "LICENSE"}
-version = '1.0.9.36'
+version = '1.0.9.37'
 description = "Audio Processing Platform"
 authors = [{name = "Hossein Zahaki", email = "mrzahaki@gmail.com"}]
 readme = "README.md"
@@ -35,8 +35,6 @@ classifiers = [
 dependencies = [
     "scipy>=1.9.1",
     "numpy>=1.23.3",
-    "pyaudio>=0.2.12",
-    "miniaudio>=1.52",
 ]
 [project.urls]
 source = "https://github.com/MrZahaki/sudio"

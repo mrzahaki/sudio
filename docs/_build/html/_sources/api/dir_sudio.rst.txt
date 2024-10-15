@@ -1,0 +1,17 @@
+.. _dir_sudio:
+
+
+Directory sudio
+===============
+
+
+*Directory path:* ``sudio``
+
+Subdirectories
+--------------
+
+- :ref:`dir_sudio_io`
+- :ref:`dir_sudio_rateshift`
+
+
+

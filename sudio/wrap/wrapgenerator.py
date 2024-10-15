@@ -1,14 +1,21 @@
+#  W.T.A
+#  SUDIO (https://github.com/MrZahaki/sudio)
+#  The Audio Processing Platform
+#  Mail: mrzahaki@gmail.com
+#  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+
+
 import io
 import os
 from contextlib import contextmanager
 
 from sudio.wrap.wrap import Wrap
 from sudio.types.name import Name
-from sudio.audiosys.audio import Audio
+from sudio.io import get_sample_size
 from sudio.utils.cacheutil import write_to_cached_file, handle_cached_record
 from sudio.audiosys.typeconversion import convert_array_type
 from sudio.utils.timed_indexed_string import TimedIndexedString
-from sudio.types import SampleFormat, LibSampleFormatEnumToSample
+from sudio.io import SampleFormat
 from sudio.metadata import AudioMetadata
 import numpy as np
 
@@ -59,7 +66,7 @@ class WrapGenerator:
         self._sample_format = self._rec['sampleFormat']
         self._nperseg = self._rec['nperseg']
         self._sample_type = self._parent._sample_width_format_str
-        self.sample_width = Audio.get_sample_size(self._rec['sampleFormat'])
+        self.sample_width = get_sample_size(self._rec['sampleFormat'])
         self._seek = 0
         self._data = self._rec['o']
         self._packed = True
@@ -147,7 +154,7 @@ class WrapGenerator:
         Returns:
             SampleFormat: The sample format.
         '''
-        return LibSampleFormatEnumToSample[self._sample_format]
+        return self._sample_format
 
     def get_sample_width(self) -> int:
         '''
@@ -232,7 +239,7 @@ class WrapGenerator:
         Returns:
             Wrap: A Wrap instance.
         '''
-        return (self.__call__(sync_sample_format_id=sync_sample_format.value,
+        return (self.__call__(sync_sample_format_id=sync_sample_format,
                              sync_nchannels=sync_nchannels,
                              sync_sample_rate=sync_sample_rate,
                              safe_load=safe_load).join(*other))
@@ -362,7 +369,7 @@ class WrapGenerator:
         return data.astype(self._sample_type).tobytes()
 
     @contextmanager
-    def unpack(self, reset=False, astype:SampleFormat=SampleFormat.formatUnknown) -> np.ndarray:
+    def unpack(self, reset=False, astype:SampleFormat=SampleFormat.UNKNOWN) -> np.ndarray:
         '''
         Unpacks audio data from cached files to dynamic memory.
 
@@ -391,7 +398,7 @@ class WrapGenerator:
             with self.get() as f:
                 data = self._from_buffer(f.read())
                 self._data = data
-            if not astype == SampleFormat.formatUnknown:
+            if not astype == SampleFormat.UNKNOWN:
                 astype_backup = self._sample_type
                 data = convert_array_type(data, astype)
             yield data

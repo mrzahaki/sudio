@@ -1,2 +1,2 @@
 from sudio.metadata.metadata import AudioMetadata
-from sudio.metadata.metadatadatabase import AudioMetadataDatabase
+from sudio.metadata.audio_record_database import AudioRecordDatabase

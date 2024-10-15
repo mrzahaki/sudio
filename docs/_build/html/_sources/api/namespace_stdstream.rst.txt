@@ -1,0 +1,29 @@
+
+.. _namespace_stdstream:
+
+Namespace stdstream
+===================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structstdstream_1_1_audio_device_info`
+
+- :ref:`exhale_class_classstdstream_1_1_audio_stream`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9`

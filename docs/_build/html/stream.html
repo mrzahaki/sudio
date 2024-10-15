@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stream Module &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core Types" href="types.html" />
+    <link rel="prev" title="Metadata Module" href="metadata.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Stream Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.stream.stream.Stream"><code class="docutils literal notranslate"><span class="pre">Stream</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.stream.Stream.acquire"><code class="docutils literal notranslate"><span class="pre">Stream.acquire()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.stream.Stream.release"><code class="docutils literal notranslate"><span class="pre">Stream.release()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.stream.Stream.locked"><code class="docutils literal notranslate"><span class="pre">Stream.locked()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.stream.Stream.set"><code class="docutils literal notranslate"><span class="pre">Stream.set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.stream.Stream.type"><code class="docutils literal notranslate"><span class="pre">Stream.type()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl"><code class="docutils literal notranslate"><span class="pre">StreamControl</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.time"><code class="docutils literal notranslate"><span class="pre">StreamControl.time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.isready"><code class="docutils literal notranslate"><span class="pre">StreamControl.isready()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.is_streaming"><code class="docutils literal notranslate"><span class="pre">StreamControl.is_streaming()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.start"><code class="docutils literal notranslate"><span class="pre">StreamControl.start()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.resume"><code class="docutils literal notranslate"><span class="pre">StreamControl.resume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.stop"><code class="docutils literal notranslate"><span class="pre">StreamControl.stop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.pause"><code class="docutils literal notranslate"><span class="pre">StreamControl.pause()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.enable_loop"><code class="docutils literal notranslate"><span class="pre">StreamControl.enable_loop()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.stream.streamcontrol.StreamControl.disable_loop"><code class="docutils literal notranslate"><span class="pre">StreamControl.disable_loop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.stream.streamingtimecontroller.StreamingTimeController"><code class="docutils literal notranslate"><span class="pre">StreamingTimeController</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Stream Module</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stream-module">
+<h1>Stream Module<a class="headerlink" href="#stream-module" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><dl class="py class" id="module-sudio.stream.stream">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.stream.stream.</span></span><span class="sig-name descname"><span class="pre">Stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'multithreading'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PipelineProcessType.MAIN</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize the Stream class for managing audio data streams.</p>
+<p>Args:
+- other: An instance of the main audio processing class.
+- obj: An object representing the data stream (e.g., list, queue).
+- name: A name for the stream (optional).
+- stream_type: Type of streaming operation (‘multithreading’ or reserved for future versions).
+- channel: Channel index for controlling multi-channel streams (optional).
+- process_type: Type of stream processing PipelineProcessType
+(PipelineProcessType.MAIN, PipelineProcessType.MULTI_STREAM, PipelineProcessType.BRANCH, PipelineProcessType.QUEUE).</p>
+<p>Raises:
+- StreamError: If there are issues with the provided parameters based on the selected processing mode.</p>
+<p>Note:
+- This class provides a flexible mechanism for managing different types of audio data streams based on the specified</p>
+<blockquote>
+<div><p>processing mode and stream type.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream.acquire">
+<span class="sig-name descname"><span class="pre">acquire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream.acquire" title="Link to this definition"></a></dt>
+<dd><p>Acquire the lock for thread-safe operations.</p>
+<p>Note:
+- This method is used for thread synchronization in multithreading scenarios.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream.release">
+<span class="sig-name descname"><span class="pre">release</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream.release" title="Link to this definition"></a></dt>
+<dd><p>Release the lock after thread-safe operations.</p>
+<p>Note:
+- This method is used for releasing the lock acquired during thread-safe operations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream.locked">
+<span class="sig-name descname"><span class="pre">locked</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream.locked" title="Link to this definition"></a></dt>
+<dd><p>Check if the lock is currently held.</p>
+<p>Returns:
+- bool: True if the lock is currently held, False otherwise.</p>
+<p>Note:
+- This method is used to check the status of the lock for thread synchronization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream.set" title="Link to this definition"></a></dt>
+<dd><p>Set the attributes of the current stream based on another stream.</p>
+<p>Args:
+- other: Another instance of the Stream class.</p>
+<p>Note:
+- This method allows setting the attributes of the current stream to match those of another stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.stream.Stream.type">
+<span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.stream.Stream.type" title="Link to this definition"></a></dt>
+<dd><p>Get the type of stream processing.</p>
+<p>Returns:
+- PipelineProcessType: The type of stream processing (MAIN, MULTI_STREAM, BRANCH, QUEUE).</p>
+<p>Note:
+- This method returns the type of stream processing used by the current instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-sudio.stream.streamcontrol">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.stream.streamcontrol.</span></span><span class="sig-name descname"><span class="pre">StreamControl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The StreamControl class is defined to control the mainstream audio playback for a special ‘record’.</p>
+<p>Initialize the StreamControl class to manage the mainstream audio playback for a specific ‘record’.</p>
+<p>Args:
+- master: An instance of the main audio processing class.
+- record: A dictionary containing information about the audio file to be streamed.
+- on_stop: Callback function to execute when audio playback stops.
+- loop_mode: Boolean indicating whether to enable loop mode.
+- stream_mode: Type of streaming operation (e.g., ‘read’, ‘write’).</p>
+<p>Attributes:
+- self._master: Reference to the main audio processing instance.
+- self._stream_type: Type of streaming operation.
+- self._stream_file: File object representing the audio file.
+- self._stream_file_size: Size of the audio file.
+- self._size_calculator: Lambda function to calculate the size of a data chunk.
+- self._stream_data_size: Size of the audio data to be streamed.
+- self._stream_data_pointer: Current position in the audio file.
+- self._stream_on_stop: Callback function for when audio playback stops.
+- self._stream_loop_mode: Boolean indicating whether loop mode is enabled.
+- self.duration: Duration of the audio file.
+- self._time_calculator: Lambda function to convert time to byte offset.
+- self._itime_calculator: Lambda function to convert byte offset to time.</p>
+<p>Raises:
+- PermissionError: If attempting to initialize while another file is streaming.</p>
+<p>Note:
+- This class facilitates the management of audio playback for a specific audio file, ensuring proper synchronization
+and handling of playback-related operations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.time">
+<span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.isready">
+<span class="sig-name descname"><span class="pre">isready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.isready" title="Link to this definition"></a></dt>
+<dd><p>Check if the stream is ready for playback.</p>
+<p>Returns:
+- bool: True if ready, False otherwise</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.is_streaming">
+<span class="sig-name descname"><span class="pre">is_streaming</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.is_streaming" title="Link to this definition"></a></dt>
+<dd><p>Check if the stream is currently in the streaming state.</p>
+<p>Returns:
+- bool: True if streaming, False otherwise</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.start" title="Link to this definition"></a></dt>
+<dd><p>Start the audio playback stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.resume">
+<span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.resume" title="Link to this definition"></a></dt>
+<dd><p>Resume the audio playback stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.stop" title="Link to this definition"></a></dt>
+<dd><p>Stop the audio playback stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.pause">
+<span class="sig-name descname"><span class="pre">pause</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.pause" title="Link to this definition"></a></dt>
+<dd><p>Pause the audio playback stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.enable_loop">
+<span class="sig-name descname"><span class="pre">enable_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.enable_loop" title="Link to this definition"></a></dt>
+<dd><p>Enable looping for the audio playback stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.stream.streamcontrol.StreamControl.disable_loop">
+<span class="sig-name descname"><span class="pre">disable_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.stream.streamcontrol.StreamControl.disable_loop" title="Link to this definition"></a></dt>
+<dd><p>Disable looping for the audio playback stream.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-sudio.stream.streamingtimecontroller">
+<dt class="sig sig-object py" id="sudio.stream.streamingtimecontroller.StreamingTimeController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.stream.streamingtimecontroller.</span></span><span class="sig-name descname"><span class="pre">StreamingTimeController</span></span><a class="headerlink" href="#sudio.stream.streamingtimecontroller.StreamingTimeController" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="metadata.html" class="btn btn-neutral float-left" title="Metadata Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="types.html" class="btn btn-neutral float-right" title="Core Types" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+:orphan:
+
+
+Full API
+========
+
+Directories
+***********
+
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_io.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_io_inc.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_io_src.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_rateshift.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_rateshift_inc.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   dir_sudio_rateshift_src.rst
+
+Files
+*****
+
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_io_src_codec.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_io_inc_codec.hpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_rateshift_src_python_bindings.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_rateshift_src_rateshift.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_rateshift_inc_rateshift.hpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_io_src_stdstream.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_io_inc_stdstream.hpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_sudio_io_src_suiobind.cpp.rst

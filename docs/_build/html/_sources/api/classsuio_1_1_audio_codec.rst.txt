@@ -1,0 +1,27 @@
+.. _exhale_class_classsuio_1_1_audio_codec:
+
+Class AudioCodec
+================
+
+- Defined in :ref:`file_sudio_io_inc_codec.hpp`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_class_classsuio_1_1_audio_codec_1_1_audio_file_stream`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: suio::AudioCodec
+   :project: sudio
+   :members:
+   :protected-members:
+   :undoc-members:

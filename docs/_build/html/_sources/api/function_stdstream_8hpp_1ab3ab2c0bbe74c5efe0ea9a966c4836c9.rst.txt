@@ -1,0 +1,14 @@
+.. _exhale_function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9:
+
+Function stdstream::writeToDefaultOutput
+========================================
+
+- Defined in :ref:`file_sudio_io_inc_stdstream.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: stdstream::writeToDefaultOutput(const std::vector<uint8_t>&, PaSampleFormat, int, double)
+   :project: sudio

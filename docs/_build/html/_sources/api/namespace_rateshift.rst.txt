@@ -1,0 +1,36 @@
+
+.. _namespace_rateshift:
+
+Namespace rateshift
+===================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrateshift_1_1_callback_resampler`
+
+- :ref:`exhale_class_classrateshift_1_1_resampler`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_rateshift_8hpp_1aeadfdeeae8deb7874d2f11fc06cc502a`

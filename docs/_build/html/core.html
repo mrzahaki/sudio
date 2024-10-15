@@ -1,0 +1,837 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Module &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pipeline Module" href="pipeline.html" />
+    <link rel="prev" title="Quick start" href="start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Master Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.core.Master"><code class="docutils literal notranslate"><span class="pre">Master</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.CACHE_INFO"><code class="docutils literal notranslate"><span class="pre">Master.CACHE_INFO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.BUFFER_TYPE"><code class="docutils literal notranslate"><span class="pre">Master.BUFFER_TYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.start"><code class="docutils literal notranslate"><span class="pre">Master.start()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.add_file"><code class="docutils literal notranslate"><span class="pre">Master.add_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.add"><code class="docutils literal notranslate"><span class="pre">Master.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.recorder"><code class="docutils literal notranslate"><span class="pre">Master.recorder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.load"><code class="docutils literal notranslate"><span class="pre">Master.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_record_info"><code class="docutils literal notranslate"><span class="pre">Master.get_record_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.syncable"><code class="docutils literal notranslate"><span class="pre">Master.syncable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.sync"><code class="docutils literal notranslate"><span class="pre">Master.sync()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.del_record"><code class="docutils literal notranslate"><span class="pre">Master.del_record()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.export"><code class="docutils literal notranslate"><span class="pre">Master.export()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_record_names"><code class="docutils literal notranslate"><span class="pre">Master.get_record_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_nperseg"><code class="docutils literal notranslate"><span class="pre">Master.get_nperseg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_nchannels"><code class="docutils literal notranslate"><span class="pre">Master.get_nchannels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_sample_rate"><code class="docutils literal notranslate"><span class="pre">Master.get_sample_rate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.stream"><code class="docutils literal notranslate"><span class="pre">Master.stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.mute"><code class="docutils literal notranslate"><span class="pre">Master.mute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.unmute"><code class="docutils literal notranslate"><span class="pre">Master.unmute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.is_muted"><code class="docutils literal notranslate"><span class="pre">Master.is_muted()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.echo"><code class="docutils literal notranslate"><span class="pre">Master.echo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.disable_echo"><code class="docutils literal notranslate"><span class="pre">Master.disable_echo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.wrap"><code class="docutils literal notranslate"><span class="pre">Master.wrap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.clean_cache"><code class="docutils literal notranslate"><span class="pre">Master.clean_cache()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.is_started"><code class="docutils literal notranslate"><span class="pre">Master.is_started()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_window"><code class="docutils literal notranslate"><span class="pre">Master.get_window()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.disable_std_input"><code class="docutils literal notranslate"><span class="pre">Master.disable_std_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.enable_std_input"><code class="docutils literal notranslate"><span class="pre">Master.enable_std_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.add_pipeline"><code class="docutils literal notranslate"><span class="pre">Master.add_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.set_pipeline"><code class="docutils literal notranslate"><span class="pre">Master.set_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.disable_pipeline"><code class="docutils literal notranslate"><span class="pre">Master.disable_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.clear_pipeline"><code class="docutils literal notranslate"><span class="pre">Master.clear_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.set_window"><code class="docutils literal notranslate"><span class="pre">Master.set_window()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_sample_format"><code class="docutils literal notranslate"><span class="pre">Master.get_sample_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_default_input_device_info"><code class="docutils literal notranslate"><span class="pre">Master.get_default_input_device_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_default_output_device_info"><code class="docutils literal notranslate"><span class="pre">Master.get_default_output_device_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_device_count"><code class="docutils literal notranslate"><span class="pre">Master.get_device_count()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_device_info_by_index"><code class="docutils literal notranslate"><span class="pre">Master.get_device_info_by_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_input_devices"><code class="docutils literal notranslate"><span class="pre">Master.get_input_devices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.core.Master.get_output_devices"><code class="docutils literal notranslate"><span class="pre">Master.get_output_devices()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Master Module</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="master-module">
+<h1>Master Module<a class="headerlink" href="#master-module" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><dl class="py class" id="module-sudio.core">
+<dt class="sig sig-object py" id="sudio.core.Master">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.core.</span></span><span class="sig-name descname"><span class="pre">Master</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">std_input_dev_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_output_dev_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_format=&lt;SampleFormat.SIGNED16:</span> <span class="pre">2&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nperseg=500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noverlap=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window='hann'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NOLA_check=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dev_sample_rate=48000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dev_nchannels=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dev_callback=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dev_nchannels=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dev_callback=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_size=30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_data_directory='./data/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The <cite>Master</cite> class is responsible for managing audio data streams, applying windowing,
+and handling input/output devices. This class provides various methods for processing,
+recording, and playing audio data, with functionality to handle different audio formats,
+sample rates, and device configurations.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>std_input_dev_id</strong> : Standard input device ID (default: <cite>None</cite>).
+If None, uses the system’s default input device.</p></li>
+<li><p><strong>std_output_dev_id</strong> : Standard output device ID (default: <cite>None</cite>).
+If None, uses the system’s default output device.</p></li>
+<li><p><strong>data_format</strong> : SampleFormat, optional
+The sample format of the audio. Default is 16-bit integer (SIGNED16).
+Supported formats: FLOAT32, SIGNED32, SIGNED24, SIGNED16, UNSIGNED8.</p></li>
+<li><p><strong>nperseg</strong> : int, optional
+Number of segments per window. Default is 500.</p></li>
+<li><p><strong>noverlap</strong> : int, optional
+Number of overlapping segments. If None, defaults to nperseg // 2.</p></li>
+<li><p><strong>window</strong> : str, float, tuple, or ndarray, optional
+Window type or array. Default is ‘hann’.
+- If string: Specifies a scipy.signal window type (e.g., ‘hamming’, ‘blackman’).
+- If float: Interpreted as the beta parameter for scipy.signal.windows.kaiser.
+- If tuple: First element is the window name, followed by its parameters.
+- If ndarray: Direct specification of window values.
+- If None: Disables windowing.</p></li>
+<li><p><strong>NOLA_check</strong> : bool, optional
+Perform the Non-Overlap-Add (NOLA) check. Default is True.</p></li>
+<li><p><strong>input_dev_sample_rate</strong> : int, optional
+Sample rate of input device. Default is 48000 Hz. Only used if input_dev_callback is provided.</p></li>
+<li><p><strong>input_dev_nchannels</strong> : int, optional
+Number of input device channels. Required if input_dev_callback is provided.</p></li>
+<li><p><strong>input_dev_callback</strong> : Callable, optional
+Input device callback function.
+Should return a numpy array of shape (nchannels, nperseg) with appropriate data format.</p></li>
+<li><p><strong>output_dev_nchannels</strong> : int, optional
+Number of output device channels. Required if output_dev_callback is provided.</p></li>
+<li><p><strong>output_dev_callback</strong> : Callable, optional
+Output device callback function.
+Receives a numpy array of shape (nchannels, nperseg) with processed audio data.</p></li>
+<li><p><strong>buffer_size</strong> : int, optional
+Size of the sound buffer. Default is 30.</p></li>
+<li><p><strong>audio_data_directory</strong> : str, optional
+Directory for storing audio data (default: <cite>‘./data/’</cite>).</p></li>
+</ul>
+</div></blockquote>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Various methods are available for audio processing, pipeline management, and device control.
+Refer to individual method docstrings for details.</p></li>
+<li><p>The class uses threading for efficient audio stream management.</p></li>
+<li><p>Window functions are crucial for spectral analysis and should be chosen carefully.</p></li>
+<li><p>NOLA constraint ensures proper reconstruction in overlap-add methods.</p></li>
+<li><p>Custom callbacks allow for flexible input/output handling but require careful implementation.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.core.Master.CACHE_INFO">
+<span class="sig-name descname"><span class="pre">CACHE_INFO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></em><a class="headerlink" href="#sudio.core.Master.CACHE_INFO" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.core.Master.BUFFER_TYPE">
+<span class="sig-name descname"><span class="pre">BUFFER_TYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.bin'</span></em><a class="headerlink" href="#sudio.core.Master.BUFFER_TYPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.start" title="Link to this definition"></a></dt>
+<dd><p>Starts the audio input and output streams and launches any registered threads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> – Returns the instance of the Master class for method chaining.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#sudio.core.Master" title="sudio.core.Master">Master</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.add_file">
+<span class="sig-name descname"><span class="pre">add_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_format=&lt;SampleFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nchannels=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_load=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.add_file" title="Link to this definition"></a></dt>
+<dd><p>Add an audio file to database. None value for the parameters means
+that they are automatically selected based on the properties of the audio file, and the master object.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>supported files format: WAV, FLAC, VORBIS, MP3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
+meaning that, The audio data storage methods can have different execution times based on the cached files.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – path/name of the audio file</p></li>
+<li><p><strong>sample_format</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span>) – sample format</p></li>
+<li><p><strong>nchannels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – number of audio channels</p></li>
+<li><p><strong>sample_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – sample rate</p></li>
+<li><p><strong>safe_load</strong> – load an audio file and modify it according to the ‘Master’ attributes.
+(sample rate, sample format, number of channels, etc).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>WrapGenerator object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.add" title="Link to this definition"></a></dt>
+<dd><p>Adds audio metadata or data to the local database. This method can handle various types of input including wrapped records,
+metadata objects, or audio files in mp3, WAV, FLAC, or VORBIS format.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>record :</dt><dd><p>The record to be added. Can be:
+- A Wrap or WrapGenerator object
+- A string representing the path to an audio file
+- AudioMetadata containing record data</p>
+</dd>
+<dt>safe_load<span class="classifier">bool, optional</span></dt><dd><p>If True (default), the audio file is loaded and modified according to
+the Master object’s attributes. This ensures compatibility with the
+current audio processing settings.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<p>:
+WrapGenerator</p>
+<blockquote>
+<div><p>A wrapped version of the added record.</p>
+</div></blockquote>
+</section>
+<section id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The method uses cached files to optimize memory usage and improve performance.</p></li>
+</ul>
+<blockquote>
+<div><p>As a result, execution times may vary depending on the state of these cached files.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Supported audio file formats: mp3, WAV, FLAC, VORBIS</p></li>
+</ul>
+</section>
+<section id="examples">
+<h2>Examples:<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># consider we have two master instances as m1, and m2</span>
+<span class="c1"># Adding an audio file</span>
+<span class="n">record1</span> <span class="o">=</span> <span class="n">m1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;path/to/audio.wav&quot;</span><span class="p">)</span>
+
+<span class="c1"># adding a copy of record1 into master 2 instance</span>
+<span class="n">record2</span> <span class="o">=</span> <span class="n">m2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">record1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.recorder">
+<span class="sig-name descname"><span class="pre">recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.recorder" title="Link to this definition"></a></dt>
+<dd><p>Record audio for a specified duration.
+This method captures audio input for a given duration and stores it as a new record
+in the Master object’s database.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>record_duration<span class="classifier">float</span></dt><dd><p>The duration of the recording in seconds.</p>
+</dd>
+<dt>name<span class="classifier">str, optional</span></dt><dd><p>A custom name for the recorded audio. If None, a timestamp-based name is generated.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>WrapGenerator instance</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Notes:<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The recording uses the current audio input settings of the Master object</p></li>
+</ul>
+<blockquote>
+<div><p>(sample rate, number of channels, etc.).</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>The recorded audio is automatically added to the Master’s database and can be</p></li>
+</ul>
+<blockquote>
+<div><p>accessed later using the provided or generated name.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>This method temporarily modifies the internal state of the Master object to</p></li>
+</ul>
+<blockquote>
+<div><p>facilitate recording. It restores the previous state after recording is complete.</p>
+</div></blockquote>
+</section>
+<section id="id3">
+<h2>Examples:<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p><strong>Record for 5 seconds with an auto-generated name</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">recorded_audio</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">recorder</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Record for 10 seconds with a custom name</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">recorded_audio</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">recorder</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_recording&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Use the recorded audio</strong></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">master</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">recorded_audio</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.load" title="Link to this definition"></a></dt>
+<dd><p>Loads a record from the local database. Trying to load a record that was previously loaded,
+outputs a wrapped version of the named record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – record name</p></li>
+<li><p><strong>safe_load</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Flag to safely load the record. if safe load is enabled then load function tries to load a record
+in the local database based on the master settings, like the frame rate and etc (default: <cite>True</cite>).</p></li>
+<li><p><strong>series</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Return the record as a series (default: <cite>False</cite>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(optional) WrapGenerator object, AudioMetadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_record_info">
+<span class="sig-name descname"><span class="pre">get_record_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_record_info" title="Link to this definition"></a></dt>
+<dd><p>Retrieves metadata for a given record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrap</span></code></a>]</span>) – The record (str, WrapGenerator, or Wrap) whose info is requested.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>information about saved record in a dict format [‘frameRate’  ‘sizeInByte’ ‘duration’
+‘nchannels’ ‘nperseg’ ‘name’].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.syncable">
+<span class="sig-name descname"><span class="pre">syncable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nchannels=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_format=&lt;SampleFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.syncable" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Prepares a list of targets to be synchronized. Determines whether the target can be synced with specified properties or not</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> – Targets to sync. wrapped objects</p></li>
+<li><p><strong>nchannels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of channels (default: <cite>None</cite>); if the value is None, the target will be compared to the ‘self’ properties.</p></li>
+<li><p><strong>sample_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Sample rate (default: <cite>None</cite>); if the value is None, the target will be compared to the ‘self’ properties.</p></li>
+<li><p><strong>sample_format</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span>) – Sample format (default: <cite>SampleFormat.UNKNOWN</cite>); if the value is None, the target will be compared to the ‘self’ properties.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>only objects that need to be synchronized.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.sync">
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nchannels=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_format=&lt;SampleFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output='wrapped'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.sync" title="Link to this definition"></a></dt>
+<dd><p>Synchronizes audio across multiple records. Synchronizes targets in the Wrap object format with the specified properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targets</strong> – Records to sync. wrapped objects.</p></li>
+<li><p><strong>nchannels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of channels (default: <cite>None</cite>); if the value is None, the target will be synced to the ‘self’ properties.</p></li>
+<li><p><strong>sample_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Sample rate (default: <cite>None</cite>); if the value is None, the target will be synced to the ‘self’ properties.</p></li>
+<li><p><strong>sample_format</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span>) – if the value is None, the target will be synced to the ‘self’ properties.</p></li>
+<li><p><strong>output</strong> – can be ‘wrapped’, ‘series’ or ‘ndarray_data’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>synchronized objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.del_record">
+<span class="sig-name descname"><span class="pre">del_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.del_record" title="Link to this definition"></a></dt>
+<dd><p>Deletes a record from the local database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrap</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>]</span>) – Record to delete (str, AudioMetadata, Wrap, or WrapGenerator).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.export">
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_path='./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format=&lt;FileFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitrate=128</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.export" title="Link to this definition"></a></dt>
+<dd><p>Exports a record to a file in WAV, MP3, FLAC, or VORBIS format. The output format can be specified either through the <cite>format</cite>
+argument or derived from the file extension in the <cite>file_path</cite>. If a file extension (‘.wav’, ‘.mp3’, ‘.flac’, or ‘.ogg’) is
+included in <cite>file_path</cite>, it takes precedence over the <cite>format</cite> argument. If no extension is provided, the
+<cite>format</cite> argument is used, defaulting to WAV if set to FileFormat.UNKNOWN. The exported file is saved at the
+specified <cite>file_path</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrap</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>]</span>) – Record to export (str, AudioMetadata, Wrap, or WrapGenerator).
+- str: Path to a file to be loaded and exported.
+- AudioMetadata: A metadata object containing audio data.
+- Wrap / WrapGenerator: Objects that wrap or generate the audio data.</p></li>
+<li><p><strong>file_path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Path to save the exported file (default: ‘./’).
+- A new filename can be specified at the end of the path.
+- If a valid file extension (‘.wav’, ‘.mp3’, ‘.flac’, or ‘.ogg’) is provided, it determines the output format, overriding the <cite>format</cite> argument.
+- If no extension is included and the path is set to ‘./’, the name of the record is used.</p></li>
+<li><p><strong>format</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileFormat</span></code></span>) – Output format (FileFormat.WAV, FileFormat.MP3, FileFormat.FLAC, or FileFormat.VORBIS). Defaults to FileFormat.UNKNOWN,
+which results in WAV being chosen unless a valid extension is provided in <cite>file_path</cite>.</p></li>
+<li><p><strong>quality</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Quality setting for encoding (default: 0.5).
+- For WAV: Ignored
+- For MP3: Converted to scale 0-9 (0 highest, 9 lowest)
+- For FLAC: Converted to scale 0-8 (0 fastest/lowest, 8 slowest/highest)
+- For VORBIS: Used directly (0.0 lowest, 1.0 highest)</p></li>
+<li><p><strong>bitrate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Bitrate for MP3 encoding in kbps (default: 128). Only used if the format is MP3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>Raises:
+- TypeError: Raised if <cite>record</cite> is not one of the expected types (str, AudioMetadata, Wrap, or WrapGenerator).
+- ValueError: Raised if an unsupported format is provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_record_names">
+<span class="sig-name descname"><span class="pre">get_record_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_record_names" title="Link to this definition"></a></dt>
+<dd><p>Returns a list of record names in the local database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_nperseg">
+<span class="sig-name descname"><span class="pre">get_nperseg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_nperseg" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of segments per window.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_nchannels">
+<span class="sig-name descname"><span class="pre">get_nchannels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_nchannels" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of audio channels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_sample_rate">
+<span class="sig-name descname"><span class="pre">get_sample_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_sample_rate" title="Link to this definition"></a></dt>
+<dd><p>Returns the sample rate of the master instanse core processor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.stream">
+<span class="sig-name descname"><span class="pre">stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cached_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">StreamMode.optimized</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.stream" title="Link to this definition"></a></dt>
+<dd><p>Streams a record with optional loop and safe load modes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
+meaning that, The audio data storage methods can have different execution times based on the cached files.</p>
+</div>
+<p>Note:
+The recorder can only capture normal streams(Non-optimized streams)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="wrap.html#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrap</span></code></a>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>]</span>) – Record to stream (str, Wrap, AudioMetadata, or WrapGenerator).</p></li>
+<li><p><strong>block_mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to block the stream (default: <cite>False</cite>).</p></li>
+<li><p><strong>safe_load</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to safely load the record (default: <cite>False</cite>).
+load an audio file and modify it according to the ‘Master’ attributes(like the frame rate, number oof channels, etc).</p></li>
+<li><p><strong>on_stop</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">callable</span></code></span>) – Callback for when the stream stops (default: <cite>None</cite>).</p></li>
+<li><p><strong>loop_mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to enable loop mode (default: <cite>False</cite>).</p></li>
+<li><p><strong>use_cached_files</strong> – Whether to use cached files (default: <cite>True</cite>).</p></li>
+<li><p><strong>stream_mode</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="types.html#sudio.types.enum.StreamMode" title="sudio.types.enum.StreamMode"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamMode</span></code></a></span>) – Streaming mode (default: <cite>StreamMode.optimized</cite>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="stream.html#sudio.stream.streamcontrol.StreamControl" title="sudio.stream.streamcontrol.StreamControl"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamControl</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A StreamControl object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.mute">
+<span class="sig-name descname"><span class="pre">mute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.mute" title="Link to this definition"></a></dt>
+<dd><p>Mutes the master main stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.unmute">
+<span class="sig-name descname"><span class="pre">unmute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.unmute" title="Link to this definition"></a></dt>
+<dd><p>Unmutes the master main stream.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.is_muted">
+<span class="sig-name descname"><span class="pre">is_muted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.is_muted" title="Link to this definition"></a></dt>
+<dd><p>Checks if the audio stream is muted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.echo">
+<span class="sig-name descname"><span class="pre">echo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_output_enable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.echo" title="Link to this definition"></a></dt>
+<dd><p>Play “Record” on the operating system’s default audio output.
+its also Enables or disables echoing of recorded data to the system’s default output, if record is not provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="wrap.html#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrap</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>, <a class="reference internal" href="wrap.html#sudio.wrap.wrapgenerator.WrapGenerator" title="sudio.wrap.wrapgenerator.WrapGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a>]</span>) – optional, default None;
+Record to echo (str, Wrap, AudioMetadata, or WrapGenerator) (default: <cite>None</cite>).</p></li>
+<li><p><strong>enable</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to enable echoing on the master’s main stream (default: <cite>None</cite> means trigger mode).</p></li>
+<li><p><strong>main_output_enable</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to enable main stream’s output while playing provided record (default: <cite>False</cite>).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.disable_echo">
+<span class="sig-name descname"><span class="pre">disable_echo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.disable_echo" title="Link to this definition"></a></dt>
+<dd><p>Disables the echo functionality.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.wrap">
+<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.wrap" title="Link to this definition"></a></dt>
+<dd><p>wraps a record as a <cite>WrapGenerator</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>]</span>) – Record to wrap (str or AudioMetadata).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.clean_cache">
+<span class="sig-name descname"><span class="pre">clean_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.clean_cache" title="Link to this definition"></a></dt>
+<dd><p>The audio data maintaining process has additional cached files to reduce dynamic
+memory usage and improve performance, meaning that, The audio data storage methods
+can have different execution times based on the cached files.
+This function used to clean the audio cache by removing cached files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.is_started">
+<span class="sig-name descname"><span class="pre">is_started</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.is_started" title="Link to this definition"></a></dt>
+<dd><p>Checks if the audio input and output streams are started.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_window">
+<span class="sig-name descname"><span class="pre">get_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_window" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the current window configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>dict or None: A dictionary containing window information if available, or None if not set.</p>
+<ul class="simple">
+<li><p>’type’: str, the type of window.</p></li>
+<li><p>’window’: window data.</p></li>
+<li><p>’overlap’: int, the overlap value.</p></li>
+<li><p>’size’: int, the size of the window.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.disable_std_input">
+<span class="sig-name descname"><span class="pre">disable_std_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.disable_std_input" title="Link to this definition"></a></dt>
+<dd><p>Disables standard input stream by acquiring the main stream’s lock object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.enable_std_input">
+<span class="sig-name descname"><span class="pre">enable_std_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.enable_std_input" title="Link to this definition"></a></dt>
+<dd><p>Enables standard input stream by clearing the main stream’s lock.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.add_pipeline">
+<span class="sig-name descname"><span class="pre">add_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PipelineProcessType.MAIN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.add_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Adds a new processing pipeline.</p>
+<section id="id4">
+<h2>Parameters:<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>pip (obj): Pipeline object or array of defined pipelines.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In <strong>PipelineProcessType.MULTI_STREAM</strong> process type, pip must be an array of defined pipelines.
+The size of the array must be the same as the number of input channels.</p>
+</div>
+<ul class="simple">
+<li><p>name (str): Indicates the name of the pipeline.</p></li>
+<li><p>process_type (PipelineProcessType): Type of processing pipeline (default: <cite>PipelineProcessType.MAIN</cite>). it can be:</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>PipelineProcessType.MAIN</strong>: Processes input data and passes it to activated pipelines (if exist).</p></li>
+<li><p><strong>PipelineProcessType.BRANCH</strong>: Represents a branch pipeline with optional channel parameter.</p></li>
+<li><p><strong>PipelineProcessType.MULTI_STREAM</strong>: Represents a multi_stream pipeline mode. Requires an array of pipelines.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>channel (obj): None or [0 to self.nchannel].</p></li>
+</ul>
+<blockquote>
+<div><p>The input data passed to the pipeline can be a NumPy array in
+(self.nchannel, 2[2 windows in 1 frame], self._nperseg) dimension [None]
+or mono (2, self._nperseg) dimension.
+In mono mode [self.nchannel = 1 or mono mode activated], channel must be None.</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The pipeline must process data and return it to the core with the dimensions as same as the input.</p>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.set_pipeline">
+<span class="sig-name descname"><span class="pre">set_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.set_pipeline" title="Link to this definition"></a></dt>
+<dd><p>sets the main processing pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.disable_pipeline">
+<span class="sig-name descname"><span class="pre">disable_pipeline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.disable_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Disables the current processing pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.clear_pipeline">
+<span class="sig-name descname"><span class="pre">clear_pipeline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.clear_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Clears all pipeline’s data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.set_window">
+<span class="sig-name descname"><span class="pre">set_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hann'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noverlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NOLA_check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.set_window" title="Link to this definition"></a></dt>
+<dd><p>Configures the window function for audio processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></span>) – The window function (default: <cite>‘hann’</cite>).</p></li>
+<li><p><strong>noverlap</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of overlapping segments (default: <cite>None</cite>).</p></li>
+<li><p><strong>NOLA_check</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Perform the NOLA check (default: <cite>True</cite>).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_sample_format">
+<span class="sig-name descname"><span class="pre">get_sample_format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_sample_format" title="Link to this definition"></a></dt>
+<dd><p>Returns the sample format of the master instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_default_input_device_info">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_input_device_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_default_input_device_info" title="Link to this definition"></a></dt>
+<dd><p>Returns information about the default input audio device.</p>
+<p>:return AudioDeviceInfo</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioDeviceInfo</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_default_output_device_info">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_output_device_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_default_output_device_info" title="Link to this definition"></a></dt>
+<dd><p>Returns information about the default output audio device.</p>
+<p>:return AudioDeviceInfo</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioDeviceInfo</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_device_count">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_device_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_device_count" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of available audio devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_device_info_by_index">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_device_info_by_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_device_info_by_index" title="Link to this definition"></a></dt>
+<dd><p>Returns information about a specific audio device by index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The index of the audio device (int).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioDeviceInfo</span></code></span></p>
+</dd>
+</dl>
+<p>:return AudioDeviceInfo</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_input_devices">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_input_devices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_input_devices" title="Link to this definition"></a></dt>
+<dd><p>Returns a list of available input devices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.core.Master.get_output_devices">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_output_devices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.core.Master.get_output_devices" title="Link to this definition"></a></dt>
+<dd><p>Returns a list of available output devices.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="start.html" class="btn btn-neutral float-left" title="Quick start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pipeline.html" class="btn btn-neutral float-right" title="Pipeline Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

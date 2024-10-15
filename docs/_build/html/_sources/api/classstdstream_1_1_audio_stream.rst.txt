@@ -1,0 +1,17 @@
+.. _exhale_class_classstdstream_1_1_audio_stream:
+
+Class AudioStream
+=================
+
+- Defined in :ref:`file_sudio_io_inc_stdstream.hpp`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: stdstream::AudioStream
+   :project: sudio
+   :members:
+   :protected-members:
+   :undoc-members:

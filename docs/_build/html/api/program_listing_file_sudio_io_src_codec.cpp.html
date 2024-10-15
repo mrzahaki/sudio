@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File codec.cpp &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File codec.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-codec-cpp">
+<span id="program-listing-file-sudio-io-src-codec-cpp"></span><h1>Program Listing for File codec.cpp<a class="headerlink" href="#program-listing-for-file-codec-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_sudio_io_src_codec.cpp.html#file-sudio-io-src-codec-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">sudio\io\src\codec.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> -- W.T.A</span>
+<span class="cm"> -- SUDIO (https://github.com/MrZahaki/sudio)</span>
+<span class="cm"> -- The Audio Processing Platform</span>
+<span class="cm"> -- Mail: mrzahaki@gmail.com</span>
+<span class="cm"> -- Software license: &quot;Apache License 2.0&quot;.</span>
+<span class="cm"> -- file codec.cpp</span>
+<span class="cm">*/</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;codec.hpp&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdexcept&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstring&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdlib&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ctime&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
+
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;lame.h&gt;</span>
+<span class="w">    </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;FLAC/stream_encoder.h&gt;</span>
+<span class="w">    </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vorbis/vorbisenc.h&gt;</span>
+<span class="w">    </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vorbis/codec.h&gt;</span>
+<span class="w">    </span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vorbis/vorbisfile.h&gt;</span>
+<span class="p">}</span>
+
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">suio</span><span class="p">{</span>
+
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">decodeAudioFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                                 </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                                                 </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                                 </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                                 </span><span class="n">ma_dither_mode</span><span class="w"> </span><span class="n">dither</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">find_last_of</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;ogg&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">decodeVorbisFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">ma_decoder_config</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_config_init</span><span class="p">(</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">config</span><span class="p">.</span><span class="n">ditherMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dither</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">frameCount</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">pSampleData</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decode_file</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">frameCount</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">pSampleData</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to decode file&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dataSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameCount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decodedData</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">pSampleData</span><span class="p">),</span>
+<span class="w">                                     </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">pSampleData</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dataSize</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">ma_free</span><span class="p">(</span><span class="n">pSampleData</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">decodedData</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">decodeVorbisFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">OggVorbis_File</span><span class="w"> </span><span class="n">vf</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ov_fopen</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vf</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open Vorbis file&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">vorbis_info</span><span class="o">*</span><span class="w"> </span><span class="n">vi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ov_info</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vi</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ov_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">);</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to get Vorbis file info&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decodedFloat</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bitStream</span><span class="p">;</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">bufferSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4096</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="o">**</span><span class="w"> </span><span class="n">buffer</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">bytesRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ov_read_float</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">bufferSize</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bitStream</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w"> </span><span class="c1">// End of file</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytesRead</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ov_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">);</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Error reading Vorbis file&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">bytesRead</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">channels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">rate</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sampleRate</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">channels</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">nchannels</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ma_resampler_config</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_resampler_config_init</span><span class="p">(</span>
+<span class="w">            </span><span class="n">ma_format_f32</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">channels</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">rate</span><span class="p">,</span>
+<span class="w">            </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">            </span><span class="n">ma_resample_algorithm_linear</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">ma_resampler</span><span class="w"> </span><span class="n">resampler</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_resampler_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">resampler</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to initialize resampler&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">frameCountIn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">channels</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">frameCountOut</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">frameCountIn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">rate</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resampledFloat</span><span class="p">(</span><span class="n">frameCountOut</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">framesRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameCountIn</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">framesWritten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameCountOut</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_resampler_process_pcm_frames</span><span class="p">(</span><span class="o">&amp;</span><span class="n">resampler</span><span class="p">,</span><span class="w"> </span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">framesRead</span><span class="p">,</span><span class="w"> </span><span class="n">resampledFloat</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">framesWritten</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ma_resampler_uninit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">resampler</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to resample audio data&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">ma_resampler_uninit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">resampler</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">        </span><span class="n">decodedFloat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">resampledFloat</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Convert to desired format</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decodedData</span><span class="p">(</span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ma_convert_pcm_frames_format</span><span class="p">(</span><span class="n">decodedData</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">ma_format_f32</span><span class="p">,</span><span class="w"> </span><span class="n">decodedFloat</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">ma_dither_mode_triangle</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">ov_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">decodedData</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">encodeWavFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                              </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<span class="w">                              </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                              </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                              </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="n">ma_encoder</span><span class="w"> </span><span class="n">encoder</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">framesWritten</span><span class="p">;</span>
+
+
+<span class="w">    </span><span class="n">ma_encoder_config</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_encoder_config_init</span><span class="p">(</span>
+<span class="w">        </span><span class="n">ma_encoding_format_wav</span><span class="p">,</span>
+<span class="w">        </span><span class="n">format</span><span class="p">,</span>
+<span class="w">        </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">        </span><span class="n">sampleRate</span>
+<span class="w">        </span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_encoder_init_file</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">encoder</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to prepare file for encoding into WAV format&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Calculate the number of frames</span>
+<span class="w">    </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">frameCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">));</span>
+
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_encoder_write_pcm_frames</span><span class="p">(</span><span class="o">&amp;</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">frameCount</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">framesWritten</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to encoding WAV into format&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">framesWritten</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">frameCount</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to write all frames&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">ma_encoder_uninit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">encoder</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">framesWritten</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">encodeMP3File</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                   </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<span class="w">                                   </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                                   </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                   </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                   </span><span class="kt">int</span><span class="w"> </span><span class="n">bitrate</span><span class="p">,</span>
+<span class="w">                                   </span><span class="kt">int</span><span class="w"> </span><span class="n">quality</span>
+<span class="w">                                   </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">lame_t</span><span class="w"> </span><span class="n">lame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lame_init</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">lame</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to initialize LAME encoder&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">lame_set_num_channels</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">);</span>
+<span class="w">    </span><span class="n">lame_set_in_samplerate</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">lame_set_brate</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">bitrate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">lame_set_quality</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">quality</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lame_init_params</span><span class="p">(</span><span class="n">lame</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">lame_close</span><span class="p">(</span><span class="n">lame</span><span class="p">);</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to set LAME parameters&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">FILE</span><span class="o">*</span><span class="w"> </span><span class="n">mp3File</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fopen</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;wb&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mp3File</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">lame_close</span><span class="p">(</span><span class="n">lame</span><span class="p">);</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open output MP3 file&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">PCM_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8192</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MP3_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8192</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pcm_buffer</span><span class="p">(</span><span class="n">PCM_SIZE</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="n">mp3_buffer</span><span class="p">[</span><span class="n">MP3_SIZE</span><span class="p">];</span>
+
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">totalFramesWritten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">frameSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">frameSize</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">PCM_SIZE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">framesToProcess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">PCM_SIZE</span><span class="p">),</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Convert input data to float</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">framesToProcess</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dataIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">frameSize</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">sample</span><span class="p">;</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_u8</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">128</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">128.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s16</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int16_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">32768.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s24</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">sample24</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">24</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">sample24</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">8388608.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s32</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int32_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2147483648.0f</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_f32</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]);</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Unsupported sample format&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">pcm_buffer</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">bytesEncoded</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nchannels</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bytesEncoded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lame_encode_buffer_ieee_float</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">pcm_buffer</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">,</span><span class="w"> </span><span class="n">mp3_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">MP3_SIZE</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bytesEncoded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lame_encode_buffer_interleaved_ieee_float</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">pcm_buffer</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">,</span><span class="w"> </span><span class="n">mp3_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">MP3_SIZE</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytesEncoded</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fclose</span><span class="p">(</span><span class="n">mp3File</span><span class="p">);</span>
+<span class="w">            </span><span class="n">lame_close</span><span class="p">(</span><span class="n">lame</span><span class="p">);</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;MP3 encoding failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">fwrite</span><span class="p">(</span><span class="n">mp3_buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">bytesEncoded</span><span class="p">,</span><span class="w"> </span><span class="n">mp3File</span><span class="p">);</span>
+<span class="w">        </span><span class="n">totalFramesWritten</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">flush_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lame_encode_flush</span><span class="p">(</span><span class="n">lame</span><span class="p">,</span><span class="w"> </span><span class="n">mp3_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">MP3_SIZE</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">flush_result</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fwrite</span><span class="p">(</span><span class="n">mp3_buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">flush_result</span><span class="p">,</span><span class="w"> </span><span class="n">mp3File</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">fclose</span><span class="p">(</span><span class="n">mp3File</span><span class="p">);</span>
+<span class="w">    </span><span class="n">lame_close</span><span class="p">(</span><span class="n">lame</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">totalFramesWritten</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">encodeFlacFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<span class="w">                                    </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                                    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                    </span><span class="kt">int</span><span class="w"> </span><span class="n">compressionLevel</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">FLAC__StreamEncoder</span><span class="w"> </span><span class="o">*</span><span class="n">encoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FLAC__stream_encoder_new</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">encoder</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to create FLAC encoder&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">FLAC__stream_encoder_set_channels</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">);</span>
+<span class="w">    </span><span class="n">FLAC__stream_encoder_set_bits_per_sample</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span>
+<span class="w">    </span><span class="n">FLAC__stream_encoder_set_sample_rate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">FLAC__stream_encoder_set_compression_level</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">compressionLevel</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">FLAC__StreamEncoderInitStatus</span><span class="w"> </span><span class="n">init_status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FLAC__stream_encoder_init_file</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">init_status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">FLAC__STREAM_ENCODER_INIT_STATUS_OK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">FLAC__stream_encoder_delete</span><span class="p">(</span><span class="n">encoder</span><span class="p">);</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to initialize FLAC encoder&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">frameSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">frameSize</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">FLAC__int32</span><span class="o">&gt;</span><span class="w"> </span><span class="n">samples</span><span class="p">(</span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Convert input data to FLAC__int32</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">nchannels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dataIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">frameSize</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">;</span>
+<span class="w">            </span><span class="n">FLAC__int32</span><span class="w"> </span><span class="n">sample</span><span class="p">;</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_u8</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">FLAC__int32</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]))</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">128</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s16</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">FLAC__int32</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int16_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]));</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s24</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">sample24</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">24</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample24</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s32</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">FLAC__int32</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int32_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]));</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_f32</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">FLAC__int32</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">8388607.0f</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                    </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Unsupported sample format for FLAC encoding&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">FLAC__bool</span><span class="w"> </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FLAC__stream_encoder_process_interleaved</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">samples</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">FLAC__stream_encoder_finish</span><span class="p">(</span><span class="n">encoder</span><span class="p">);</span>
+<span class="w">    </span><span class="n">FLAC__stream_encoder_delete</span><span class="p">(</span><span class="n">encoder</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ok</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;FLAC encoding failed&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">encodeVorbisFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                      </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<span class="w">                                      </span><span class="n">ma_format</span><span class="w"> </span><span class="n">format</span><span class="p">,</span>
+<span class="w">                                      </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                      </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                      </span><span class="kt">float</span><span class="w"> </span><span class="n">quality</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">vorbis_info</span><span class="w"> </span><span class="n">vi</span><span class="p">;</span>
+<span class="w">    </span><span class="n">vorbis_comment</span><span class="w"> </span><span class="n">vc</span><span class="p">;</span>
+<span class="w">    </span><span class="n">vorbis_dsp_state</span><span class="w"> </span><span class="n">vd</span><span class="p">;</span>
+<span class="w">    </span><span class="n">vorbis_block</span><span class="w"> </span><span class="n">vb</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ogg_stream_state</span><span class="w"> </span><span class="n">os</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ogg_page</span><span class="w"> </span><span class="n">og</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ogg_packet</span><span class="w"> </span><span class="n">op</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">vorbis_info_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vi</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vorbis_encode_init_vbr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vi</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span><span class="w"> </span><span class="n">quality</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to initialize Vorbis encoder&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">vorbis_comment_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_comment_add_tag</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vc</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ENCODER&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;AudioCodec&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">vorbis_analysis_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vi</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_block_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">srand</span><span class="p">(</span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ogg_stream_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="n">rand</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="nf">oggFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">oggFile</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open output Ogg file&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Write header</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ogg_packet</span><span class="w"> </span><span class="n">header</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ogg_packet</span><span class="w"> </span><span class="n">header_comm</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ogg_packet</span><span class="w"> </span><span class="n">header_code</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">vorbis_analysis_headerout</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vc</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header_comm</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header_code</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ogg_stream_packetin</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ogg_stream_packetin</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header_comm</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ogg_stream_packetin</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">header_code</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ogg_stream_flush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">og</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">header</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">header_len</span><span class="p">);</span>
+<span class="w">            </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">body</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">body_len</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">format</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">frameSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">frameSize</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">totalFramesWritten</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">BUFFER_SIZE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pcmBuffer</span><span class="p">(</span><span class="n">BUFFER_SIZE</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">totalFrames</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">BUFFER_SIZE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">framesToProcess</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">BUFFER_SIZE</span><span class="p">),</span><span class="w"> </span><span class="n">totalFrames</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Convert  data to float</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">nchannels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dataIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">frameSize</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bytesPerSample</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">                </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_u8</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">128</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">128.0f</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s16</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int16_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">32768.0f</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s24</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">sample24</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">24</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">sample24</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">8388608.0f</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_s32</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">int32_t</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2147483648.0f</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">case</span><span class="w"> </span><span class="no">ma_format_f32</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="n">dataIndex</span><span class="p">]);</span>
+<span class="w">                        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">default</span><span class="o">:</span>
+<span class="w">                        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Unsupported sample format for Vorbis encoding&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">pcmBuffer</span><span class="p">[</span><span class="n">j</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="o">**</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vorbis_analysis_buffer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">);</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">nchannels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">buffer</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pcmBuffer</span><span class="p">[</span><span class="n">j</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nchannels</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">k</span><span class="p">];</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">vorbis_analysis_wrote</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">);</span>
+<span class="w">        </span><span class="n">totalFramesWritten</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">framesToProcess</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">vorbis_analysis_blockout</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vb</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vorbis_analysis</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">            </span><span class="n">vorbis_bitrate_addblock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">vorbis_bitrate_flushpacket</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">op</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ogg_stream_packetin</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">op</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ogg_stream_pageout</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">og</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">header</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">header_len</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">body</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">body_len</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Flush remaining data</span>
+<span class="w">    </span><span class="n">vorbis_analysis_wrote</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">vorbis_analysis_blockout</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vb</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vorbis_analysis</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">        </span><span class="n">vorbis_bitrate_addblock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">vorbis_bitrate_flushpacket</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">op</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ogg_stream_packetin</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">op</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ogg_stream_pageout</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">og</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">header</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">header_len</span><span class="p">);</span>
+<span class="w">                </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">body</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">body_len</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Ensure  data is written</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">ogg_stream_flush</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">og</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">header</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">header_len</span><span class="p">);</span>
+<span class="w">        </span><span class="n">oggFile</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">og</span><span class="p">.</span><span class="n">body</span><span class="p">),</span><span class="w"> </span><span class="n">og</span><span class="p">.</span><span class="n">body_len</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">ogg_stream_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">os</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_block_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vb</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_dsp_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vd</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_comment_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">vorbis_info_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vi</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">oggFile</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">totalFramesWritten</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="n">AudioFileInfo</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">getFileInfo</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">AudioFileInfo</span><span class="w"> </span><span class="n">info</span><span class="p">;</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">find_last_of</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ext</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;wav&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">WAV</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ext</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;mp3&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">MP3</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ext</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;flac&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">FLAC</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ext</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;ogg&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">VORBIS</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">UNKNOWN</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Handle Vorbis files separately</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">fileFormat</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FileFormat</span><span class="o">::</span><span class="n">VORBIS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OggVorbis_File</span><span class="w"> </span><span class="n">vf</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ov_fopen</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">vf</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to open Vorbis file&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">vorbis_info</span><span class="o">*</span><span class="w"> </span><span class="n">vi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ov_info</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vi</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ov_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">);</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to get Vorbis file info&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">nchannels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">channels</span><span class="p">;</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">sampleRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vi</span><span class="o">-&gt;</span><span class="n">rate</span><span class="p">;</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">sampleFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_format_f32</span><span class="p">;</span><span class="w"> </span><span class="c1">// Vorbis uses float internally</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">numFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ov_pcm_total</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">duration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">numFrames</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">sampleRate</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">ov_clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vf</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ma_decoder</span><span class="w"> </span><span class="n">decoder</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_init_file</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">errorMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Failed to open file: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">filename</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;. Error code: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">MA_INVALID_FILE</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">errorMsg</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot; (Invalid file)&quot;</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">MA_FORMAT_NOT_SUPPORTED</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">errorMsg</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot; (Invalid format)&quot;</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="no">MA_NOT_IMPLEMENTED</span><span class="p">:</span>
+<span class="w">                    </span><span class="n">errorMsg</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot; (Format not supported)&quot;</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="n">errorMsg</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">nchannels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decoder</span><span class="p">.</span><span class="n">outputChannels</span><span class="p">;</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">sampleRate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decoder</span><span class="p">.</span><span class="n">outputSampleRate</span><span class="p">;</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">sampleFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decoder</span><span class="p">.</span><span class="n">outputFormat</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">frameCount</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ma_decoder_get_length_in_pcm_frames</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">frameCount</span><span class="p">);</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">numFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameCount</span><span class="p">;</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">duration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">numFrames</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">sampleRate</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">ma_decoder_uninit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">decoder</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">info</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ma_decoder</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">initializeDecoder</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                                          </span><span class="n">ma_format</span><span class="w"> </span><span class="n">outputFormat</span><span class="p">,</span>
+<span class="w">                                                          </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                                          </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                                          </span><span class="n">ma_dither_mode</span><span class="w"> </span><span class="n">dither</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">decoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">ma_decoder</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ma_decoder_config</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_config_init</span><span class="p">(</span><span class="n">outputFormat</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">);</span>
+<span class="w">    </span><span class="n">config</span><span class="p">.</span><span class="n">ditherMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dither</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_init_file</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">decoder</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to initialize decoder&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">decoder</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">readDecoderFrames</span><span class="p">(</span><span class="n">ma_decoder</span><span class="o">*</span><span class="w"> </span><span class="n">decoder</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">framesToRead</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">buffer</span><span class="p">(</span><span class="n">framesToRead</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">decoder</span><span class="o">-&gt;</span><span class="n">outputChannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">decoder</span><span class="o">-&gt;</span><span class="n">outputFormat</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ma_uint64</span><span class="w"> </span><span class="n">framesRead</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_read_pcm_frames</span><span class="p">(</span><span class="n">decoder</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span><span class="w"> </span><span class="n">framesToRead</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">framesRead</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to read PCM frames&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">buffer</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">framesRead</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">decoder</span><span class="o">-&gt;</span><span class="n">outputChannels</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ma_get_bytes_per_sample</span><span class="p">(</span><span class="n">decoder</span><span class="o">-&gt;</span><span class="n">outputFormat</span><span class="p">));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">buffer</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">AudioCodec</span><span class="o">::</span><span class="n">AudioFileStream</span><span class="o">::</span><span class="n">AudioFileStream</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                                             </span><span class="n">ma_format</span><span class="w"> </span><span class="n">outputFormat</span><span class="p">,</span>
+<span class="w">                                             </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span>
+<span class="w">                                             </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span>
+<span class="w">                                             </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">framesToRead</span><span class="p">,</span>
+<span class="w">                                             </span><span class="n">ma_dither_mode</span><span class="w"> </span><span class="n">dither</span><span class="p">,</span>
+<span class="w">                                             </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">seekFrame</span><span class="p">)</span>
+<span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="n">m_framesToRead</span><span class="p">(</span><span class="n">framesToRead</span><span class="p">),</span><span class="w"> </span><span class="n">m_nchannels</span><span class="p">(</span><span class="n">nchannels</span><span class="p">),</span><span class="w"> </span><span class="n">m_outputFormat</span><span class="p">(</span><span class="n">outputFormat</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">m_decoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">initializeDecoder</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">outputFormat</span><span class="p">,</span><span class="w"> </span><span class="n">nchannels</span><span class="p">,</span><span class="w"> </span><span class="n">sampleRate</span><span class="p">,</span><span class="w"> </span><span class="n">dither</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">seekFrame</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ma_result</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ma_decoder_seek_to_pcm_frame</span><span class="p">(</span><span class="n">m_decoder</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">seekFrame</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MA_SUCCESS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Failed to seek to frame&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">AudioCodec</span><span class="o">::</span><span class="n">AudioFileStream</span><span class="o">::~</span><span class="n">AudioFileStream</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">ma_decoder_uninit</span><span class="p">(</span><span class="n">m_decoder</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">AudioFileStream</span><span class="o">::</span><span class="n">readFrames</span><span class="p">(</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">framesToRead</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">framesToRead</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">framesToRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_framesToRead</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">AudioCodec</span><span class="o">::</span><span class="n">readDecoderFrames</span><span class="p">(</span><span class="n">m_decoder</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">framesToRead</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

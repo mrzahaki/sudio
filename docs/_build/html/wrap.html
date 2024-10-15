@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wrap Module &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="RateShift Module" href="rateshift.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">I/O module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Wrap Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.wrap.wrap.Wrap"><code class="docutils literal notranslate"><span class="pre">Wrap</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.name"><code class="docutils literal notranslate"><span class="pre">Wrap.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_sample_format"><code class="docutils literal notranslate"><span class="pre">Wrap.get_sample_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_sample_width"><code class="docutils literal notranslate"><span class="pre">Wrap.get_sample_width()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_master"><code class="docutils literal notranslate"><span class="pre">Wrap.get_master()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_size"><code class="docutils literal notranslate"><span class="pre">Wrap.get_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_sample_rate"><code class="docutils literal notranslate"><span class="pre">Wrap.get_sample_rate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_nchannels"><code class="docutils literal notranslate"><span class="pre">Wrap.get_nchannels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_duration"><code class="docutils literal notranslate"><span class="pre">Wrap.get_duration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.join"><code class="docutils literal notranslate"><span class="pre">Wrap.join()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.unpack"><code class="docutils literal notranslate"><span class="pre">Wrap.unpack()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get_data"><code class="docutils literal notranslate"><span class="pre">Wrap.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.is_packed"><code class="docutils literal notranslate"><span class="pre">Wrap.is_packed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.get"><code class="docutils literal notranslate"><span class="pre">Wrap.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrap.Wrap.set_data"><code class="docutils literal notranslate"><span class="pre">Wrap.set_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator"><code class="docutils literal notranslate"><span class="pre">WrapGenerator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.name"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_data"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.set_data"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.set_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_format"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_sample_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_width"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_sample_width()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_master"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_master()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_size"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_cache_size"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_cache_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_rate"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_sample_rate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_nchannels"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_nchannels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_duration"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.get_duration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.join"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.join()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio.wrap.wrapgenerator.WrapGenerator.unpack"><code class="docutils literal notranslate"><span class="pre">WrapGenerator.unpack()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Wrap Module</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wrap-module">
+<h1>Wrap Module<a class="headerlink" href="#wrap-module" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><dl class="py class" id="module-sudio.wrap.wrap">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.wrap.wrap.</span></span><span class="sig-name descname"><span class="pre">Wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize the Wrap object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – The parent object.</p></li>
+<li><p><strong>record</strong> – Preloaded record or AudioMetadata.</p></li>
+<li><p><strong>generator</strong> – The audio generator associated with the record.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Slicing:
+The Wrapped object can be sliced using standard Python slice syntax x[start: stop: step],
+where x is the wrapped object.</p>
+<p>Slicing the time domain:
+Use [i: j: k, i(2): j(2): k(2), i(n): j(n): k(n)] syntax, where i is start time, j is stop time,
+and k is step (negative for inversing). This selects nXm seconds with index times
+i, i+1, i+2, …, j, i(2), i(2)+1, …, j(2), i(n), …, j(n) where m = j - i (j &gt; i).</p>
+<p>Note: for i &lt; j, i is stop time, j is start time, meaning audio data is read inversely.</p>
+<p>Filtering (Slicing the frequency domain):
+Use [‘i’: ‘j’: ‘filtering options’, ‘i(2)’: ‘j(2)’: ‘options(2)’, …, ‘i(n)’: ‘j(n)’: ‘options(n)’]
+where i is starting frequency, j is stopping frequency (string type, same units as fs).
+Activates n iir filters with specified frequencies and options.</p>
+<p>For slice syntax [x: y: options]:
+- x=None, y=’j’: low pass filter with a cutoff frequency of j
+- x=’i’, y=None: high pass filter with a cutoff frequency of i
+- x=’i’, y=’j’: bandpass filter with critical frequencies i, j
+- x=’i’, y=’j’, options=’scale=[Any negative number]’: bandstop filter with critical frequencies i, j</p>
+<p>Filtering options:
+- ftype: optional; The type of IIR filter to design: ‘butter’ (default), ‘cheby1’, ‘cheby2’, ‘ellip’, ‘bessel’
+- rs: float, optional: For Chebyshev and elliptic filters, provides minimum attenuation in stop band (dB)
+- rp: float, optional: For Chebyshev and elliptic filters, provides maximum ripple in passband (dB)
+- order: The order of the filter (default 5)
+- scale: [float, int] optional; Attenuation or amplification factor, must be negative in bandstop filter.</p>
+<p>Complex slicing:
+Use [a: b, ‘i’: ‘j’: ‘filtering options’, …, ‘i(n)’: ‘j(n)’: ‘options(n)’, …, a(n): b(n), …]
+or [a: b, [Filter block 1)], a(2): b(2), [Filter block 2] …, a(n): b(n), [Filter block n]].
+i is starting frequency, j is stopping frequency, a is starting time, b is stopping time in seconds.
+Activates n filter blocks described in the filtering section, each operating within a predetermined time range.</p>
+<p>Note:
+The sliced object is stored statically, so calling the original wrapped returns the sliced object.</p>
+<p>Dynamic and static memory management:
+Wrapped objects are stored statically; all calculations need additional IO read/write time.
+This reduces dynamic memory usage, especially for large audio data.
+All operations (mathematical, slicing, etc.) can be done faster in dynamic memory using the unpack method.</p>
+<p>Examples:
+Slicing wrap object snd remove 10 to 36 seconds
+&gt;&gt;&gt; master = Master()
+&gt;&gt;&gt; wrap = master.add(‘file.mp3’)
+&gt;&gt;&gt; master.echo(wrap[5: 10, 36:90] * .5)</p>
+<p>Bandstop filter:
+&gt;&gt;&gt; wrap[‘200’: ‘1000’: ‘order=6, scale=-.8’]
+&gt;&gt;&gt; master.echo(wrap)</p>
+<p>Complex slicing and inversing:
+&gt;&gt;&gt; wrap[: 10, :’100’: ‘scale=1.1’, 5: 15: -1, ‘100’: ‘5000’: ‘order=10, scale=.8’]
+&gt;&gt;&gt; master.echo(wrap - .7)</p>
+<p>Simple two-band EQ:
+&gt;&gt;&gt; wrap[20:30,: ‘100’: ‘order=4, scale=.7’, ‘100’::’order=5, scale=.4’]
+&gt;&gt;&gt; master.echo(wrap)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.name" title="Link to this definition"></a></dt>
+<dd><p>Descriptor class for accessing and modifying the ‘name’ attribute of an object.</p>
+<p>This class is intended to be used as a descriptor for the ‘name’ attribute of an object.
+It allows getting and setting the ‘name’ attribute through the __get__ and __set__ methods.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_sample_format">
+<span class="sig-name descname"><span class="pre">get_sample_format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_sample_format" title="Link to this definition"></a></dt>
+<dd><p>Get the sample format of the audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sample format enumeration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_sample_width">
+<span class="sig-name descname"><span class="pre">get_sample_width</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_sample_width" title="Link to this definition"></a></dt>
+<dd><p>Get the sample width (in bytes) of the audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sample width.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_master">
+<span class="sig-name descname"><span class="pre">get_master</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_master" title="Link to this definition"></a></dt>
+<dd><p>Get the parent object (Master) associated with this Wrap object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The parent Master object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_size">
+<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_size" title="Link to this definition"></a></dt>
+<dd><p>Get the size of the audio data file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The size of the audio data file in bytes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_sample_rate">
+<span class="sig-name descname"><span class="pre">get_sample_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_sample_rate" title="Link to this definition"></a></dt>
+<dd><p>Get the frame rate of the audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The frame rate of the audio data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_nchannels">
+<span class="sig-name descname"><span class="pre">get_nchannels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_nchannels" title="Link to this definition"></a></dt>
+<dd><p>Get the number of channels in the audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of channels.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_duration">
+<span class="sig-name descname"><span class="pre">get_duration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_duration" title="Link to this definition"></a></dt>
+<dd><p>Get the duration of the audio data in seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The duration of the audio data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.join" title="Link to this definition"></a></dt>
+<dd><p>Join the current audio data with other audio data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> – Other audio data to be joined.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The current Wrap object after joining with other audio data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.unpack">
+<span class="sig-name descname"><span class="pre">unpack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">astype=&lt;SampleFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.unpack" title="Link to this definition"></a></dt>
+<dd><p>Unpacks audio data from cached files to dynamic memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reset</strong> – Resets the audio pointer to time 0 (Equivalent to slice ‘[:]’).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Audio data in ndarray format with shape (number of audio channels, block size).</p>
+</dd>
+</dl>
+<p>Notes:
+- All calculations within the unpacked block are performed on the pre-cached
+files, not on the original audio data.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">master</span> <span class="o">=</span> <span class="n">Master</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrap</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;file.mp3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">wrap</span><span class="o">.</span><span class="n">unpack</span><span class="p">()</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">wrap</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="mf">0.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">master</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">wrap</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get_data" title="Link to this definition"></a></dt>
+<dd><p>Get the audio data either from cached files or dynamic memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">AudioMetadata</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If packed, returns record information. If unpacked, returns the audio data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.is_packed">
+<span class="sig-name descname"><span class="pre">is_packed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.is_packed" title="Link to this definition"></a></dt>
+<dd><p>Check if the Wrap object is in packed mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the Wrap object is in packed mode, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.get" title="Link to this definition"></a></dt>
+<dd><p>Context manager for getting a file handle and managing seek position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> – Offset to seek within the file.</p></li>
+<li><p><strong>whence</strong> – Reference point for the seek operation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>File handle for reading or writing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrap.Wrap.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrap.Wrap.set_data" title="Link to this definition"></a></dt>
+<dd><p>Set the audio data when the Wrap object is in unpacked mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> – Audio data to be set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-sudio.wrap.wrapgenerator">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sudio.wrap.wrapgenerator.</span></span><span class="sig-name descname"><span class="pre">WrapGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">master</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> – The master instance.</p></li>
+<li><p><strong>record</strong> – The record to be wrapped.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.name" title="Link to this definition"></a></dt>
+<dd><p>Descriptor class for accessing and modifying the ‘name’ attribute of an object.</p>
+<p>This class is intended to be used as a descriptor for the ‘name’ attribute of an object.
+It allows getting and setting the ‘name’ attribute through the __get__ and __set__ methods.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_data" title="Link to this definition"></a></dt>
+<dd><p>Get the data of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="metadata.html#sudio.metadata.metadata.AudioMetadata" title="sudio.metadata.metadata.AudioMetadata">AudioMetadata</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">whence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get" title="Link to this definition"></a></dt>
+<dd><p>Get the context manager for the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offset</strong> – Offset for seeking.</p></li>
+<li><p><strong>whence</strong> – Reference for seeking.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>io.BufferedRandom</em> – The file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.set_data" title="Link to this definition"></a></dt>
+<dd><p>Set the data of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> – The data to be set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_sample_format">
+<span class="sig-name descname"><span class="pre">get_sample_format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_format" title="Link to this definition"></a></dt>
+<dd><p>Get the sample format of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The sample format.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>SampleFormat</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_sample_width">
+<span class="sig-name descname"><span class="pre">get_sample_width</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_width" title="Link to this definition"></a></dt>
+<dd><p>Get the sample width of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The sample width.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_master">
+<span class="sig-name descname"><span class="pre">get_master</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_master" title="Link to this definition"></a></dt>
+<dd><p>Get the master of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The master.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_size">
+<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_size" title="Link to this definition"></a></dt>
+<dd><p>Get the size of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The size.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_cache_size">
+<span class="sig-name descname"><span class="pre">get_cache_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_cache_size" title="Link to this definition"></a></dt>
+<dd><p>Get the cache size of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cache size.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_sample_rate">
+<span class="sig-name descname"><span class="pre">get_sample_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_sample_rate" title="Link to this definition"></a></dt>
+<dd><p>Get the frame rate of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The frame rate.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_nchannels">
+<span class="sig-name descname"><span class="pre">get_nchannels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_nchannels" title="Link to this definition"></a></dt>
+<dd><p>Get the number of channels of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of channels.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.get_duration">
+<span class="sig-name descname"><span class="pre">get_duration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.get_duration" title="Link to this definition"></a></dt>
+<dd><p>Get the duration of the WrapGenerator instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The duration.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_sample_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_nchannels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_sample_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.join" title="Link to this definition"></a></dt>
+<dd><p>Join multiple WrapGenerators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*other</strong> – Other WrapGenerators.</p></li>
+<li><p><strong>sync_sample_format</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SampleFormat</span></code></span>) – Sync the sample format.</p></li>
+<li><p><strong>sync_nchannels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Sync the number of channels.</p></li>
+<li><p><strong>sync_sample_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Sync the sample rate.</p></li>
+<li><p><strong>safe_load</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Use safe loading.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Wrap instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#sudio.wrap.wrap.Wrap" title="sudio.wrap.wrap.Wrap">Wrap</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sudio.wrap.wrapgenerator.WrapGenerator.unpack">
+<span class="sig-name descname"><span class="pre">unpack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">astype=&lt;SampleFormat.UNKNOWN:</span> <span class="pre">0&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sudio.wrap.wrapgenerator.WrapGenerator.unpack" title="Link to this definition"></a></dt>
+<dd><p>Unpacks audio data from cached files to dynamic memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reset</strong> – Resets the audio pointer to time 0 (Equivalent to slice ‘[:]’).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Audio data in ndarray format with shape (number of audio channels, block size).</p>
+</dd>
+</dl>
+<p>Notes:
+- All calculations within the unpacked block are performed on the pre-cached
+files, not on the original audio data.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">master</span> <span class="o">=</span> <span class="n">Master</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wrap</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;file.mp3&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">wrap</span><span class="o">.</span><span class="n">unpack</span><span class="p">()</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">wrap</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="mf">0.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">master</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">wrap</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rateshift.html" class="btn btn-neutral float-left" title="RateShift Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

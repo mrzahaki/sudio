@@ -1,0 +1,21 @@
+.. _dir_sudio_rateshift_inc:
+
+
+Directory inc
+=============
+
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_rateshift>` (``sudio\rateshift``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``sudio\rateshift\inc``
+
+
+Files
+-----
+
+- :ref:`file_sudio_rateshift_inc_rateshift.hpp`
+
+

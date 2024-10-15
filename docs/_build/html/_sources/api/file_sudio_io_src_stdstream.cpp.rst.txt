@@ -1,0 +1,32 @@
+
+.. _file_sudio_io_src_stdstream.cpp:
+
+File stdstream.cpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_sudio_io_src>` (``sudio\io\src``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``sudio\io\src\stdstream.cpp``)
+-------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_sudio_io_src_stdstream.cpp.rst
+
+
+
+
+
+
+
+
+

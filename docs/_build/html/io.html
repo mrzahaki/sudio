@@ -1,0 +1,485 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I/O module &mdash; sudio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/collapsible-lists\css\tree_view.css?v=a885cde7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/collapsible-lists\js\CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="_static/collapsible-lists\js\apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Metadata Module" href="metadata.html" />
+    <link rel="prev" title="Function stdstream::writeToDefaultOutput" href="api/function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            sudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Master Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audiosys.html">Audiosys Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/io_root.html">API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">I/O module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enums">Enums</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-fileformat">sudio.io.FileFormat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-sampleformat">sudio.io.SampleFormat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-dithermode">sudio.io.DitherMode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-audiofileinfo">sudio.io.AudioFileInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-audiofilestream">sudio.io.codec.AudioFileStream</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-pyaudiostreamiterator">sudio.io.codec.PyAudioStreamIterator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-audiodeviceinfo">sudio.io.AudioDeviceInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-audiostream">sudio.io.AudioStream</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-decode-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-dither-dithermode-none">sudio.io.codec.decode_audio_file(filename, output_format=SampleFormat.SIGNED16, nchannels=2, sample_rate=44100, dither=DitherMode.NONE)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-encode-wav-file-filename-data-format-nchannels-sample-rate">sudio.io.codec.encode_wav_file(filename, data, format, nchannels, sample_rate)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-encode-mp3-file-filename-data-format-nchannels-sample-rate-bitrate-128-quality-2">sudio.io.codec.encode_mp3_file(filename, data, format, nchannels, sample_rate, bitrate=128, quality=2)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-encode-flac-file-filename-data-format-nchannels-sample-rate-compression-level-5">sudio.io.codec.encode_flac_file(filename, data, format, nchannels, sample_rate, compression_level=5)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-encode-vorbis-file-filename-data-format-nchannels-sample-rate-quality-0-4">sudio.io.codec.encode_vorbis_file(filename, data, format, nchannels, sample_rate, quality=0.4)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#notes">Notes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-get-file-info-filename">sudio.io.codec.get_file_info(filename)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-codec-stream-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-frames-to-read-1024-dither-dithermode-none-seek-frame-0">sudio.io.codec.stream_audio_file(filename, output_format=SampleFormat.SIGNED16, nchannels=2, sample_rate=44100, frames_to_read=1024, dither=DitherMode.NONE, seek_frame=0)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-write-to-default-output-data-format-sampleformat-float32-channels-none-sample-rate-none">sudio.io.write_to_default_output(data, format=SampleFormat.FLOAT32, channels=None, sample_rate=None)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sudio-io-get-sample-size-format">sudio.io.get_sample_size(format)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#callback-function-signatures">Callback Function Signatures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input-callback">Input Callback</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output-callback">Output Callback</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stream.html">Stream Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Core Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rateshift.html">RateShift Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrap.html">Wrap Module</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mrzahaki/sudio">Source code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">I/O module</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="i-o-module">
+<h1>I/O module<a class="headerlink" href="#i-o-module" title="Link to this heading"></a></h1>
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('mrzahaki', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#2980b9',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script><p>The <strong>sudio.io</strong> module provides bindings for working with audio streams, codecs, and device management in Python. It includes functionality for reading, writing, and processing audio data, as well as managing audio devices. This module is part of the <strong>SUDIO</strong> platform.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+</section>
+<section id="enums">
+<h2>Enums<a class="headerlink" href="#enums" title="Link to this heading"></a></h2>
+<section id="sudio-io-fileformat">
+<h3>sudio.io.FileFormat<a class="headerlink" href="#sudio-io-fileformat" title="Link to this heading"></a></h3>
+<p>An enum representing different audio file formats.</p>
+<ul class="simple">
+<li><p><strong>UNKNOWN</strong>: Unknown format.</p></li>
+<li><p><strong>WAV</strong>: WAV audio file format.</p></li>
+<li><p><strong>FLAC</strong>: FLAC audio file format.</p></li>
+<li><p><strong>VORBIS</strong>: Vorbis audio file format.</p></li>
+<li><p><strong>MP3</strong>: MP3 audio file format.</p></li>
+</ul>
+</section>
+<section id="sudio-io-sampleformat">
+<h3>sudio.io.SampleFormat<a class="headerlink" href="#sudio-io-sampleformat" title="Link to this heading"></a></h3>
+<p>An enum representing different sample formats.</p>
+<ul class="simple">
+<li><p><strong>UNKNOWN</strong>: Unknown sample format.</p></li>
+<li><p><strong>UNSIGNED8</strong>: Unsigned 8-bit samples.</p></li>
+<li><p><strong>SIGNED16</strong>: Signed 16-bit samples.</p></li>
+<li><p><strong>SIGNED24</strong>: Signed 24-bit samples.</p></li>
+<li><p><strong>SIGNED32</strong>: Signed 32-bit samples.</p></li>
+<li><p><strong>FLOAT32</strong>: 32-bit floating-point samples.</p></li>
+</ul>
+</section>
+<section id="sudio-io-dithermode">
+<h3>sudio.io.DitherMode<a class="headerlink" href="#sudio-io-dithermode" title="Link to this heading"></a></h3>
+<p>An enum representing the dither modes available during audio processing.</p>
+<ul class="simple">
+<li><p><strong>NONE</strong>: No dither.</p></li>
+<li><p><strong>RECTANGLE</strong>: Rectangular dither.</p></li>
+<li><p><strong>TRIANGLE</strong>: Triangular dither.</p></li>
+</ul>
+</section>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<section id="sudio-io-audiofileinfo">
+<h3>sudio.io.AudioFileInfo<a class="headerlink" href="#sudio-io-audiofileinfo" title="Link to this heading"></a></h3>
+<p>Represents information about an audio file.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><strong>name</strong> (str): Name of the audio file.</p></li>
+<li><p><strong>file_format</strong> (FileFormat): Format of the audio file.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of audio channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz.</p></li>
+<li><p><strong>sample_format</strong> (SampleFormat): Format of audio samples.</p></li>
+<li><p><strong>num_frames</strong> (int): Total number of frames in the file.</p></li>
+<li><p><strong>duration</strong> (float): Duration of the audio file in seconds.</p></li>
+</ul>
+</section>
+<section id="sudio-io-codec-audiofilestream">
+<h3>sudio.io.codec.AudioFileStream<a class="headerlink" href="#sudio-io-codec-audiofilestream" title="Link to this heading"></a></h3>
+<p>Represents a stream for reading audio data from a file.</p>
+<p>Methods:</p>
+<ul class="simple">
+<li><p><strong>read_frames(frames_to_read=0)</strong>: Reads a specified number of frames from the stream. If <strong>frames_to_read</strong> is 0, it uses the default value set during initialization.</p></li>
+</ul>
+</section>
+<section id="sudio-io-codec-pyaudiostreamiterator">
+<h3>sudio.io.codec.PyAudioStreamIterator<a class="headerlink" href="#sudio-io-codec-pyaudiostreamiterator" title="Link to this heading"></a></h3>
+<p>An iterator to read frames from an <strong>AudioFileStream</strong>.</p>
+<p>Methods:
+- <strong>__next__()</strong>: Returns the next set of audio frames as bytes.</p>
+</section>
+<section id="sudio-io-audiodeviceinfo">
+<h3>sudio.io.AudioDeviceInfo<a class="headerlink" href="#sudio-io-audiodeviceinfo" title="Link to this heading"></a></h3>
+<p>Represents information about an audio device.</p>
+<p>Attributes:</p>
+<ul class="simple">
+<li><p><strong>index</strong> (int): Index of the audio device.</p></li>
+<li><p><strong>name</strong> (str): Name of the audio device.</p></li>
+<li><p><strong>max_input_channels</strong> (int): Maximum number of input channels.</p></li>
+<li><p><strong>max_output_channels</strong> (int): Maximum number of output channels.</p></li>
+<li><p><strong>default_sample_rate</strong> (int): Default sample rate of the device.</p></li>
+<li><p><strong>is_default_input</strong> (bool): Whether this device is the default input.</p></li>
+<li><p><strong>is_default_output</strong> (bool): Whether this device is the default output.</p></li>
+</ul>
+</section>
+<section id="sudio-io-audiostream">
+<h3>sudio.io.AudioStream<a class="headerlink" href="#sudio-io-audiostream" title="Link to this heading"></a></h3>
+<p>Represents an audio stream for reading and writing audio data.</p>
+<p>Methods:</p>
+<ul>
+<li><p>open(input_dev_index: int=None, output_dev_index:int=None, sample_rate:float=0.0, format:SampleFormat=ma_format_s16, input_channels: int=0, output_channels:int=0, frames_per_buffer:int=None, enable_input:bool=True, enable_output:bool=True, stream_flags=None, input_callback=None, output_callback=None):</p>
+<p>Opens an audio stream with the given parameters.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><ul class="simple">
+<li><p><strong>input_dev_index</strong> (int, optional): Index of the input device. If None and input is enabled, it uses the default standard streaming source.</p></li>
+<li><p><strong>output_dev_index</strong> (int, optional): Index of the output device. If None and output is enabled, it uses the default standard streaming destination.</p></li>
+<li><p><strong>sample_rate</strong> (float, optional): Sample rate in Hz. If 0.0, it uses the default sample rate of the selected device.</p></li>
+<li><p><strong>format</strong> (SampleFormat, optional): Sample format. Defaults to SIGNED16.</p></li>
+<li><p><strong>input_channels</strong> (int, optional): Number of input channels. If 0, it uses the maximum number of input channels for the selected device.</p></li>
+<li><p><strong>output_channels</strong> (int, optional): Number of output channels. If 0, it uses the maximum number of output channels for the selected device.</p></li>
+<li><p><strong>frames_per_buffer</strong> (int, optional): Number of frames per buffer. If None, it uses a default value appropriate for the host system.</p></li>
+<li><p><strong>enable_input</strong> (bool, optional): Whether to enable input. Defaults to True.</p></li>
+<li><p><strong>enable_output</strong> (bool, optional): Whether to enable output. Defaults to True.</p></li>
+<li><p><strong>stream_flags</strong> (int, optional): Stream flags. Reserved for future use.</p></li>
+<li><p><strong>input_callback</strong> (callable, optional): Callback function for input processing. If not provided and input is enabled, the stream operates in blocking mode.</p></li>
+<li><p><strong>output_callback</strong> (callable, optional): Callback function for output processing. If not provided and output is enabled, the stream operates in blocking mode.</p></li>
+</ul>
+</dd>
+<dt>Note:</dt><dd><p>If input_callback and output_callback are not provided, and enable_input/enable_output is True, the data is read/written in blocking mode using the read_stream/write_stream methods.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>start()</strong>: Starts the audio stream.</p></li>
+<li><p><strong>stop()</strong>: Stops the audio stream.</p></li>
+<li><p><strong>close()</strong>: Closes the audio stream.</p></li>
+<li><p><strong>read_stream(frames)</strong>: Reads a number of frames from the stream. Returns a tuple <strong>(data: bytes, frames_read: int)</strong>.</p></li>
+<li><p><strong>write_stream(data)</strong>: Writes audio data to the stream. Returns the number of frames written.</p></li>
+<li><p><strong>get_stream_read_available()</strong>: Returns the number of frames that can be read without waiting.</p></li>
+<li><p><strong>get_stream_write_available()</strong>: Returns the number of frames that can be written without waiting.</p></li>
+</ul>
+<p>Static Methods:</p>
+<ul class="simple">
+<li><p><strong>get_input_devices()</strong>: Returns a list of available input devices as <strong>AudioDeviceInfo</strong> objects.</p></li>
+<li><p><strong>get_output_devices()</strong>: Returns a list of available output devices as <strong>AudioDeviceInfo</strong> objects.</p></li>
+<li><p><strong>get_default_input_device()</strong>: Returns the default input device as an <strong>AudioDeviceInfo</strong> object.</p></li>
+<li><p><strong>get_default_output_device()</strong>: Returns the default output device as an <strong>AudioDeviceInfo</strong> object.</p></li>
+<li><p><strong>get_device_count()</strong>: Returns the total number of audio devices.</p></li>
+<li><p><strong>get_device_info_by_index(index)</strong>: Returns an <strong>AudioDeviceInfo</strong> object for the device at the specified index.</p></li>
+</ul>
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<section id="sudio-io-codec-decode-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-dither-dithermode-none">
+<h3>sudio.io.codec.decode_audio_file(filename, output_format=SampleFormat.SIGNED16, nchannels=2, sample_rate=44100, dither=DitherMode.NONE)<a class="headerlink" href="#sudio-io-codec-decode-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-dither-dithermode-none" title="Link to this heading"></a></h3>
+<p>Decodes an audio file into raw audio data.</p>
+<ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the audio file.</p></li>
+<li><p><strong>output_format</strong> (SampleFormat): Desired output sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of output channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Output sample rate in Hz.</p></li>
+<li><p><strong>dither</strong> (DitherMode): Dither mode.</p></li>
+</ul>
+<p>Returns: Raw audio data as bytes.</p>
+</section>
+<section id="sudio-io-codec-encode-wav-file-filename-data-format-nchannels-sample-rate">
+<h3>sudio.io.codec.encode_wav_file(filename, data, format, nchannels, sample_rate)<a class="headerlink" href="#sudio-io-codec-encode-wav-file-filename-data-format-nchannels-sample-rate" title="Link to this heading"></a></h3>
+<p>Encodes raw audio data into a WAV file.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the output WAV file.</p></li>
+<li><p><strong>data</strong> (bytes): Raw audio data.</p></li>
+<li><p><strong>format</strong> (SampleFormat): Audio sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of audio channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz.</p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><p>uint64_t: Number of frames written to the file.</p>
+</dd>
+</dl>
+</section>
+<section id="sudio-io-codec-encode-mp3-file-filename-data-format-nchannels-sample-rate-bitrate-128-quality-2">
+<h3>sudio.io.codec.encode_mp3_file(filename, data, format, nchannels, sample_rate, bitrate=128, quality=2)<a class="headerlink" href="#sudio-io-codec-encode-mp3-file-filename-data-format-nchannels-sample-rate-bitrate-128-quality-2" title="Link to this heading"></a></h3>
+<p>Encodes raw audio data into an MP3 file.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the output MP3 file.</p></li>
+<li><p><strong>data</strong> (bytes): Raw audio data.</p></li>
+<li><p><strong>format</strong> (SampleFormat): Audio sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of audio channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz.</p></li>
+<li><p><strong>bitrate</strong> (int, optional): MP3 encoding bitrate in kbps. Defaults to 128.</p></li>
+<li><p><strong>quality</strong> (int, optional): MP3 encoding quality (0-9, where 0 is best and 9 is worst). Defaults to 2.</p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><p>uint64_t: Number of frames written to the file.</p>
+</dd>
+</dl>
+</section>
+<section id="sudio-io-codec-encode-flac-file-filename-data-format-nchannels-sample-rate-compression-level-5">
+<h3>sudio.io.codec.encode_flac_file(filename, data, format, nchannels, sample_rate, compression_level=5)<a class="headerlink" href="#sudio-io-codec-encode-flac-file-filename-data-format-nchannels-sample-rate-compression-level-5" title="Link to this heading"></a></h3>
+<p>Encodes raw audio data into a FLAC file.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the output FLAC file.</p></li>
+<li><p><strong>data</strong> (bytes): Raw audio data.</p></li>
+<li><p><strong>format</strong> (SampleFormat): Audio sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of audio channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz.</p></li>
+<li><p><strong>compression_level</strong> (int, optional): FLAC compression level (0-8, where 0 is least compressed and 8 is most compressed). Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><p>uint64_t: Number of frames written to the file.</p>
+</dd>
+</dl>
+</section>
+<section id="sudio-io-codec-encode-vorbis-file-filename-data-format-nchannels-sample-rate-quality-0-4">
+<h3>sudio.io.codec.encode_vorbis_file(filename, data, format, nchannels, sample_rate, quality=0.4)<a class="headerlink" href="#sudio-io-codec-encode-vorbis-file-filename-data-format-nchannels-sample-rate-quality-0-4" title="Link to this heading"></a></h3>
+<p>Encodes raw audio data into an Ogg Vorbis file.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the output Ogg Vorbis file.</p></li>
+<li><p><strong>data</strong> (bytes): Raw audio data.</p></li>
+<li><p><strong>format</strong> (SampleFormat): Audio sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of audio channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz.</p></li>
+<li><p><strong>quality</strong> (float, optional): Vorbis encoding quality (-0.1 to 1.0, where -0.1 is lowest quality/smallest file and 1.0 is highest quality/largest file). Defaults to 0.4.</p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><p>uint64_t: Number of frames written to the file.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>All encoding functions accept raw audio data as bytes and return the number of frames written to the output file.</p></li>
+<li><p>The input <cite>format</cite> parameter should match the format of the raw audio data provided.</p></li>
+<li><p>For best results, ensure that the <cite>nchannels</cite> and <cite>sample_rate</cite> parameters match the characteristics of your input audio data.</p></li>
+<li><p>When encoding to lossy formats like MP3 and Vorbis, adjusting the <cite>quality</cite> or <cite>bitrate</cite> parameters allows you to balance between file size and audio quality.</p></li>
+<li><p>FLAC is a lossless format, so the <cite>compression_level</cite> parameter only affects file size and encoding speed, not audio quality.</p></li>
+</ul>
+<p>Here are some examples of how to use these encoding functions:</p>
+<dl>
+<dt><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python</dt><dd><p>import sudio.io.codec as codec
+from sudio.io import SampleFormat</p>
+<p># Example: Encoding a WAV file
+wav_data = b’…’  # Your raw audio data here
+codec.encode_wav_file(“output.wav”, wav_data, SampleFormat.SIGNED16, 2, 44100)</p>
+<p># Example: Encoding an MP3 file with custom bitrate
+mp3_data = b’…’  # Your raw audio data here
+codec.encode_mp3_file(“output.mp3”, mp3_data, SampleFormat.SIGNED16, 2, 44100, bitrate=192, quality=0)</p>
+<p># Example: Encoding a FLAC file with high compression
+flac_data = b’…’  # Your raw audio data here
+codec.encode_flac_file(“output.flac”, flac_data, SampleFormat.SIGNED24, 2, 48000, compression_level=8)</p>
+<p># Example: Encoding an Ogg Vorbis file with high quality
+vorbis_data = b’…’  # Your raw audio data here
+codec.encode_vorbis_file(“output.ogg”, vorbis_data, SampleFormat.FLOAT32, 2, 44100, quality=0.8)</p>
+</dd>
+</dl>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>These examples demonstrate basic usage of each encoding function. Remember to replace the placeholder audio data with your actual raw audio bytes.</p>
+<section id="sudio-io-codec-get-file-info-filename">
+<h3>sudio.io.codec.get_file_info(filename)<a class="headerlink" href="#sudio-io-codec-get-file-info-filename" title="Link to this heading"></a></h3>
+<p>Returns information about an audio file as an <strong>AudioFileInfo</strong> object.</p>
+<ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the audio file.</p></li>
+</ul>
+</section>
+<section id="sudio-io-codec-stream-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-frames-to-read-1024-dither-dithermode-none-seek-frame-0">
+<h3>sudio.io.codec.stream_audio_file(filename, output_format=SampleFormat.SIGNED16, nchannels=2, sample_rate=44100, frames_to_read=1024, dither=DitherMode.NONE, seek_frame=0)<a class="headerlink" href="#sudio-io-codec-stream-audio-file-filename-output-format-sampleformat-signed16-nchannels-2-sample-rate-44100-frames-to-read-1024-dither-dithermode-none-seek-frame-0" title="Link to this heading"></a></h3>
+<p>Streams audio data from a file.</p>
+<ul class="simple">
+<li><p><strong>filename</strong> (str): Path to the audio file.</p></li>
+<li><p><strong>output_format</strong> (SampleFormat): Desired output sample format.</p></li>
+<li><p><strong>nchannels</strong> (int): Number of output channels.</p></li>
+<li><p><strong>sample_rate</strong> (int): Output sample rate in Hz.</p></li>
+<li><p><strong>frames_to_read</strong> (int): Number of frames to read per iteration.</p></li>
+<li><p><strong>dither</strong> (DitherMode): Dither mode.</p></li>
+<li><p><strong>seek_frame</strong> (int): Frame to start reading from.</p></li>
+</ul>
+<p>Returns: A <strong>PyAudioStreamIterator</strong> object.</p>
+</section>
+<section id="sudio-io-write-to-default-output-data-format-sampleformat-float32-channels-none-sample-rate-none">
+<h3>sudio.io.write_to_default_output(data, format=SampleFormat.FLOAT32, channels=None, sample_rate=None)<a class="headerlink" href="#sudio-io-write-to-default-output-data-format-sampleformat-float32-channels-none-sample-rate-none" title="Link to this heading"></a></h3>
+<p>Writes raw audio data to the default audio output device.</p>
+<ul class="simple">
+<li><p><strong>data</strong> (bytes): Raw audio data.</p></li>
+<li><p><strong>format</strong> (SampleFormat): Sample format.</p></li>
+<li><p><strong>channels</strong> (int): Number of audio channels. If None, uses the maximum number of output channels for the default device.</p></li>
+<li><p><strong>sample_rate</strong> (int): Sample rate in Hz. If None, uses the default sample rate of the output device.</p></li>
+</ul>
+</section>
+<section id="sudio-io-get-sample-size-format">
+<h3>sudio.io.get_sample_size(format)<a class="headerlink" href="#sudio-io-get-sample-size-format" title="Link to this heading"></a></h3>
+<p>Returns the sample size in bytes for a given sample format.</p>
+<ul class="simple">
+<li><p><strong>format</strong> (SampleFormat): Audio sample format.</p></li>
+</ul>
+<p>Returns: The sample size in bytes.</p>
+</section>
+</section>
+<section id="callback-function-signatures">
+<h2>Callback Function Signatures<a class="headerlink" href="#callback-function-signatures" title="Link to this heading"></a></h2>
+<section id="input-callback">
+<h3>Input Callback<a class="headerlink" href="#input-callback" title="Link to this heading"></a></h3>
+<p>The input callback function should have the following signature:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">input_callback</span><span class="p">(</span><span class="n">input_buffer</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="n">SampleFormat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># Process input_buffer</span>
+    <span class="c1"># Return True to continue streaming, False to stop</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>input_buffer</strong>: The input audio data as bytes.</p></li>
+<li><p><strong>frames</strong>: The number of frames in the input buffer.</p></li>
+<li><p><strong>format</strong>: The sample format of the input data.</p></li>
+</ul>
+<p>The callback should return <strong>True</strong> to continue streaming or <strong>False</strong> to stop.</p>
+</section>
+<section id="output-callback">
+<h3>Output Callback<a class="headerlink" href="#output-callback" title="Link to this heading"></a></h3>
+<p>The output callback function should have the following signature:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">output_callback</span><span class="p">(</span><span class="n">frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="n">SampleFormat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+    <span class="c1"># Generate or process output data</span>
+    <span class="c1"># Return (output_buffer, continue_flag)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>frames</strong>: The number of frames to generate.</p></li>
+<li><p><strong>format</strong>: The required sample format for the output data.</p></li>
+</ul>
+<p>The callback should return a tuple containing:</p>
+<ol class="arabic simple">
+<li><p>The output audio data as bytes.</p></li>
+<li><p>A boolean flag indicating whether to continue streaming (<strong>True</strong>) or stop (<strong>False</strong>).</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api/function_stdstream_8hpp_1ab3ab2c0bbe74c5efe0ea9a966c4836c9.html" class="btn btn-neutral float-left" title="Function stdstream::writeToDefaultOutput" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="metadata.html" class="btn btn-neutral float-right" title="Metadata Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, mrzahaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

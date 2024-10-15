@@ -1,0 +1,17 @@
+.. _exhale_struct_structstdstream_1_1_audio_device_info:
+
+Struct AudioDeviceInfo
+======================
+
+- Defined in :ref:`file_sudio_io_inc_stdstream.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: stdstream::AudioDeviceInfo
+   :project: sudio
+   :members:
+   :protected-members:
+   :undoc-members:

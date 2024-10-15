@@ -1,7 +1,15 @@
+
+#  W.T.A
+#  SUDIO (https://github.com/MrZahaki/sudio)
+#  The Audio Processing Platform
+#  Mail: mrzahaki@gmail.com
+#  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
+
+
 import numpy as np
 from sudio.rateshift import rateshift
-from sudio.types import SampleFormat
-from sudio.audiosys.audio import Audio
+from sudio.io import SampleFormat
+from sudio.io import get_sample_size
 from sudio.audiosys.channel import shuffle2d_channels
 
 
@@ -29,7 +37,7 @@ def synchronize_audio(rec,
 
     Usage:
     ```python
-    new_rec = synchronize_audio(rec, nchannels=2, sample_rate=44100, sample_format_id=SampleFormat.formatInt16.value)
+    new_rec = synchronize_audio(rec, nchannels=2, sample_rate=44100, sample_format_id=SampleFormat.SIGNED16.value)
     ```
 
     :param rec: The input audio recording data.
@@ -40,8 +48,8 @@ def synchronize_audio(rec,
     :return: The synchronized audio recording data.
     """
 
-    form = Audio.get_sample_size(rec['sampleFormat'])
-    if rec['sampleFormat'] == SampleFormat.formatFloat32.value:
+    form = get_sample_size(rec['sampleFormat'])
+    if rec['sampleFormat'] == SampleFormat.FLOAT32:
         form = '<f{}'.format(form)
     else:
         form = '<i{}'.format(form)
@@ -78,8 +86,8 @@ def synchronize_audio(rec,
     rec['nchannels'] = nchannels
     rec['sampleFormat'] = sample_format_id
 
-    form = Audio.get_sample_size(sample_format_id)
-    if sample_format_id == SampleFormat.formatFloat32.value:
+    form = get_sample_size(sample_format_id)
+    if sample_format_id == SampleFormat.FLOAT32:
         form = '<f{}'.format(form)
     else:
         form = '<i{}'.format(form)
@@ -94,6 +102,6 @@ def synchronize_audio(rec,
 
     rec['duration'] = rec['size'] / (rec['frameRate'] *
                                      rec['nchannels'] *
-                                     Audio.get_sample_size(rec['sampleFormat']))
+                                     get_sample_size(rec['sampleFormat']))
 
     return rec

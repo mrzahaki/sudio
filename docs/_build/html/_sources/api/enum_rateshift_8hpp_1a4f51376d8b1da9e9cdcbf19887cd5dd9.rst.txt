@@ -1,0 +1,14 @@
+.. _exhale_enum_rateshift_8hpp_1a4f51376d8b1da9e9cdcbf19887cd5dd9:
+
+Enum ConverterType
+==================
+
+- Defined in :ref:`file_sudio_rateshift_inc_rateshift.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: rateshift::ConverterType
+   :project: sudio

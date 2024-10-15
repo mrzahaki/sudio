@@ -1,13 +1,9 @@
-"""
- W.T.A
- SUDIO (https://github.com/MrZahaki/sudio)
- The Audio Processing Platform
- Mail: mrzahaki@gmail.com
- Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
-"""
+#  W.T.A
+#  SUDIO (https://github.com/MrZahaki/sudio)
+#  The Audio Processing Platform
+#  Mail: mrzahaki@gmail.com
+#  Software license: "Apache License 2.0". See https://choosealicense.com/licenses/apache-2.0/
 
-
-import io
 import scipy.signal as scisig
 import threading
 import queue
@@ -21,9 +17,8 @@ from io import BufferedRandom
 import traceback
 
 
-from sudio.types import StreamMode, RefreshError, SampleFormatToLib, LibToSampleFormat
-from sudio.types import SampleFormat, SampleFormatEnumToLib, LibSampleFormat, DitherMode
-from sudio.types import LibSampleFormatEnumToSample, PipelineProcessType
+from sudio.types import StreamMode, RefreshError
+from sudio.types import PipelineProcessType
 from sudio.wrap.wrapgenerator import WrapGenerator
 from sudio.wrap.wrap import Wrap
 from sudio.utils.exmath import voltage_to_dBu
@@ -31,20 +26,15 @@ from sudio.utils.strtool import generate_timestamp_name
 from sudio.utils.timed_indexed_string import TimedIndexedString 
 from sudio.stream.stream import Stream
 from sudio.stream.streamcontrol import StreamControl
-from sudio.stream.utils import stdout_stream
 from sudio.audiosys.window import multi_channel_overlap, single_channel_overlap
 from sudio.audiosys.window import multi_channel_windowing, single_channel_windowing
-from sudio.audiosys.codecinfo import get_file_info
-from sudio.audiosys import interface as audiointerface
-from sudio.audiosys.audio import Audio
-from sudio.audiosys.io import write_wav_file
-from sudio.audiosys.codec import decode_audio_file
 from sudio.audiosys.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
 from sudio.audiosys.sync import synchronize_audio
 from sudio.utils.cacheutil import handle_cached_record, write_to_cached_file
-from sudio.audiosys.typeconversion import get_format_from_width
 from sudio.pipeline import Pipeline
-from sudio.metadata import AudioMetadataDatabase, AudioMetadata
+from sudio.metadata import AudioRecordDatabase, AudioMetadata
+from sudio.io import SampleFormat, codec, write_to_default_output, AudioStream
+from sudio.io import AudioDeviceInfo, get_sample_size, FileFormat
 
 
 
@@ -56,7 +46,7 @@ class Master:
     def __init__(self,
                  std_input_dev_id: int = None,
                  std_output_dev_id: int = None,
-                 data_format: SampleFormat = SampleFormat.formatInt16,  # 16bit mode
+                 data_format: SampleFormat = SampleFormat.SIGNED16,
                  nperseg: int = 500,
                  noverlap: int = None,
                  window: object = 'hann',
@@ -71,106 +61,70 @@ class Master:
                  ):
         
         """
-        Initialize the Master audio processing object.
+        The `Master` class is responsible for managing audio data streams, applying windowing, 
+        and handling input/output devices. This class provides various methods for processing, 
+        recording, and playing audio data, with functionality to handle different audio formats, 
+        sample rates, and device configurations.
 
-        This class provides comprehensive audio processing capabilities, including
-        device management, audio format handling, windowing, and pipeline processing.
 
-        Parameters:
-        -----------
-        std_input_dev_id : int, optional
-            Input device ID. If None, uses the system's default input device.
-        
-        std_output_dev_id : int, optional
-            Output device ID. If None, uses the system's default output device.
-        
-        data_format : SampleFormat, optional
-            Audio sample format. Default is 16-bit integer (formatInt16).
-            Supported formats: formatFloat32, formatInt32, formatInt24, formatInt16, formatInt8, formatUInt8.
-        
-        nperseg : int, optional
-            Number of samples per frame (window) in one channel. Default is 500.
-        
-        noverlap : int, optional
-            Number of samples to overlap between frames. If None, defaults to nperseg // 2.
-        
-        window : str, float, tuple, or ndarray, optional
-            Window type or array. Default is 'hann'.
-            - If string: Specifies a scipy.signal window type (e.g., 'hamming', 'blackman').
-            - If float: Interpreted as the beta parameter for scipy.signal.windows.kaiser.
-            - If tuple: First element is the window name, followed by its parameters.
-            - If ndarray: Direct specification of window values.
-            - If None: Disables windowing.
-        
-        NOLA_check : bool, optional
-            If True, checks if the window satisfies the Non-Zero Overlap Add (NOLA) constraint. Default is True.
-        
-        input_dev_sample_rate : int, optional
-            Sample rate for the input device. Default is 48000 Hz. Only used if input_dev_callback is provided.
-        
-        input_dev_nchannels : int, optional
-            Number of input channels. Required if input_dev_callback is provided.
-        
-        input_dev_callback : Callable, optional
-            Custom callback function for input stream processing.
-            Should return a numpy array of shape (nchannels, nperseg) with appropriate data format.
-        
-        output_dev_nchannels : int, optional
-            Number of output channels. Required if output_dev_callback is provided.
-        
-        output_dev_callback : Callable, optional
-            Custom callback function for output stream processing.
-            Receives a numpy array of shape (nchannels, nperseg) with processed audio data.
-        
-        buffer_size : int, optional
-            Size of the internal audio buffer in frames. Default is 30.
+		Parameters
+		----------
 
-        Attributes:
-        -----------
-        Numerous internal attributes are set for managing audio streams, processing pipelines,
-        and maintaining state. These are not typically accessed directly by users.
+		- **std_input_dev_id** : Standard input device ID (default: `None`).
+		  If None, uses the system's default input device.
+		- **std_output_dev_id** : Standard output device ID (default: `None`).
+		  If None, uses the system's default output device.
+		- **data_format** : SampleFormat, optional
+		  The sample format of the audio. Default is 16-bit integer (SIGNED16).
+		  Supported formats: FLOAT32, SIGNED32, SIGNED24, SIGNED16, UNSIGNED8.
+		- **nperseg** : int, optional
+		  Number of segments per window. Default is 500.
+		- **noverlap** : int, optional
+		  Number of overlapping segments. If None, defaults to nperseg // 2.
+		- **window** : str, float, tuple, or ndarray, optional
+		  Window type or array. Default is 'hann'.
+		  - If string: Specifies a scipy.signal window type (e.g., 'hamming', 'blackman').
+		  - If float: Interpreted as the beta parameter for scipy.signal.windows.kaiser.
+		  - If tuple: First element is the window name, followed by its parameters.
+		  - If ndarray: Direct specification of window values.
+		  - If None: Disables windowing.
+		- **NOLA_check** : bool, optional
+		  Perform the Non-Overlap-Add (NOLA) check. Default is True.
+		- **input_dev_sample_rate** : int, optional
+		  Sample rate of input device. Default is 48000 Hz. Only used if input_dev_callback is provided.
+		- **input_dev_nchannels** : int, optional
+		  Number of input device channels. Required if input_dev_callback is provided.
+		- **input_dev_callback** : Callable, optional
+		  Input device callback function.
+		  Should return a numpy array of shape (nchannels, nperseg) with appropriate data format.
+		- **output_dev_nchannels** : int, optional
+		  Number of output device channels. Required if output_dev_callback is provided.
+		- **output_dev_callback** : Callable, optional
+		  Output device callback function.
+		  Receives a numpy array of shape (nchannels, nperseg) with processed audio data.
+		- **buffer_size** : int, optional
+		  Size of the sound buffer. Default is 30.
+		- **audio_data_directory** : str, optional
+		  Directory for storing audio data (default: `'./data/'`).
 
-        Methods:
-        --------
-        Various methods are available for audio processing, pipeline management, and device control.
-        Refer to individual method docstrings for details.
-
-        Notes:
-        ------
+        Notes
+        -----
+        - Various methods are available for audio processing, pipeline management, and device control.
+          Refer to individual method docstrings for details.
         - The class uses threading for efficient audio stream management.
         - Window functions are crucial for spectral analysis and should be chosen carefully.
         - NOLA constraint ensures proper reconstruction in overlap-add methods.
         - Custom callbacks allow for flexible input/output handling but require careful implementation.
 
-        Examples:
-        ---------
-        # Basic initialization with default settings
-        master = Master()
 
-        # Custom configuration
-        master = Master(std_input_dev_id=1, data_format=SampleFormat.formatFloat32,
-                        nperseg=1024, window='hamming')
-
-        # Using custom callbacks
-        def input_callback(frame_count, time_info, status):
-            # Custom input processing
-            return processed_data
-
-        master = Master(input_dev_callback=input_callback, input_dev_nchannels=2,
-                        input_dev_sample_rate=44100)
-
-        # Start audio processing
-        master.start()
         """
-        # ----------------------------------------------------- First Initialization Section -----------------------------------------------------
-
-        # Set initial values for various attributes
+        
         self._sound_buffer_size = buffer_size
         self._stream_type = StreamMode.optimized
         self._sample_format_type = data_format
         self.input_dev_callback = None
         self.output_dev_callback = None
-        self._default_stream_callback = self._stream_callback
+        self._default_stream_callback = self._input_stream_callback
 
         # Initialize threading events and flags
         self._exstream_mode = threading.Event()
@@ -183,24 +137,14 @@ class Master:
         self._nchannels = None
         self._sample_rate = None
         self._audio_data_directory = audio_data_directory
-
-        # Create necessary directories if they don't exist
         try:
             os.mkdir(self._audio_data_directory)
         except FileExistsError:
             pass
-        
-        # Suppress warnings
         warnings.filterwarnings("ignore")
-
         self._output_device_index = None
-        # Create an interface to PortAudio
-        self._audio_instance = Audio()
-
-        # Set default number of input channels
         input_channels = int(1e6)
 
-        # UI mode: Choose input device interactively
         if callable(input_dev_callback):
             self.input_dev_callback = input_dev_callback
             self._default_stream_callback = self._custom_stream_callback
@@ -209,65 +153,48 @@ class Master:
 
         elif std_input_dev_id is None:
             dev = self.get_default_input_device_info()
-            self._sample_rate = int(dev['defaultSampleRate'])
-            input_channels = dev['maxInputChannels']
-            self._std_input_dev_id = dev['index']
+            self._sample_rate = int(dev.default_sample_rate)
+            input_channels = dev.max_input_channels
+            self._std_input_dev_id = dev.index
 
         else:
-            # Use specified input device ID
             self._std_input_dev_id = std_input_dev_id
             dev = self.get_device_info_by_index(std_input_dev_id)
-            input_channels = dev['maxInputChannels']
-            self._sample_rate = int(dev['defaultSampleRate'])
+            input_channels = dev.max_input_channels
+            self._sample_rate = int(dev.default_sample_rate)
 
-
-        data_format = data_format.value
-        # Set number of output channels to a large value initially
-        self._sample_width = Audio.get_sample_size(data_format)
+        self._sample_width = get_sample_size(data_format)
         self._sample_format = data_format
         output_channels = int(1e6)
 
         if callable(output_dev_callback):
             self.output_dev_callback = output_dev_callback
             output_channels = output_dev_nchannels
-        # UI mode: Choose output device interactively
         elif std_output_dev_id is None:
-            # Use default output device
             dev = self.get_default_output_device_info()
-            self._output_device_index = dev['index']
-            output_channels = dev['maxOutputChannels']
+            self._output_device_index = dev.index
+            output_channels = dev.max_output_channels
         else:
-            # Use specified input device ID
             self._std_input_dev_id = std_output_dev_id
             dev = self.get_device_info_by_index(std_output_dev_id)
-            output_channels = dev['maxOutputChannels']
+            output_channels = dev.max_output_channels
 
         self._input_channels = input_channels
         self._output_channels = output_channels
         self._nchannels = self._output_channels
   
-
-
         # Raise an error if no input or output device is found
         if self._nchannels == 0:
             raise ValueError('No input or output device found')
-
-        # Mute the audio initially
         self.mute()
-
-        # Set initial values for various attributes
         self.branch_pipe_database_min_key = 0
         self._window_type = window
         self._nperseg = nperseg
 
-        # Check window arguments
         if noverlap is None:
             noverlap = nperseg // 2
-
         if type(self._window_type) is str or type(self._window_type) is tuple or type(self._window_type) == float:
             window = scisig.get_window(window, nperseg)
-
-        # Check window size
         if self._window_type:
             assert len(window) == nperseg, 'Control size of window'
             if NOLA_check:
@@ -275,118 +202,79 @@ class Master:
         elif self._window_type is None:
             window = None
             self._window_type = None
-        # ----------------------------------------------------- Sample rate and pre-filter processing -----------------------------------------------------
-
-        # Set data chunk size, frame rate, and other constants
         self._data_chunk = nperseg
         self._sample_width_format_str = '<i{}'.format(self._sample_width)
-
-        # Adjust constant for floating-point data format
-        if data_format == SampleFormat.formatFloat32.value:
+        if data_format == SampleFormat.FLOAT32.value:
             self._sample_width_format_str = '<f{}'.format(self._sample_width)
 
-        # Initialize thread list
         self._threads = []
-
-        # ----------------------------------------------------- User _database define -----------------------------------------------------
-
-        self._local_database = AudioMetadataDatabase()
-
-        # ----------------------------------------------------- Pipeline _database and other definitions section -----------------------------------------------------
-
+        self._local_database = AudioRecordDatabase()
         self._recordq = [threading.Event(), queue.Queue(maxsize=0)]
         self._queue = queue.Queue()
-
         self._echo_flag = threading.Event()
         self.main_pipe_database = []
         self.branch_pipe_database = []
-
-        # ----------------------------------------------------- Threading management -----------------------------------------------------
-
         self._functions = []
-        self._functions.append(self._stream_output_manager)
-
-        # Create and start threads
         for i in range(len(self._functions)):
             self._threads.append(threading.Thread(target=self._run, daemon=True, args=(len(self._threads),)))
             self._queue.put(i)
-
-        # ----------------------------------------------------- Windowing object define and initialization -----------------------------------------------------
-
         # Set parameters for windowing
         self._nhop = nperseg - noverlap
         self._noverlap = noverlap
         self._window = window
-
-
         self._overlap_buffer = [np.zeros(nperseg) for i in range(self._nchannels)]
         self._windowing_buffer = [[np.zeros(nperseg), np.zeros(nperseg)] for i in range(self._nchannels)]
-
-        # Create Stream objects for main and normal streams
         data_queue = queue.Queue(maxsize=self._sound_buffer_size)
         self._normal_stream = Stream(self, data_queue, process_type=PipelineProcessType.QUEUE)
         self._main_stream = Stream(self, data_queue, process_type=PipelineProcessType.QUEUE)
-        # ----------------------------------------------------- Miscellaneous initialization -----------------------------------------------------
         self._refresh_ev = threading.Event()
-
         # Master selection and synchronization
         self._master_sync = threading.Barrier(self._nchannels)
-        self._pystream = False
+        self._audio_input_stream = False
+        self._audio_output_stream = False
+        self.clean_cache()
 
 
     def start(self):
         """
-        Start the audio processing stream.
+        Starts the audio input and output streams and launches any registered threads.
 
-        This method initializes and starts the audio stream, activating all configured
-        audio processing pipelines and enabling real-time audio input/output.
-
-        Returns:
-        --------
-        self : Master
-            Returns the instance of the Master class, allowing for method chaining.
-
-        Raises:
+        Returns
         -------
-        AssertionError
-            If the audio stream is already started.
-        
-        Other exceptions may be raised depending on the underlying audio library's
-        behavior when opening the stream.
-
-        Notes:
-        ------
-        - This method must be called after all desired configurations (like setting
-        input/output devices, adding pipelines, etc.) have been made.
-        - Once started, the audio stream runs in a separate thread, allowing for
-        concurrent processing.
-        - The method blocks until all active threads are initialized, ensuring
-        the system is fully operational before returning.
-
-        Examples:
-        ---------
-        # Basic usage
-        master = Master()
-        master.start()
-
-        # Method chaining
-        master = Master().start()
-
-        # Start after configuration
-        master = Master()
-        master.add_pipeline(some_pipeline)
-        master.set_window('hamming')
-        master.start()
+        self : Master
+            Returns the instance of the Master class for method chaining.
         """
-        assert not self._pystream, 'Master is Already Started'
+        
+        assert not self._audio_input_stream, 'Master is Already Started'
+        self._audio_input_stream = AudioStream()
+        self._audio_output_stream = AudioStream()
+
         try:
-            self._pystream = self._audio_instance.open_stream(format=self._sample_format,
-                                                   channels=self._input_channels,
-                                                   rate=self._sample_rate,
-                                                   frames_per_buffer=self._data_chunk,
-                                                   input_device_index=self._std_input_dev_id,
-                                                   input=True,
-                                                   stream_callback=self._default_stream_callback)
+            self._audio_input_stream.open(
+                input_dev_index = self._std_input_dev_id,
+                sample_rate = self._sample_rate,
+                format=self._sample_format,
+                input_channels=self._input_channels,
+                frames_per_buffer=self._data_chunk,
+                enable_input=True,
+                enable_output=False,
+                input_callback=self._default_stream_callback
+                )
+            
+            self._audio_output_stream.open(
+                    output_dev_index=self._output_device_index,
+                    frames_per_buffer=self._data_chunk,
+                    sample_rate=self._sample_rate, 
+                    format=self._sample_format,
+                    output_channels=self._output_channels,
+                    enable_input=False, 
+                    enable_output=True,
+                    output_callback=self._output_stream_callback
+                )
+
+            self._audio_output_stream.start()
+            self._audio_input_stream.start()
+            
             for i in self._threads:
                 i.start()
 
@@ -440,11 +328,13 @@ class Master:
             self._main_stream.release()
 
 
-    def _stream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
+    def _input_stream_callback(self, in_data, frame_count, format):  
         
+
         if self._exstream_mode.is_set():
             self._exstream()
-            return None, 0
+            return None, True
+        
         elif self._master_mute_mode.is_set():
             in_data = get_mute_mode_data(self._nchannels, self._nperseg)
         else:
@@ -454,25 +344,25 @@ class Master:
             except Exception as e:
                 error_msg = f"Error in audio channel mapping: {type(e).__name__}: {str(e)}"
                 print(error_msg)
-                print(traceback.format_exc())  # This will print the full stack trace
+                print(traceback.format_exc())
 
-                return None, 0
+                return None, True
         try:
             self._main_stream.acquire()
             self._main_stream.put(in_data)  
             self._main_stream.release()
 
         except Exception as e:
-            print(f"Error in stream callback: {e}")
-            print(f"in_data shape: {in_data.shape}, type: {type(in_data)}")
-            print(f"self._input_channels: {self._input_channels}, self._nchannels: {self._nchannels}")
-            print(traceback.format_exc())  # This will print the full stack trace
-            return None, 1  # Indicate that an error occurred
+            # print(f"Error in stream callback: {e}")
+            # print(f"in_data shape: {in_data.shape}, type: {type(in_data)}")
+            # print(f"self._input_channels: {self._input_channels}, self._nchannels: {self._nchannels}")
+            # print(traceback.format_exc())  # This will print the full stack trace
+            return None, False  # Indicate that an error occurred
 
-        return None, 0
+        return None, True
 
 
-    def _custom_stream_callback(self, in_data, frame_count, time_info, status):  # PaCallbackFlags
+    def _custom_stream_callback(self, in_data, frame_count, format):  
 
         if self._exstream_mode.is_set():
             if not self._exstream():
@@ -481,7 +371,7 @@ class Master:
         elif self._master_mute_mode.is_set():
             in_data = get_mute_mode_data(self._nchannels, self._nperseg)
         else:
-            in_data = self.input_dev_callback(frame_count, time_info, status).astype('f')
+            in_data = self.input_dev_callback(frame_count, format).astype('f')
             try:
                 in_data = map_channels(in_data, self._input_channels, self._nchannels)
             except Exception as e:
@@ -504,52 +394,63 @@ class Master:
         # self.a1 = time.perf_counter()
         return None, 0
 
-    def _stream_output_manager(self, thread_id):
-        stream_out = self._audio_instance.open_stream(
-                            format=self._sample_format,
-                            channels=self._output_channels,
-                            output_device_index=self._output_device_index,
-                            rate=self._sample_rate, input=False, output=True)
-
-        stream_out.start_stream()
+    def _output_stream_callback(self, frame_count, format):
         rec_ev, rec_queue = self._recordq
         while 1:
+            data = None
+
             try:
                 data = self._main_stream.get(timeout=0.0001)
 
                 if rec_ev.is_set():
                     rec_queue.put_nowait(data)
-
-                data = shuffle2d_channels(data)
-
-                if self._echo_flag.is_set():
-                    stream_out.write(data.tobytes())
-
-                if self.output_dev_callback:
-                    self.output_dev_callback(data)
-            except Exception as e:
+            except:
                 pass
-                # error_msg = f"Error in _stream_output_manager: {type(e).__name__}: {str(e)}"
-                # print(error_msg)
-                # print(traceback.format_exc())  
+
+            try:
+                if data is not None:
+                    data = shuffle2d_channels(data)
+
+                    if self.output_dev_callback:
+                        self.output_dev_callback(data)
+                    
+                    if self._echo_flag.is_set():
+                        return (data.tobytes(), True)
+
+            except Exception as e:
+                error_msg = f"Error in _output_stream_callback: {type(e).__name__}: {str(e)}"
+                print(error_msg)
+                print(traceback.format_exc())  
 
             if self._refresh_ev.is_set():
                 self._refresh_ev.clear()
                 # close current stream
-                stream_out.close()
+                try:
+                    self._audio_output_stream.stop()
+                    self._audio_output_stream.close()
+                except:
+                    pass
+                    # print(f"Error closing stream: {type(e).__name__}: {str(e)}")
+                    # print(traceback.format_exc())    
+                            
                 # create new stream
-                rate = self._sample_rate
+                try:
+                    self._audio_output_stream.open(
+                        output_dev_index=self._output_device_index,
+                        frames_per_buffer=self._data_chunk,
+                        sample_rate=self._sample_rate, 
+                        format=self._sample_format,
+                        output_channels=self._output_channels,
+                        enable_input=False, 
+                        enable_output=True,
+                        output_callback=self._output_stream_callback
+                    )
+                    self._audio_output_stream.start()
 
+                except Exception as e:
+                    print(f"Error opening new stream: {type(e).__name__}: {str(e)}")  
+                    print(traceback.format_exc())                     
 
-                stream_out = self._audio_instance.open_stream(
-                                    format=self._sample_format,
-                                    channels=self._output_channels,
-                                    rate=rate,
-                                    input=False,
-                                    output=True)
-                                    
-
-                stream_out.start_stream()
                 self._main_stream.clear()
 
     # RMS to dbu
@@ -558,14 +459,14 @@ class Master:
         return voltage_to_dBu(np.max(arr) / ((2 ** (self._sample_width * 8 - 1) - 1) / 1.225))
 
 
-    def add_file(self, filename: str, sample_format: SampleFormat = SampleFormat.formatUnknown,
+    def add_file(self, filename: str, sample_format: SampleFormat = SampleFormat.UNKNOWN,
                 nchannels: int = None, sample_rate: int = None ,safe_load=True):
         '''
-        Add an audio file to the local database. None value for the parameters means
-        that they are automatically selected based on the properties of the audio file.
+        Add an audio file to database. None value for the parameters means
+        that they are automatically selected based on the properties of the audio file, and the master object.
 
-         Note:
-          supported files format: WAV, FLAC, VORBIS, MP3
+        Note:
+         supported files format: WAV, FLAC, VORBIS, MP3
 
         Note:
          The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
@@ -576,20 +477,20 @@ class Master:
         :param nchannels: number of audio channels
         :param sample_rate: sample rate
         :param safe_load: load an audio file and modify it according to the 'Master' attributes.
-        (sample rate, sample format, number of channels, etc).
+         (sample rate, sample format, number of channels, etc).
         :return: WrapGenerator object
 
         '''
-        info = get_file_info(filename)
+        info = codec.get_file_info(filename)
         if safe_load:
-            sample_format = SampleFormatEnumToLib[self._sample_format]
-        elif sample_format is SampleFormat.formatUnknown:
-            if info.sample_format is LibSampleFormat.UNKNOWN:
-                sample_format = SampleFormatToLib[self._sample_format]
+            sample_format = self._sample_format
+        elif sample_format is SampleFormat.UNKNOWN:
+            if info.sample_format is SampleFormat.UNKNOWN:
+                sample_format = self._sample_format
             else:
                 sample_format = info.sample_format
         else:
-            sample_format = SampleFormatToLib[sample_format]
+            sample_format = sample_format
 
         if nchannels is None:
             nchannels = info.nchannels
@@ -604,7 +505,7 @@ class Master:
             'noise': None,
             'frameRate': sample_rate,
             'o': None,
-            'sampleFormat': LibToSampleFormat[sample_format].value,
+            'sampleFormat': sample_format,
             'nchannels': nchannels,
             'duration': info.duration,
             'nperseg': self._nperseg,
@@ -627,8 +528,7 @@ class Master:
                               ' is not same as object channels({ch1})'.format(name=name,
                                                                               ch0=record['nchannels'],
                                                                               ch1=self._nchannels))
-
-        decoder = lambda: decode_audio_file(filename, sample_format, nchannels, sample_rate, DitherMode.NONE)
+        decoder = lambda: codec.decode_audio_file(filename, sample_format, nchannels, sample_rate)
 
         record = (
         handle_cached_record(record,
@@ -647,19 +547,16 @@ class Master:
 
     def add(self, record, safe_load=True):
         """
-        Add a new record to the database.
-
-        This method can handle various types of input including wrapped records,
-        Record objects, or audio files in mp3, WAV, FLAC, or VORBIS format.
+        Adds audio metadata or data to the local database. This method can handle various types of input including wrapped records, 
+        metadata objects, or audio files in mp3, WAV, FLAC, or VORBIS format.
 
         Parameters:
         -----------
-        record : Union[Wrap, str, AudioMetadata, WrapGenerator, Tuple[Union[Wrap, str, AudioMetadata, WrapGenerator], str]]
+        record : 
             The record to be added. Can be:
             - A Wrap or WrapGenerator object
             - A string representing the path to an audio file
             - AudioMetadata containing record data
-            - A tuple containing the record and a custom name for the record
 
         safe_load : bool, optional
             If True (default), the audio file is loaded and modified according to
@@ -673,61 +570,26 @@ class Master:
 
         Notes:
         ------
-        - If a tuple is passed as the record parameter, the second element will be
-        used as the name for the new record. Otherwise, a name is automatically generated.
-        - The method uses cached files to optimize memory usage and improve performance.
-        As a result, execution times may vary depending on the state of these cached files.
+        - The method uses cached files to optimize memory usage and improve performance. 
+         As a result, execution times may vary depending on the state of these cached files.
         - Supported audio file formats: mp3, WAV, FLAC, VORBIS
 
-        Raises:
-        -------
-        ValueError
-            If the record type is not recognized or if there's an issue with file format.
-        ImportError
-            If the number of channels in the record is incompatible with the Master object's settings.
 
         Examples:
         ---------
-        # Adding an audio file
-        master.add("path/to/audio.wav")
 
-        # Adding a wrapped record with a custom name
-        wrapped_record = some_wrap_generator()
-        master.add((wrapped_record, "my_custom_name"))
+        .. code-block:: python
+            
+            # consider we have two master instances as m1, and m2
+            # Adding an audio file
+            record1 = m1.add("path/to/audio.wav")
 
-        # Adding AudioMetadata record
-        series_record = AudioMetadata({...})  # Record data
-        master.add(series_record)
+            # adding a copy of record1 into master 2 instance
+            record2 = m2.add(record1)
         """
         name_type = type(record)
-        if name_type is list or name_type is tuple:
-            assert len(record) < 3
 
-            rec_name = None
-            if len(record) == 2:
-                if type(rec_name) is str:
-                    rec_name = record[1]
-
-            if type(record[0]) is WrapGenerator:
-                record = record[0].get_data()
-
-            elif type(record[0]) is AudioMetadata:
-                pass
-            else:
-                raise TypeError('record data should be an instance of AudioMetadata, or WrapGenerator')
-
-            if rec_name and type(rec_name) is str:
-                record.name = rec_name
-
-            elif rec_name is None:
-                record.name = generate_timestamp_name()
-
-            else:
-                raise ValueError('second item in the list is the name of the new record')
-            
-            return self.add(record, safe_load=safe_load)
-
-        elif name_type is Wrap or name_type is WrapGenerator:
+        if name_type is Wrap or name_type is WrapGenerator:
             record = record.get_data()
             return self.add(record, safe_load=safe_load)
 
@@ -755,15 +617,13 @@ class Master:
                                 pre_truncate=True,
                                 after_seek=(Master.CACHE_INFO, 0),
                                 after_flush=True,
-                                sizeon_out=True)
+                                size_on_output=True)
                 )
                 record['o'] = f
                 record['size'] = newsize
 
             elif (not (self._audio_data_directory + record.name + Master.BUFFER_TYPE) == record.name) or \
                     record.name in self._local_database.index():
-                # new sliced Wrap data
-
                 if record.name in self._local_database.index():
                     record.name = generate_timestamp_name()
                 
@@ -779,7 +639,7 @@ class Master:
                                 data=prefile.read(),
                                 after_seek=prepos,
                                 after_flush=True,
-                                sizeon_out=True)
+                                size_on_output=True)
                 )
                 prefile.seek(*prepos)
                 record['size'] = newsize
@@ -798,8 +658,7 @@ class Master:
 
     def recorder(self, record_duration: float, name: str = None):
         """
-        Record audio for a specified duration.
-
+        Record audio for a specified duration. 
         This method captures audio input for a given duration and stores it as a new record
         in the Master object's database.
 
@@ -811,36 +670,33 @@ class Master:
         name : str, optional
             A custom name for the recorded audio. If None, a timestamp-based name is generated.
 
-        Returns:
-        --------
-        Wrap
-            A wrapped version of the recorded audio data.
+        :return: WrapGenerator instance
 
-        Raises:
-        -------
-        KeyError
-            If the provided name already exists in the database.
 
         Notes:
         ------
         - The recording uses the current audio input settings of the Master object
-        (sample rate, number of channels, etc.).
+         (sample rate, number of channels, etc.).
         - The recorded audio is automatically added to the Master's database and can be
-        accessed later using the provided or generated name.
+         accessed later using the provided or generated name.
         - This method temporarily modifies the internal state of the Master object to
-        facilitate recording. It restores the previous state after recording is complete.
+         facilitate recording. It restores the previous state after recording is complete.
 
         Examples:
         ---------
-        # Record for 5 seconds with an auto-generated name
-        recorded_audio = master.recorder(5)
+        **Record for 5 seconds with an auto-generated name**
 
-        # Record for 10 seconds with a custom name
-        recorded_audio = master.recorder(10, name="my_recording")
+         >>> recorded_audio = master.recorder(5)
 
-        # Use the recorded audio
-        master.play(recorded_audio)
+        **Record for 10 seconds with a custom name**
+
+         >>> recorded_audio = master.recorder(10, name="my_recording")
+
+        **Use the recorded audio**
+
+         >>> master.echo(recorded_audio)
         """
+
         if name is None:
             name = generate_timestamp_name('record')
         elif name in self._local_database.index():
@@ -875,7 +731,6 @@ class Master:
             'duration': record_duration,
         }
 
-        # Write the recorded data to a file
         record_data['o'] = write_to_cached_file(
             record_data['size'],
             record_data['frameRate'],
@@ -888,10 +743,7 @@ class Master:
             after_flush=True
         )
 
-        # Update the size to include the cache info
         record_data['size'] += Master.CACHE_INFO
-
-        # Add the record to the local database
         metadata = AudioMetadata(name, **record_data)
         self._local_database.add_record(metadata)
 
@@ -901,16 +753,15 @@ class Master:
     def load(self, name: str, safe_load: bool=True,
          series: bool=False) -> Union[WrapGenerator, AudioMetadata]:
         '''
-        This method used to load a predefined recoed from database. 
-         Trying to load a record that was previously loaded, outputs a wrapped version
-         of the named record.
+        Loads a record from the local database. Trying to load a record that was previously loaded, 
+        outputs a wrapped version of the named record.
 
         :param name: record name
-        :param safe_load: if safe load is enabled then load function tries to load a record
-         in the local database based on the master  settings, like the frame rate and etc.
-        :param series: if enabled then Trying to load a record that was previously loaded, outputs data series
-        of the named record.
-        :return: (optional) Wrapped object, AudioMetadata
+        :param safe_load: Flag to safely load the record. if safe load is enabled then load function tries to load a record
+         in the local database based on the master settings, like the frame rate and etc (default: `True`).
+        :param series:  Return the record as a series (default: `False`).
+        :return: (optional) WrapGenerator object, AudioMetadata
+        
         '''
 
         if name in self._local_database.index():
@@ -944,8 +795,10 @@ class Master:
 
     def get_record_info(self, record: Union[str, WrapGenerator, Wrap]) -> dict:
         '''
-        :param name: name of the registered record on database
-        :return: information about saved record ['frameRate'  'sizeInByte' 'duration'
+        Retrieves metadata for a given record.
+
+        :param record: The record (str, WrapGenerator, or Wrap) whose info is requested.
+        :return: information about saved record in a dict format ['frameRate'  'sizeInByte' 'duration'
             'nchannels' 'nperseg' 'name'].
         '''
         if type(record) is WrapGenerator or Wrap:
@@ -967,7 +820,7 @@ class Master:
             'nchannels': rec['nchannels'],
             'nperseg': rec['nperseg'],
             'name': name,
-            'sampleFormat': LibSampleFormatEnumToSample[rec['sampleFormat']].name
+            'sampleFormat': rec['sampleFormat'].name
         }
 
     def _syncable(self,
@@ -982,7 +835,7 @@ class Master:
         :param nchannels: number of channels; if the value is None, the target will be compared to the 'self' properties.
         :param sample_rate: sample rate; if the value is None, the target will be compared to the 'self' properties.
         :param sample_format_id: if the value is None, the target will be compared to the 'self' properties.
-        :return: returns only objects that need to be synchronized.
+        :return: only objects that need to be synchronized.
         '''
         nchannels = nchannels if nchannels else self._nchannels
         sample_format_id = self._sample_format if sample_format_id is None else sample_format_id
@@ -1008,36 +861,39 @@ class Master:
                  *target,
                  nchannels: int = None,
                  sample_rate: int = None,
-                 sample_format: SampleFormat = SampleFormat.formatUnknown):
+                 sample_format: SampleFormat = SampleFormat.UNKNOWN):
         '''
-         Determines whether the target can be synced with specified properties or not
+         Prepares a list of targets to be synchronized. Determines whether the target can be synced with specified properties or not
 
-        :param target: wrapped object\s
-        :param nchannels: number of channels; if the value is None, the target will be compared to the 'self' properties.
-        :param sample_rate: sample rate; if the value is None, the target will be compared to the 'self' properties.
-        :param sample_format: if the value is None, the target will be compared to the 'self' properties.
-        :return: returns only objects that need to be synchronized.
+        :param target: Targets to sync. wrapped object\s
+        :param nchannels: Number of channels (default: `None`); if the value is None, the target will be compared to the 'self' properties.
+        :param sample_rate: Sample rate (default: `None`); if the value is None, the target will be compared to the 'self' properties.
+        :param sample_format: Sample format (default: `SampleFormat.UNKNOWN`); if the value is None, the target will be compared to the 'self' properties.
+
+        :return: only objects that need to be synchronized.
         '''
-        return self._syncable(*target, nchannels=nchannels, sample_rate=sample_rate, sample_format_id=sample_format.value)
+        return self._syncable(*target, nchannels=nchannels, sample_rate=sample_rate, sample_format_id=sample_format)
 
 
     def sync(self,
             *targets,
             nchannels: int=None,
             sample_rate: int=None,
-            sample_format: SampleFormat=SampleFormat.formatUnknown,
+            sample_format: SampleFormat=SampleFormat.UNKNOWN,
             output='wrapped'):
         '''
-        Synchronizes targets in the Wrap object format with the specified properties
-        :param targets: wrapped object\s
-        :param nchannels: number of channels; if the value is None, the target will be synced to the 'self' properties.
-        :param sample_rate: if the value is None, the target will be synced to the 'self' properties.
+        Synchronizes audio across multiple records. Synchronizes targets in the Wrap object format with the specified properties.
+
+        :param targets: Records to sync. wrapped object\s.
+        :param nchannels: Number of channels (default: `None`); if the value is None, the target will be synced to the 'self' properties.
+        :param sample_rate: Sample rate (default: `None`); if the value is None, the target will be synced to the 'self' properties.
         :param sample_format: if the value is None, the target will be synced to the 'self' properties.
         :param output: can be 'wrapped', 'series' or 'ndarray_data'
-        :return: returns synchronized objects.
+
+        :return: synchronized objects.
         '''
         nchannels = nchannels if nchannels else self._nchannels
-        sample_format = self._sample_format if sample_format == SampleFormat.formatUnknown else sample_format.value
+        sample_format = self._sample_format if sample_format == SampleFormat.UNKNOWN else sample_format
         sample_rate = sample_rate if sample_rate else self._sample_rate
 
         out_type = 'ndarray' if output.startswith('n') else 'byte'
@@ -1046,7 +902,7 @@ class Master:
         for record in targets:
             record: AudioMetadata = record.get_data().copy()
             assert isinstance(record, AudioMetadata)
-            main_file: io.BufferedRandom = record['o']
+            main_file: BufferedRandom = record['o']
             main_seek = main_file.tell(), 0
             record['o'] = main_file.read()
             main_file.seek(*main_seek)
@@ -1064,9 +920,9 @@ class Master:
 
     def del_record(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator]):
         '''
-        This function is used to delete a record from the internal database.
-        :param name Union[str, AudioMetadata]: preloaded record.
-        :return: None
+        Deletes a record from the local database.
+
+        :param record: Record to delete (str, AudioMetadata, Wrap, or WrapGenerator).
         '''
 
         if type(record) is AudioMetadata or type(record) is Wrap or type(record) is WrapGenerator:
@@ -1104,15 +960,38 @@ class Master:
 
         gc.collect()
 
+    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str = './', format: FileFormat = FileFormat.UNKNOWN, quality: float = 0.5, bitrate: int = 128):
+        '''
+        Exports a record to a file in WAV, MP3, FLAC, or VORBIS format. The output format can be specified either through the `format` 
+        argument or derived from the file extension in the `file_path`. If a file extension ('.wav', '.mp3', '.flac', or '.ogg') is 
+        included in `file_path`, it takes precedence over the `format` argument. If no extension is provided, the 
+        `format` argument is used, defaulting to WAV if set to FileFormat.UNKNOWN. The exported file is saved at the 
+        specified `file_path`.
 
-    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str='./'):
+        :param record: Record to export (str, AudioMetadata, Wrap, or WrapGenerator).
+                    - str: Path to a file to be loaded and exported.
+                    - AudioMetadata: A metadata object containing audio data.
+                    - Wrap / WrapGenerator: Objects that wrap or generate the audio data.
+        :param file_path: Path to save the exported file (default: './').
+                        - A new filename can be specified at the end of the path.
+                        - If a valid file extension ('.wav', '.mp3', '.flac', or '.ogg') is provided, it determines the output format, overriding the `format` argument.
+                        - If no extension is included and the path is set to './', the name of the record is used.
+        :param format: Output format (FileFormat.WAV, FileFormat.MP3, FileFormat.FLAC, or FileFormat.VORBIS). Defaults to FileFormat.UNKNOWN, 
+                    which results in WAV being chosen unless a valid extension is provided in `file_path`.
+        :param quality: Quality setting for encoding (default: 0.5).
+                        - For WAV: Ignored
+                        - For MP3: Converted to scale 0-9 (0 highest, 9 lowest)
+                        - For FLAC: Converted to scale 0-8 (0 fastest/lowest, 8 slowest/highest)
+                        - For VORBIS: Used directly (0.0 lowest, 1.0 highest)
+        :param bitrate: Bitrate for MP3 encoding in kbps (default: 128). Only used if the format is MP3.
+        :return: None
+
+        Raises:
+        - TypeError: Raised if `record` is not one of the expected types (str, AudioMetadata, Wrap, or WrapGenerator).
+        - ValueError: Raised if an unsupported format is provided.
         '''
-        Convert the record to the wav audio format.
-        :param record: record can be the name of registered record, an AudioMetadata or an wrap object
-        :param file_path: The name or path of the wav file(auto detection).
-        A new name for the record to be converted can be placed at the end of the address.
-        :return:None
-        '''
+
+        file_path = file_path.strip()
         rec_type = type(record)
         if rec_type is str:
             record = self.load(record, series=True)
@@ -1122,51 +1001,107 @@ class Master:
             pass
         else:
             raise TypeError('please control the type of record')
-
+        
         p0 = max(file_path.rfind('\\'), file_path.rfind('/'))
         p1 = file_path.rfind('.')
         if p0 < 0:
             p0 = 0
-
         if p1 <= 0:
             p1 = None
-
-        if (p0 == len(file_path) - 1) or len(file_path) < 2:
+        
+        if (not file_path) or (file_path == "./") or (file_path == ".") or (file_path == "/"):
             name = record.name
         else:
             name = file_path[p0 : p1]
+        
+        name_format = None
+        if p1 is not None:
+            name_format = file_path[p1 + 1:].lower()
+            name_format = FileFormat.WAV if name_format == 'wav' else \
+                        FileFormat.MP3 if name_format == 'mp3' else \
+                        FileFormat.FLAC if name_format == 'flac' else \
+                        FileFormat.VORBIS if name_format == 'ogg' else None
 
-        name += '.wav'
+        format = name_format if name_format is not None else FileFormat.WAV if format == FileFormat.UNKNOWN else format
+        supported = {FileFormat.WAV: 'wav', FileFormat.MP3: 'mp3', FileFormat.FLAC: 'flac', FileFormat.VORBIS: 'ogg'}
+        if format not in supported:
+            raise ValueError("Format must be either 'wav', 'mp3', 'flac', or 'ogg'")
+        
+        name += f'.{supported[format]}'
         if p0:
             file_path = file_path[0: p0 + 1] + name
         else:
-            file_path =  name
-            
+            file_path = name
+        
         file = record['o']
         file_pos = file.tell()
         data = file.read()
         file.seek(file_pos, 0)
-
-        write_wav_file(file_path, data,
-                       record['nchannels'], record['frameRate'],
-                       Audio.get_sample_size(record['sampleFormat']))
+        
+        if format == FileFormat.WAV:
+            codec.encode_wav_file(
+                file_path,
+                data,
+                record['sampleFormat'],
+                record['nchannels'],
+                record['frameRate'],
+            )
+        elif format == FileFormat.MP3:
+            mp3_quality = int(quality * 9)  # Convert 0-1 to 0-9 scale
+            codec.encode_mp3_file(
+                file_path,
+                data,
+                record['sampleFormat'],
+                record['nchannels'],
+                record['frameRate'],
+                bitrate,
+                mp3_quality
+            )
+        elif format == FileFormat.FLAC:
+            flac_compression = int(quality * 8)  # Convert 0-1 to 0-8 scale
+            codec.encode_flac_file(
+                file_path,
+                data,
+                record['sampleFormat'],
+                record['nchannels'],
+                record['frameRate'],
+                flac_compression
+            )
+        elif format == FileFormat.VORBIS:
+            codec.encode_vorbis_file(
+                file_path,
+                data,
+                record['sampleFormat'],
+                record['nchannels'],
+                record['frameRate'],
+                quality
+            )
 
 
     def get_record_names(self) -> list:
         '''
-        :return: list of the saved records in database
+        Returns a list of record names in the local database.
         '''
         return list(self._local_database.index())
 
 
 
     def get_nperseg(self):
+        '''
+        Returns the number of segments per window.
+        '''
         return self._nperseg
 
     def get_nchannels(self):
+        '''
+        Returns the number of audio channels.
+        '''
         return self._nchannels
 
     def get_sample_rate(self):
+        '''
+        Returns the sample rate of the master instanse core processor.
+        '''
         return self._sample_rate
 
     def stream(self, record: Union[str, Wrap, AudioMetadata, WrapGenerator],
@@ -1177,7 +1112,7 @@ class Master:
                use_cached_files=True,
                stream_mode:StreamMode = StreamMode.optimized) -> StreamControl:
         '''
-        'Record' playback on the mainstream.
+        Streams a record with optional loop and safe load modes.
 
         Note:
          The audio data maintaining process has additional cached files to reduce dynamic memory usage and improve performance,
@@ -1186,17 +1121,17 @@ class Master:
         Note:
         The recorder can only capture normal streams(Non-optimized streams)
 
-        :param record: It could be a predefined record name, a wrapped record, or an AudioMetadata type object.
-        :param block_mode: This can be true, in which case the current thread will be
-         blocked as long as the stream is busy.
-        :param safe_load: load an audio file and modify it according to the 'Master' attributes(like the frame rate
-        , number oof channels, etc).
-        :param on_stop: An optional callback is called at the end of the streaming process.
-        :param loop_mode: 'Record' playback on the continually.
-        :param use_cached_files: enable additional cache maintaining process.
+        :param record: Record to stream (str, Wrap, AudioMetadata, or WrapGenerator).
+        :param block_mode: Whether to block the stream (default: `False`).
+        :param safe_load: Whether to safely load the record (default: `False`). 
+         load an audio file and modify it according to the 'Master' attributes(like the frame rate, number oof channels, etc).
+        :param on_stop: Callback for when the stream stops (default: `None`).
+        :param loop_mode: Whether to enable loop mode (default: `False`).
+        :param use_cached_files: Whether to use cached files (default: `True`).
+        :param stream_mode: Streaming mode (default: `StreamMode.optimized`).
         :return: A StreamControl object
         '''
-        #loop mode just worked in unblocking mode
+        # loop mode dont workes in blocking mode
         cache_head_check_size = 20
 
         rec_type = type(record)
@@ -1222,7 +1157,7 @@ class Master:
         elif not self._sample_rate == record['frameRate']:
             warnings.warn('Warning, frame rate must be same')
 
-        assert  type(record['o']) is io.BufferedRandom, TypeError('The record object is not standard')
+        assert  type(record['o']) is BufferedRandom, TypeError('The record object is not standard')
         file = record['o']
         file_pos = file.tell()
         tmp = list(file.name)
@@ -1303,42 +1238,39 @@ class Master:
 
     def mute(self):
         '''
-        mute the mainstream
+        Mutes the master main stream.
         '''
         self._master_mute_mode.set()
 
 
     def unmute(self):
+        '''
+        Unmutes the master main stream.
+        '''
         assert not self._exstream_mode.is_set(), "stream is busy"
         self._master_mute_mode.clear()
         self._main_stream.clear()  # Clear any stale data in the stream
 
 
     def is_muted(self):
+        '''
+        Checks if the audio stream is muted.
+        '''
         return self._master_mute_mode.is_set()
 
 
     def echo(self, record: Union[Wrap, str, AudioMetadata, WrapGenerator]=None,
              enable: bool=None, main_output_enable: bool=False):
         """
-        Play "Record" on the operating system's default audio output.
-
-         Note:
-          If the 'record' argument takes the value None,
-          the method controls the standard output activity of the master with the 'enable' argument.
+        Play "Record" on the operating system's default audio output. 
+        its also Enables or disables echoing of recorded data to the system's default output, if record is not provided.
 
         :param record: optional, default None;
-         It could be a predefined record name, a wrapped record,
-         or AudioMetadata.
+         Record to echo (str, Wrap, AudioMetadata, or WrapGenerator) (default: `None`).
+        :param enable: Whether to enable echoing on the master's main stream (default: `None` means trigger mode).
+        :param main_output_enable: Whether to enable main stream's output while playing provided record (default: `False`).
 
-        :param enable: optional, default None(trigger mode)
-            determines that the standard output of the master is enable or not.
-
-        :param main_output_enable:
-            when the 'record' is not None, controls the standard output activity of the master
-        :return: self
         """
-        # Enable echo to system's default output or echo an pre recorded data
         if record is None:
             if enable is None:
                 if self._echo_flag.is_set():
@@ -1375,10 +1307,12 @@ class Master:
                 flg = True
                 self._echo_flag.clear()
 
-            stdout_stream(data,
-                 sample_format=record['sampleFormat'],
-                 nchannels=record['nchannels'],
-                 framerate=record['frameRate'])
+            write_to_default_output(
+                data,
+                record['sampleFormat'],
+                record['nchannels'],
+                record['frameRate']
+            )
 
             if flg:
                 self._echo_flag.set()
@@ -1388,17 +1322,16 @@ class Master:
 
     def disable_echo(self):
         '''
-        disable the main stream echo mode
-        :return: self
+        Disables the echo functionality.
         '''
         return  self.echo(enable=False)
 
 
     def wrap(self, record: Union[str, AudioMetadata]):
         '''
-        Create a Wrap object
-        :param record: preloaded record or AudioMetadata
-        :return: Wrap object
+        wraps a record as a `WrapGenerator`.
+        
+        :param record: Record to wrap (str or AudioMetadata).
         '''
         return WrapGenerator(self, record)
 
@@ -1428,8 +1361,7 @@ class Master:
          The audio data maintaining process has additional cached files to reduce dynamic
          memory usage and improve performance, meaning that, The audio data storage methods
          can have different execution times based on the cached files.
-         This function used to clean additional cache files.
-        :return: self
+         This function used to clean the audio cache by removing cached files.
         '''
         cache = self._cache()
         for i in cache:
@@ -1473,18 +1405,22 @@ class Master:
         self._main_stream.release()
 
     def is_started(self):
-        return self._pystream and True
+        '''
+        Checks if the audio input and output streams are started.
+        '''
+        return self._audio_input_stream and self._audio_output_stream
     
     def get_window(self):
         """
-        Retrieves information about the window used for processing.
+        Retrieves the current window configuration.
 
-        Returns:
-            dict or None: A dictionary containing window information if available, or None if not set.
-                - 'type': str, the type of window.
-                - 'window': window data.
-                - 'overlap': int, the overlap value.
-                - 'size': int, the size of the window.
+        :return: dict or None: A dictionary containing window information if available, or None if not set.
+
+         - 'type': str, the type of window.
+         - 'window': window data.
+         - 'overlap': int, the overlap value.
+         - 'size': int, the size of the window.
+
         """
         if self._window_type:
             return {'type': self._window_type,
@@ -1496,14 +1432,14 @@ class Master:
 
     def disable_std_input(self):
         """
-        Disables standard input stream by acquiring a lock.
+        Disables standard input stream by acquiring the main stream's lock object.
         """
         # if not self._main_stream.locked():
         self._main_stream.acquire()
 
     def enable_std_input(self):
         """
-        Enables standard input stream by clearing the lock.
+        Enables standard input stream by clearing the main stream's lock.
         """
         if self._main_stream.locked():
             self._main_stream.clear()
@@ -1518,26 +1454,31 @@ class Master:
             channel=None
             ):
         """
-        Add a pipeline to the DSP core.
+        Adds a new processing pipeline.
 
         Parameters:
-        - name (str): Indicates the name of the pipeline.
-        - pip (obj): Pipeline object or array of defined pipelines.
-                    Note: In PipelineProcessType.MULTI_STREAM process type, pip must be an array of defined pipelines.
-                    The size of the array must be the same as the number of input channels.
-        - process_type (PipelineProcessType): Type of DSP core process.
-                            Options: PipelineProcessType.MAIN, PipelineProcessType.BRANCH, PipelineProcessType.MULTI_STREAM
-                            PipelineProcessType.MAIN: Processes input data and passes it to activated pipelines (if exist).
-                            PipelineProcessType.BRANCH: Represents a branch pipeline with optional channel parameter.
-                            PipelineProcessType.MULTI_STREAM: Represents a multi_stream pipeline mode. Requires an array of pipelines.
-        - channel (obj): None or [0 to self.nchannel].
-                        The input data passed to the pipeline can be a NumPy array in
-                        (self.nchannel, 2[2 windows in 1 frame], self._nperseg) dimension [None]
-                        or mono (2, self._nperseg) dimension.
-                        In mono mode [self.nchannel = 1 or mono mode activated], channel must be None.
+        -----------
 
-        Returns:
-        - The pipeline must process data and return it to the core with the dimensions as same as the input.
+        - pip (obj): Pipeline object or array of defined pipelines.
+         
+        Note:
+         In **PipelineProcessType.MULTI_STREAM** process type, pip must be an array of defined pipelines.
+         The size of the array must be the same as the number of input channels.
+         
+        - name (str): Indicates the name of the pipeline.
+        - process_type (PipelineProcessType): Type of processing pipeline (default: `PipelineProcessType.MAIN`). it can be:
+         - **PipelineProcessType.MAIN**: Processes input data and passes it to activated pipelines (if exist).
+         - **PipelineProcessType.BRANCH**: Represents a branch pipeline with optional channel parameter.
+         - **PipelineProcessType.MULTI_STREAM**: Represents a multi_stream pipeline mode. Requires an array of pipelines.
+        - channel (obj): None or [0 to self.nchannel].
+         The input data passed to the pipeline can be a NumPy array in
+         (self.nchannel, 2[2 windows in 1 frame], self._nperseg) dimension [None]
+         or mono (2, self._nperseg) dimension.
+         In mono mode [self.nchannel = 1 or mono mode activated], channel must be None.
+        
+        Note:
+         The pipeline must process data and return it to the core with the dimensions as same as the input.
+
         """
         stream_type = 'multithreading'
 
@@ -1554,7 +1495,6 @@ class Master:
             stream = Stream(self, pip, name, stream_type=stream_type, channel=channel, process_type=process_type)
             self.branch_pipe_database.append(stream)
                 
-        # Reserved for future versions
         else:
             pass
 
@@ -1562,6 +1502,9 @@ class Master:
 
 
     def set_pipeline(self, stream: Union[str, Stream]):
+        '''
+        sets the main processing pipeline.
+        '''
         if type(stream) is str:
             name = stream
         else:
@@ -1571,7 +1514,6 @@ class Master:
             # Find the specified pipeline
             pipeline = next(obj for obj in self.main_pipe_database if obj.name == name)
             
-            # Check if the pipeline is a main or multi_stream pipeline
             assert pipeline.process_type in [PipelineProcessType.MAIN, PipelineProcessType.MULTI_STREAM], \
                 f"Pipeline {name} is not a MAIN or MULTI_STREAM type"
 
@@ -1581,7 +1523,6 @@ class Master:
             except ValueError:
                 pass
             
-
             # Acquire the lock before modifying the main stream
             self._main_stream.acquire()
             try:
@@ -1589,20 +1530,16 @@ class Master:
                 self._main_stream.set(pipeline)
                 
                 if pipeline.process_type == PipelineProcessType.MULTI_STREAM:
-                    # Ensure all sub-pipelines are alive in multi_stream mode
                     for i in pipeline.pip:
                         assert i.is_alive(), f'Error: Sub-pipeline in {name} is not Enabled!'
                         i.sync(self._master_sync)
                     
-                    # Set each sub-pipeline as async
                     for i in pipeline.pip:
                         i.aasync()
 
-                # Clear the main stream after setting the new pipeline
                 # self._main_stream.clear()
 
             finally:
-                # Always release the lock, even if an exception occurs
                 self._main_stream.release()
 
         except StopIteration:
@@ -1614,26 +1551,25 @@ class Master:
             raise
 
     def disable_pipeline(self):
+        '''
+        Disables the current processing pipeline.
+        '''
         if self._main_stream and hasattr(self._main_stream, 'pip'):
-            # Stop processing new data
             self._main_stream.acquire()
-            
-            # Clear any remaining data in the pipeline
             if isinstance(self._main_stream.pip, Pipeline):
                 self._main_stream.pip.clear()
-            
-            # Reset the main stream to the normal stream
             self._main_stream.set(self._normal_stream)
             
-            # Clear the main stream
             self._main_stream.clear()
             
-            # Release the lock
             self._main_stream.release()
         else:
             raise ValueError("No pipeline is currently set")             
 
     def clear_pipeline(self):
+        '''
+        Clears all pipeline's data.
+        '''
         if self._main_stream:
             self._main_stream.clear()
         for pipeline in self.main_pipe_database:
@@ -1730,7 +1666,14 @@ class Master:
                window: object = 'hann',
                noverlap: int = None,
                NOLA_check: bool = True):
-        
+        '''
+        Configures the window function for audio processing.
+
+        :param window: The window function (default: `'hann'`).
+        :param noverlap: Number of overlapping segments (default: `None`).
+        :param NOLA_check: Perform the NOLA check (default: `True`).
+        '''
+
         if self._window_type == window and self._noverlap == noverlap:
             return
         else:
@@ -1762,73 +1705,61 @@ class Master:
         self._main_stream.clear()
 
     def get_sample_format(self)->SampleFormat:
+        '''
+        Returns the sample format of the master instance.
+        '''
         return self._sample_format_type
 
     @staticmethod
-    def get_default_input_device_info():
+    def get_default_input_device_info()-> AudioDeviceInfo:
         """
-        Retrieves information about the default input audio device.
+        Returns information about the default input audio device.
 
-        Returns:
-            dict: A dictionary containing information about the default input device.
+        :return AudioDeviceInfo
         """
-        data = audiointerface.get_default_input_device_info()
+        data = AudioStream.get_default_input_device()
         return data
 
     @staticmethod
-    def get_default_output_device_info():
+    def get_default_output_device_info()-> AudioDeviceInfo:
         """
-        Retrieves information about the default output audio device.
+        Returns information about the default output audio device.
 
-        Returns:
-            dict: A dictionary containing information about the default output device.
+        :return AudioDeviceInfo
         """
-        data = audiointerface.get_default_output_device_info()
+        data = AudioStream.get_default_output_device()
         return data
     
     @staticmethod
-    def get_device_count():
+    def get_device_count()-> int:
         """
-        Gets the total number of available audio devices.
-
-        Returns:
-            int: The number of available audio devices.
+        Returns the number of available audio devices.
         """
-        data = audiointerface.get_device_count()
+        data = AudioStream.get_device_count()
         return data
     
     @staticmethod
-    def get_device_info_by_index(index: int):
+    def get_device_info_by_index(index: int)-> AudioDeviceInfo:
         """
-        Retrieves information about an audio device based on its index.
+        Returns information about a specific audio device by index.
 
-        Args:
-            index (int): The index of the audio device.
+        :param index: The index of the audio device (int).
 
-        Returns:
-            dict: A dictionary containing information about the specified audio device.
+        :return AudioDeviceInfo
         """
-        data = audiointerface.get_device_info_by_index(int(index))
+        data = AudioStream.get_device_info_by_index(int(index))
         return data
     
     @staticmethod
     def get_input_devices():
         """
-        Gets information about all available input audio devices.
-
-        Returns:
-            dict: A dictionary containing information about each available input device.
+        Returns a list of available input devices.
         """
-        return audiointerface.get_input_devices()
+        return AudioStream.get_input_devices()
 
     @staticmethod
     def get_output_devices():
         """
-        Gets information about all available output audio devices.
-
-        Returns:
-            dict: A dictionary containing information about each available output device.
+        Returns a list of available output devices.
         """
-        return audiointerface.get_output_devices()
-
-    
+        return AudioStream.get_output_devices()
