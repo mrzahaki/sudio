@@ -144,8 +144,8 @@ if(MSVC)
     target_compile_options(sudio_io PRIVATE /EHsc /MP /bigobj)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else()
-    target_compile_options(sudio_io PRIVATE -O3 -Wall -Wextra)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    target_compile_options(sudio_io PRIVATE -O3 -Wall -Wextra -fPIC)
+    
 endif()
 
 set_target_properties(sudio_io PROPERTIES
