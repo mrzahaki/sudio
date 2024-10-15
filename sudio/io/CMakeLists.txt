@@ -6,16 +6,16 @@ project(sudio_io LANGUAGES CXX C)
 include(FetchContent)
 
 
+set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio")
     FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
         GIT_TAG 0.11.21
     )
-    set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
+    FetchContent_Populate(miniaudio)
 else()
     message(STATUS "Using existing MiniAudio in /miniaudio")
-    set(MINIAUDIO_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/miniaudio/extras/miniaudio_split")
 endif()
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build PortAudio as a static library")
@@ -111,19 +111,15 @@ endif()
 
 
 
-# Create a separate target for MiniAudio
-add_library(miniaudio STATIC ${MINIAUDIO_SOURCE_DIR}/miniaudio.c)
-target_include_directories(miniaudio PUBLIC ${MINIAUDIO_SOURCE_DIR})
-target_compile_definitions(
-    miniaudio 
-    PRIVATE 
-    MINIAUDIO_IMPLEMENTATION
-    )
+add_library(miniaudio INTERFACE)
+target_include_directories(miniaudio INTERFACE ${MINIAUDIO_SOURCE_DIR})
+target_compile_definitions(miniaudio INTERFACE MINIAUDIO_IMPLEMENTATION)
 
 pybind11_add_module(sudio_io
     src/codec.cpp
     src/stdstream.cpp
     src/suiobind.cpp
+    ${MINIAUDIO_SOURCE_DIR}/miniaudio.c
 )
 
 # Include directories
