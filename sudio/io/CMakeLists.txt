@@ -145,8 +145,11 @@ if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
 else()
     target_compile_options(sudio_io PRIVATE -O3 -Wall -Wextra -fPIC)
-    
 endif()
+
+set_target_properties(miniaudio PortAudio mp3lame ${OGG_LIBRARY} FLAC vorbis vorbisenc vorbisfile
+PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 set_target_properties(sudio_io PROPERTIES
     PREFIX ""
