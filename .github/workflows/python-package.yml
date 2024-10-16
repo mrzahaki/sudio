@@ -1,12 +1,13 @@
 name: Build and Publish Python Package
 
 on:
-  push:
-    branches: [ "Master" ]
-    tags:
-      - 'v*'
-  pull_request:
-    branches: [ "Master" ]
+  # push:
+  #   branches: [ "Master" ]
+  #   tags:
+  #     - 'v*'
+  # pull_request:
+  #   branches: [ "Master" ]
+  workflow_dispatch:
 
 jobs:
   build_wheels:
