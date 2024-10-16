@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../build/lib.win-amd64-cpython-311/sudio'))
+sys.path.insert(0, os.path.abspath('../sudio'))
 
 project = 'sudio'
 copyright = '2024, mrzahaki'
