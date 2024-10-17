@@ -29,10 +29,27 @@ jobs:
     - name: Get version from pyproject.toml
       id: get_version
       run: |
-        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['tool']['poetry']['version'])")
+        VERSION=$(python -c "
+        import toml
+        import sys
+
+        try:
+            data = toml.load('pyproject.toml')
+            if 'tool' in data and 'poetry' in data['tool']:
+                version = data['tool']['poetry']['version']
+            elif 'project' in data:
+                version = data['project']['version']
+            else:
+                raise KeyError('Unable to find version in pyproject.toml')
+            print(version)
+        except Exception as e:
+            print(f'Error: {str(e)}', file=sys.stderr)
+            sys.exit(1)
+        ")
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Create and push tag
+      if: steps.get_version.outputs.VERSION
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
@@ -40,7 +57,7 @@ jobs:
         git push origin v${{ steps.get_version.outputs.VERSION }}
 
     - name: Create GitHub Release
-      if: ${{ inputs.create_release }}
+      if: ${{ inputs.create_release && steps.get_version.outputs.VERSION }}
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ steps.get_version.outputs.VERSION }}
@@ -52,14 +69,17 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build source distribution
+      if: steps.get_version.outputs.VERSION
       run: |
         pip install build
         python -m build --sdist
 
     - name: Create source code ZIP
+      if: steps.get_version.outputs.VERSION
       run: git archive -o source_code.zip HEAD
 
     - name: Upload artifacts
+      if: steps.get_version.outputs.VERSION
       uses: actions/upload-artifact@v4
       with:
         name: release-artifacts
