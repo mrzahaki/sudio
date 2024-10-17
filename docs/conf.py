@@ -1,5 +1,6 @@
 import os
 import sys
+from sphinx.ext.autodoc import importer
 
 sys.path.insert(0, os.path.abspath('../sudio'))
 
@@ -50,3 +51,10 @@ primary_domain = 'cpp'
 highlight_language = 'cpp'
 html_show_sourcelink = False
 
+def custom_import(self, modname):
+    try:
+        return importer._builtin_import(modname)
+    except ImportError:
+        return None
+
+importer._builtin_import = custom_import
