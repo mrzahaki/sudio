@@ -45,7 +45,7 @@ jobs:
         path: dist/*.tar.gz
 
     - name: Upload source code ZIP
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: source-code-zip
         path: source_code.zip
