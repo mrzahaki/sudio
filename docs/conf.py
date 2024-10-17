@@ -2,7 +2,7 @@ import os
 import sys
 from sphinx.ext.autodoc import importer
 
-sys.path.insert(0, os.path.abspath('../sudio'))
+sys.path.insert(0, os.path.abspath('..'))
 
 project = 'sudio'
 copyright = '2024, mrzahaki'
