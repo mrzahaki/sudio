@@ -21,19 +21,6 @@ on:
         required: true
         type: boolean
         default: false
-      python_versions:
-        description: 'Python versions to build'
-        required: true
-        type: choice
-        options:
-          - 'cp310,cp311,cp312,pp310,cp313,cp313t'
-          - 'cp310'
-          - 'cp311'
-          - 'cp312'
-          - 'pp310'
-          - 'cp313'
-          - 'cp313t'
-        default: 'cp310,cp311,cp312,pp310,cp313,cp313t'
 
 jobs:
   extract_version:
@@ -86,7 +73,7 @@ jobs:
           - [macos-14, macosx_arm64, accelerate]
           - [windows-2019, win_amd64, ""]
           - [windows-2019, win32, ""]
-        python: ${{ fromJson('["' + join(github.event.inputs.python_versions, '","') + '"]') }}
+        python: ["cp310", "cp311", "cp312", "pp310", "cp313", "cp313t"]
         exclude:
           - buildplat: [windows-2019, win32, ""]
             python: "pp310"
