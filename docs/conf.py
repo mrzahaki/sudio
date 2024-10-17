@@ -50,5 +50,5 @@ breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp', '.hpp']
 primary_domain = 'cpp'
 highlight_language = 'cpp'
 html_show_sourcelink = False
-autodoc_mock_imports = ['sudio.suio', 'sudio.io']
+autodoc_mock_imports = ['sudio.suio', 'sudio.io', 'scipy', 'numpy']
 
