@@ -1,4 +1,4 @@
-name: Flexible Build, Release, and Tag
+name: Build
 on:
   workflow_dispatch:
     inputs:
