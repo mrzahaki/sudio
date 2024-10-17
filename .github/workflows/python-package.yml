@@ -1,37 +1,88 @@
-name: Build
-
+name: Flexible Build, Release, and Tag
 on:
-  # push:
-  #   branches: [ "Master" ]
-  #   tags:
-  #     - 'v*'
-  # pull_request:
-  #   branches: [ "Master" ]
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Type of build to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - wheels
+          - sdist
+      create_release:
+        description: 'Create a new release'
+        required: true
+        type: boolean
+        default: false
+      upload_to_pypi:
+        description: 'Upload to PyPI'
+        required: true
+        type: boolean
+        default: false
+      python_versions:
+        description: 'Python versions to build (comma-separated)'
+        required: true
+        default: 'cp310,cp311,cp312,pp310,cp313,cp313t'
+        type: string
+
+env:
+  DEFAULT_PYTHON_VERSIONS: cp310,cp311,cp312,pp310,cp313,cp313t
 
 jobs:
+  extract_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.VERSION }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install toml
+    - name: Get version from pyproject.toml
+      id: get_version
+      run: |
+        VERSION=$(python -c "
+        import toml
+        import sys
+        try:
+            data = toml.load('pyproject.toml')
+            if 'tool' in data and 'poetry' in data['tool']:
+                version = data['tool']['poetry']['version']
+            elif 'project' in data:
+                version = data['project']['version']
+            else:
+                raise KeyError('Unable to find version in pyproject.toml')
+            print(version)
+        except Exception as e:
+            print(f'Error: {str(e)}', file=sys.stderr)
+            sys.exit(1)
+        ")
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
   build_wheels:
     name: Build wheel ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
     runs-on: ${{ matrix.buildplat[0] }}
+    if: github.event.inputs.build_type == 'all' || github.event.inputs.build_type == 'wheels'
     strategy:
-      # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        # Github Actions doesn't support pairing matrix values together, let's improvise
-        # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
           - [ubuntu-22.04, musllinux_x86_64, ""]
           - [macos-13, macosx_x86_64, openblas]
-          
-          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
           - [macos-13, macosx_x86_64, accelerate]
-          - [macos-14, macosx_arm64, accelerate]  # always use accelerate
+          - [macos-14, macosx_arm64, accelerate]
           - [windows-2019, win_amd64, ""]
           - [windows-2019, win32, ""]
-        python: ["cp310", "cp311", "cp312", "pp310", "cp313", "cp313t"]
+        python: ${{ fromJson(format('[{0}]', github.event.inputs.python_versions || env.DEFAULT_PYTHON_VERSIONS)) }}
         exclude:
-          # Don't build PyPy 32-bit windows
           - buildplat: [windows-2019, win32, ""]
             python: "pp310"
           - buildplat: [ ubuntu-22.04, musllinux_x86_64, "" ]
@@ -42,26 +93,19 @@ jobs:
             python: "cp313t"
           - buildplat: [ windows-2019, win32, "" ]
             python: "cp313t"
-          - buildplat: [ macos13, macosx_x86_64, openblas ]
+          - buildplat: [ macos-13, macosx_x86_64, openblas ]
             python: "cp313t"
 
     steps:
-    - uses: actions/checkout@v4      
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.10'
-
-    - name: Print Python version info
-      run: |
-        python --version
-        python -c "import sys; print(sys.executable)"
-
     - name: Install cibuildwheel
       run: |
         python -m pip install --upgrade pip
         python -m pip install cibuildwheel==2.16.2
-
     - name: Build wheels
       run: |
         python -m cibuildwheel --output-dir wheelhouse
@@ -69,14 +113,15 @@ jobs:
         CIBW_SKIP: cp36-* pp*
         CIBW_BEFORE_BUILD: >
           pip install cmake setuptools_scm[toml] wheel pybind11
-
     - uses: actions/upload-artifact@v3
       with:
+        name: wheels
         path: ./wheelhouse/*.whl
         
   build_sdist:
     name: Build sdist
     runs-on: ubuntu-latest
+    if: github.event.inputs.build_type == 'all' || github.event.inputs.build_type == 'sdist'
     
     steps:
     - uses: actions/checkout@v4
@@ -97,15 +142,47 @@ jobs:
         
     - uses: actions/upload-artifact@v3
       with:
+        name: sdist
         path: ./dist/*
-    
-  upload_pypi:
-    needs: [build_wheels]
+
+  create_release:
+    needs: [extract_version, build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event.inputs.create_release == 'true'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: dist
+    - name: Create and push tag
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git tag v${{ needs.extract_version.outputs.version }}
+        git push origin v${{ needs.extract_version.outputs.version }}
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ needs.extract_version.outputs.version }}
+        name: Release v${{ needs.extract_version.outputs.version }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          dist/**/*.whl
+          dist/**/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  upload_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.upload_to_pypi == 'true'
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: artifact
         path: dist
     
     - name: List Build contents
@@ -116,4 +193,3 @@ jobs:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
         skip_existing: true
-        
