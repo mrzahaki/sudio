@@ -1,51 +1,69 @@
-name: Create Release
+name: Create Release Tag
 
 on:
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
-  create-release:
+  create-release-tag:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4  
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel
+        pip install toml
 
     - name: Get version from pyproject.toml
       id: get_version
       run: |
-        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['tool.poetry']['version'])")
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['tool']['poetry']['version'])")
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-    - name: Create tag
+    - name: Create and push tag
       run: |
-        git tag v${{ env.VERSION }}
-        git push origin v${{ env.VERSION }}
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git tag v${{ steps.get_version.outputs.VERSION }}
+        git push origin v${{ steps.get_version.outputs.VERSION }}
+
+    - name: Create GitHub Release
+      if: ${{ inputs.create_release }}
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.get_version.outputs.VERSION }}
+        name: Release v${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build source distribution
-      run: python setup.py sdist
+      run: |
+        pip install build
+        python -m build --sdist
 
-    - name: Create ZIP archive of source code
+    - name: Create source code ZIP
       run: git archive -o source_code.zip HEAD
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: source-distribution
-        path: dist/*.tar.gz
-
-    - name: Upload source code ZIP
-      uses: actions/upload-artifact@v3
-      with:
-        name: source-code-zip
-        path: source_code.zip
+        name: release-artifacts
+        path: |
+          dist/*.tar.gz
+          source_code.zip
+        if-no-files-found: error
