@@ -51,7 +51,7 @@ For detailed documentation and examples, visit the [Sudio Documentation](http://
 
 ## 🤝 Contributing
 
-Sudio is like a symphony in progress, and we'd love for you to join the orchestra! If you're interested in contributing, please check out our [contribution guidelines](CONTRIBUTING.md).
+Sudio is like a symphony in progress, and we'd love for you to join the orchestra! If you're interested in contributing, please check out our [contribution guidelines](https://github.com/mrzahaki/sudio/blob/Master/CONTRIBUTING.md). You can access the source code here at [Sudio GitHub Repository](https://github.com/mrzahaki/sudio).
 
 ## 💖 Support Sudio
 
@@ -61,7 +61,7 @@ If Sudio has been helpful to you, consider supporting its development:
 
 ## 📄 License
 
-Sudio is released under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+Sudio is released under the Apache License 2.0. See the [LICENSE](https://github.com/mrzahaki/sudio/blob/Master/LICENSE) file for details.
 
 ---
 
