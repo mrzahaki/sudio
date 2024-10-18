@@ -21,4 +21,4 @@ Latest PyPI stable release
 
 .. code-block:: bash
 
-    pip install sudio
+    pip install sudio --upgrade
