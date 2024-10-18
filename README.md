@@ -18,7 +18,7 @@ Sudio is an open-source digital audio processing library that offers advanced fu
 Install Sudio using pip:
 
 ```bash
-pip install sudio
+pip install sudio --upgrade
 ```
 
 ### Basic Usage
