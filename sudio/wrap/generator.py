@@ -19,13 +19,13 @@ from sudio.io import SampleFormat
 from sudio.metadata import AudioMetadata
 import numpy as np
 
-class WrapGenerator:
+class Generator:
     # Class variable to store the name
     name = Name()
 
     def __init__(self, master, record):
         '''
-        Initialize the WrapGenerator instance.
+        Initialize the Generator instance.
 
         Args:
             master: The master instance.
@@ -80,7 +80,7 @@ class WrapGenerator:
                  safe_load: bool = True
                  ):
         '''
-        Call the WrapGenerator instance, creating a new cache file and a new record.
+        Call the Generator instance, creating a new cache file and a new record.
 
         Args:
             sync_sample_format_id: Sync the sample format ID.
@@ -107,7 +107,7 @@ class WrapGenerator:
 
     def get_data(self) -> AudioMetadata:
         '''
-        Get the data of the WrapGenerator instance.
+        Get the data of the Generator instance.
 
         Returns:
             AudioMetadata: The data.
@@ -140,7 +140,7 @@ class WrapGenerator:
 
     def set_data(self, data):
         '''
-        Set the data of the WrapGenerator instance.
+        Set the data of the Generator instance.
 
         Args:
             data: The data to be set.
@@ -149,7 +149,7 @@ class WrapGenerator:
 
     def get_sample_format(self) -> SampleFormat:
         '''
-        Get the sample format of the WrapGenerator instance.
+        Get the sample format of the Generator instance.
 
         Returns:
             SampleFormat: The sample format.
@@ -158,7 +158,7 @@ class WrapGenerator:
 
     def get_sample_width(self) -> int:
         '''
-        Get the sample width of the WrapGenerator instance.
+        Get the sample width of the Generator instance.
 
         Returns:
             int: The sample width.
@@ -167,7 +167,7 @@ class WrapGenerator:
 
     def get_master(self):
         '''
-        Get the master of the WrapGenerator instance.
+        Get the master of the Generator instance.
 
         Returns:
             The master.
@@ -176,7 +176,7 @@ class WrapGenerator:
 
     def get_size(self) -> int:
         '''
-        Get the size of the WrapGenerator instance.
+        Get the size of the Generator instance.
 
         Returns:
             int: The size.
@@ -185,7 +185,7 @@ class WrapGenerator:
 
     def get_cache_size(self) -> int:
         '''
-        Get the cache size of the WrapGenerator instance.
+        Get the cache size of the Generator instance.
 
         Returns:
             int: The cache size.
@@ -194,7 +194,7 @@ class WrapGenerator:
 
     def get_sample_rate(self) -> int:
         '''
-        Get the frame rate of the WrapGenerator instance.
+        Get the frame rate of the Generator instance.
 
         Returns:
             int: The frame rate.
@@ -203,7 +203,7 @@ class WrapGenerator:
 
     def get_nchannels(self) -> int:
         '''
-        Get the number of channels of the WrapGenerator instance.
+        Get the number of channels of the Generator instance.
 
         Returns:
             int: The number of channels.
@@ -212,7 +212,7 @@ class WrapGenerator:
 
     def get_duration(self) -> float:
         '''
-        Get the duration of the WrapGenerator instance.
+        Get the duration of the Generator instance.
 
         Returns:
             float: The duration.
@@ -227,10 +227,10 @@ class WrapGenerator:
              safe_load: bool = True
              ):
         '''
-        Join multiple WrapGenerators.
+        Join multiple Generators.
 
         Args:
-            *other: Other WrapGenerators.
+            *other: Other Generators.
             sync_sample_format: Sync the sample format.
             sync_nchannels: Sync the number of channels.
             sync_sample_rate: Sync the sample rate.
@@ -246,7 +246,7 @@ class WrapGenerator:
 
     def __getitem__(self, item):
         '''
-        Get an item from the WrapGenerator.
+        Get an item from the Generator.
 
         Args:
             item: The item to get.
@@ -258,7 +258,7 @@ class WrapGenerator:
 
     def __del__(self):
         '''
-        Delete the WrapGenerator instance.
+        Delete the Generator instance.
         '''
         if not self._file.closed:
             self._file.close()
@@ -276,16 +276,16 @@ class WrapGenerator:
 
     def __str__(self):
         '''
-        Get a string representation of the WrapGenerator instance.
+        Get a string representation of the Generator instance.
 
         Returns:
             str: The string representation.
         '''
-        return 'WrapGenerator object of {}'.format(self._rec.name)
+        return 'Generator object of {}'.format(self._rec.name)
 
     def __mul__(self, scale):
         '''
-        Multiply the WrapGenerator instance by a scale.
+        Multiply the Generator instance by a scale.
 
         Args:
             scale: The scale.
@@ -297,7 +297,7 @@ class WrapGenerator:
 
     def __truediv__(self, scale):
         '''
-        Divide the WrapGenerator instance by a scale.
+        Divide the Generator instance by a scale.
 
         Args:
             scale: The scale.
@@ -309,7 +309,7 @@ class WrapGenerator:
 
     def __pow__(self, power, modulo=None):
         '''
-        Raise the WrapGenerator instance to the power.
+        Raise the Generator instance to the power.
 
         Args:
             power: The power.
@@ -322,7 +322,7 @@ class WrapGenerator:
 
     def __add__(self, other):
         '''
-        Add another object to the WrapGenerator.
+        Add another object to the Generator.
 
         Args:
             other: The other object.
@@ -334,7 +334,7 @@ class WrapGenerator:
 
     def __sub__(self, other):
         '''
-        Subtract another object from the WrapGenerator.
+        Subtract another object from the Generator.
 
         Args:
             other: The other object.

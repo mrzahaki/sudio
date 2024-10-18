@@ -116,6 +116,33 @@ class Wrap:
                                                       self.sample_width)
         self._packed = True
 
+        # Initialize the data directly here instead of requiring [:] later
+        try:
+            # Read data from generator
+            with self._generator.get() as generator:
+                data = generator.read()
+            
+            # Process and write the data to cache file
+            with self.get(self._parent.__class__.CACHE_INFO, 0) as file:
+                file.truncate()
+                file.write(data)
+                file.flush()
+                self._data = file
+
+            # Initialize by processing the entire data range
+            self._data = self._time_slice((None, None, None))
+            
+            # Write processed data back to cache
+            if self._packed:
+                with self.get(self._parent.__class__.CACHE_INFO, 0) as file:
+                    file.truncate()
+                    file.write(self._to_buffer(self._data))
+                    file.flush()
+                    self._data = file
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize wrapped data: {str(e)}")
+
     def get_sample_format(self) -> SampleFormat:
         """
         Get the sample format of the audio data.

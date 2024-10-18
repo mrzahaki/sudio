@@ -38,7 +38,7 @@ sudio/io/lame/
 sudio/io/flac/
 sudio/io/ogg/
 sudio/io/vorbis/
-docs/_build/doctrees
+docs/_build
 docs/doxyoutput
 docs/api
 

@@ -158,19 +158,9 @@ set_target_properties(sudio_io PROPERTIES
 )
 
 
-set_target_properties(
-    miniaudio 
-    PortAudio 
-    mp3lame 
-    ${OGG_LIBRARY} 
-    FLAC 
-    vorbis 
-    vorbisenc 
-    vorbisfile
-    PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set(
+    SUDIO_IO_TARGETS
 
-
-target_link_libraries(sudio_io PRIVATE
     miniaudio
     PortAudio
     mp3lame
@@ -179,6 +169,15 @@ target_link_libraries(sudio_io PRIVATE
     vorbis
     vorbisenc
     vorbisfile
+    )
+
+set_target_properties(
+    ${SUDIO_IO_TARGETS} 
+    PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+
+target_link_libraries(sudio_io PRIVATE
+    ${SUDIO_IO_TARGETS} 
     ${Python_LIBRARIES}
 )
 

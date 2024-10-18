@@ -143,28 +143,19 @@ Custom Fade-In and Mixing
         data[:, :fade_length] *= fade_in
         song.set_data(data)
 
-    modified = song[:30] + song[:15, :'100'] * 3
+    gain_duration = song.get_duration() / 2
+    modified = song + song[:gain_duration, :'100'] * .3
     su.echo(modified)
     su.export(modified, 'modified_song.ogg')
 
-This example demonstrates advanced audio manipulation techniques:
-
-1. **Fade-In Effect**: We create a 5-second linear fade-in effect.
-
-2. **Data Type Conversion**: The audio data is converted to float32 for precise calculations.
-
-3. **Unpacking and Repacking**: We use ``unpack()`` to access raw audio data, modify it, and then ``set_data()`` to apply changes.
-
-4. **Audio Slicing and Mixing**:
-   
-   - ``song[:30]``: Takes the first 30 seconds of the audio.
-   - ``song[:15, :'100']``: Takes the first 15 seconds and applies a low-pass filter at 100 Hz.
-   - The ``* 3`` multiplies the amplitude of the filtered segment.
-   - These segments are then added together.
-
-5. **Playback and Export**: The modified audio is played and exported to a new file.
-
-This example showcases the library's capability to perform complex audio manipulations, combining time-domain operations (fade-in, slicing) with frequency-domain filtering and amplitude adjustments.
+This example shows how you can tweak audio using the sudio library. 
+We start with a simple 5-second fade-in by gradually increasing the volume from 0 to full over that time. 
+The audio data is unpacked in FLOAT32 for more accurate processing, and after applying the fade, we pack it back. 
+Next, we take the first half of the track, apply a low-pass filter to keep only the lower frequencies, 
+reduce its volume by 70%, and mix it back into the original. 
+The modified track is then played with echo() and saved as an .ogg file. 
+This example highlights how sudio lets you easily combine time-based edits (like fades) with frequency-based tweaks 
+for creative audio manipulation.
 
 Audio Analysis
 ^^^^^^^^^^^^^^
@@ -235,8 +226,8 @@ When adding two Wrap objects, the combined audio will be as long as the longer o
     su = sudio.Master()
 
     # Add two audio files
-    song1 = su.add('song1.mp3')  # Assuming this is a 30-second audio
-    song2 = su.add('song2.mp3')  # Assuming this is a 40-second audio
+    song1 = su.add('song1.mp3') 
+    song2 = su.add('song2.mp3') 
 
     # Add the two songs
     combined = song1 + song2

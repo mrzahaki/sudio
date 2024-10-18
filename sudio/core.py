@@ -19,7 +19,7 @@ import traceback
 
 from sudio.types import StreamMode, RefreshError
 from sudio.types import PipelineProcessType
-from sudio.wrap.wrapgenerator import WrapGenerator
+from sudio.wrap.generator import Generator
 from sudio.wrap.wrap import Wrap
 from sudio.utils.exmath import voltage_to_dBu
 from sudio.utils.strtool import generate_timestamp_name 
@@ -478,7 +478,7 @@ class Master:
         :param sample_rate: sample rate
         :param safe_load: load an audio file and modify it according to the 'Master' attributes.
          (sample rate, sample format, number of channels, etc).
-        :return: WrapGenerator object
+        :return: Generator object
 
         '''
         info = codec.get_file_info(filename)
@@ -554,7 +554,7 @@ class Master:
         -----------
         record : 
             The record to be added. Can be:
-            - A Wrap or WrapGenerator object
+            - A Wrap or Generator object
             - A string representing the path to an audio file
             - AudioMetadata containing record data
 
@@ -565,7 +565,7 @@ class Master:
 
         Returns:
         --------
-        WrapGenerator
+        Generator
             A wrapped version of the added record.
 
         Notes:
@@ -589,7 +589,7 @@ class Master:
         """
         name_type = type(record)
 
-        if name_type is Wrap or name_type is WrapGenerator:
+        if name_type is Wrap or name_type is Generator:
             record = record.get_data()
             return self.add(record, safe_load=safe_load)
 
@@ -670,7 +670,7 @@ class Master:
         name : str, optional
             A custom name for the recorded audio. If None, a timestamp-based name is generated.
 
-        :return: WrapGenerator instance
+        :return: Generator instance
 
 
         Notes:
@@ -751,7 +751,7 @@ class Master:
 
 
     def load(self, name: str, safe_load: bool=True,
-         series: bool=False) -> Union[WrapGenerator, AudioMetadata]:
+         series: bool=False) -> Union[Generator, AudioMetadata]:
         '''
         Loads a record from the local database. Trying to load a record that was previously loaded, 
         outputs a wrapped version of the named record.
@@ -760,7 +760,7 @@ class Master:
         :param safe_load: Flag to safely load the record. if safe load is enabled then load function tries to load a record
          in the local database based on the master settings, like the frame rate and etc (default: `True`).
         :param series:  Return the record as a series (default: `False`).
-        :return: (optional) WrapGenerator object, AudioMetadata
+        :return: (optional) Generator object, AudioMetadata
         
         '''
 
@@ -793,20 +793,20 @@ class Master:
         return self.wrap(rec)
     
 
-    def get_record_info(self, record: Union[str, WrapGenerator, Wrap]) -> dict:
+    def get_record_info(self, record: Union[str, Generator, Wrap]) -> dict:
         '''
         Retrieves metadata for a given record.
 
-        :param record: The record (str, WrapGenerator, or Wrap) whose info is requested.
+        :param record: The record (str, Generator, or Wrap) whose info is requested.
         :return: information about saved record in a dict format ['frameRate'  'sizeInByte' 'duration'
             'nchannels' 'nperseg' 'name'].
         '''
-        if type(record) is WrapGenerator or Wrap:
+        if type(record) is Generator or Wrap:
             name = record.name
         elif type(record) is str:
             name = record
         else:
-            raise TypeError('record must be an instance of WrapGenerator, Wrap or str')
+            raise TypeError('record must be an instance of Generator, Wrap or str')
         
         if name in self._local_database.index():
             rec = self._local_database.get_record(name)
@@ -843,7 +843,7 @@ class Master:
 
         buffer = []
         for rec in target:
-            assert type(rec) is Wrap or type(rec) is WrapGenerator
+            assert type(rec) is Wrap or type(rec) is Generator
             tmp = rec.get_data()
 
             if (not tmp['nchannels'] == nchannels or
@@ -918,14 +918,14 @@ class Master:
     def _sync_record(self, rec):
         return synchronize_audio(rec, self._nchannels, self._sample_rate, self._sample_format)
 
-    def del_record(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator]):
+    def del_record(self, record: Union[str, AudioMetadata, Wrap, Generator]):
         '''
         Deletes a record from the local database.
 
-        :param record: Record to delete (str, AudioMetadata, Wrap, or WrapGenerator).
+        :param record: Record to delete (str, AudioMetadata, Wrap, or Generator).
         '''
 
-        if type(record) is AudioMetadata or type(record) is Wrap or type(record) is WrapGenerator:
+        if type(record) is AudioMetadata or type(record) is Wrap or type(record) is Generator:
             name = record.name
         elif type(record) is str:
             name = record
@@ -960,7 +960,7 @@ class Master:
 
         gc.collect()
 
-    def export(self, record: Union[str, AudioMetadata, Wrap, WrapGenerator], file_path: str = './', format: FileFormat = FileFormat.UNKNOWN, quality: float = 0.5, bitrate: int = 128):
+    def export(self, record: Union[str, AudioMetadata, Wrap, Generator], file_path: str = './', format: FileFormat = FileFormat.UNKNOWN, quality: float = 0.5, bitrate: int = 128):
         '''
         Exports a record to a file in WAV, MP3, FLAC, or VORBIS format. The output format can be specified either through the `format` 
         argument or derived from the file extension in the `file_path`. If a file extension ('.wav', '.mp3', '.flac', or '.ogg') is 
@@ -968,10 +968,10 @@ class Master:
         `format` argument is used, defaulting to WAV if set to FileFormat.UNKNOWN. The exported file is saved at the 
         specified `file_path`.
 
-        :param record: Record to export (str, AudioMetadata, Wrap, or WrapGenerator).
+        :param record: Record to export (str, AudioMetadata, Wrap, or Generator).
                     - str: Path to a file to be loaded and exported.
                     - AudioMetadata: A metadata object containing audio data.
-                    - Wrap / WrapGenerator: Objects that wrap or generate the audio data.
+                    - Wrap / Generator: Objects that wrap or generate the audio data.
         :param file_path: Path to save the exported file (default: './').
                         - A new filename can be specified at the end of the path.
                         - If a valid file extension ('.wav', '.mp3', '.flac', or '.ogg') is provided, it determines the output format, overriding the `format` argument.
@@ -987,7 +987,7 @@ class Master:
         :return: None
 
         Raises:
-        - TypeError: Raised if `record` is not one of the expected types (str, AudioMetadata, Wrap, or WrapGenerator).
+        - TypeError: Raised if `record` is not one of the expected types (str, AudioMetadata, Wrap, or Generator).
         - ValueError: Raised if an unsupported format is provided.
         '''
 
@@ -995,7 +995,7 @@ class Master:
         rec_type = type(record)
         if rec_type is str:
             record = self.load(record, series=True)
-        elif rec_type is Wrap or rec_type is WrapGenerator:
+        elif rec_type is Wrap or rec_type is Generator:
             record = record.get_data()
         elif rec_type is AudioMetadata:
             pass
@@ -1104,7 +1104,7 @@ class Master:
         '''
         return self._sample_rate
 
-    def stream(self, record: Union[str, Wrap, AudioMetadata, WrapGenerator],
+    def stream(self, record: Union[str, Wrap, AudioMetadata, Generator],
                block_mode: bool=False,
                safe_load: bool=False,
                on_stop: callable=None,
@@ -1121,7 +1121,7 @@ class Master:
         Note:
         The recorder can only capture normal streams(Non-optimized streams)
 
-        :param record: Record to stream (str, Wrap, AudioMetadata, or WrapGenerator).
+        :param record: Record to stream (str, Wrap, AudioMetadata, or Generator).
         :param block_mode: Whether to block the stream (default: `False`).
         :param safe_load: Whether to safely load the record (default: `False`). 
          load an audio file and modify it according to the 'Master' attributes(like the frame rate, number oof channels, etc).
@@ -1138,8 +1138,8 @@ class Master:
         if rec_type is str:
             record = self.load(record, series=True)
         else:
-            if rec_type is Wrap or rec_type is WrapGenerator:
-                assert rec_type is WrapGenerator or record.is_packed(), BufferError('The {} is not packed!'.format(record))
+            if rec_type is Wrap or rec_type is Generator:
+                assert rec_type is Generator or record.is_packed(), BufferError('The {} is not packed!'.format(record))
                 record = record.get_data()
 
             elif rec_type is AudioMetadata:
@@ -1259,14 +1259,14 @@ class Master:
         return self._master_mute_mode.is_set()
 
 
-    def echo(self, record: Union[Wrap, str, AudioMetadata, WrapGenerator]=None,
+    def echo(self, record: Union[Wrap, str, AudioMetadata, Generator]=None,
              enable: bool=None, main_output_enable: bool=False):
         """
         Play "Record" on the operating system's default audio output. 
         its also Enables or disables echoing of recorded data to the system's default output, if record is not provided.
 
         :param record: optional, default None;
-         Record to echo (str, Wrap, AudioMetadata, or WrapGenerator) (default: `None`).
+         Record to echo (str, Wrap, AudioMetadata, or Generator) (default: `None`).
         :param enable: Whether to enable echoing on the master's main stream (default: `None` means trigger mode).
         :param main_output_enable: Whether to enable main stream's output while playing provided record (default: `False`).
 
@@ -1284,8 +1284,8 @@ class Master:
             else:
                 self._echo_flag.clear()
         else:
-            if type(record) is Wrap or type(record) is WrapGenerator:
-                assert type(record) is WrapGenerator or record.is_packed()
+            if type(record) is Wrap or type(record) is Generator:
+                assert type(record) is Generator or record.is_packed()
                 record = record.get_data()
             else:
                 if type(record) is str:
@@ -1318,7 +1318,7 @@ class Master:
                 self._echo_flag.set()
 
         # self.clean_cache()
-        # return WrapGenerator(record)
+        # return Generator(record)
 
     def disable_echo(self):
         '''
@@ -1329,11 +1329,11 @@ class Master:
 
     def wrap(self, record: Union[str, AudioMetadata]):
         '''
-        wraps a record as a `WrapGenerator`.
+        wraps a record as a `Generator`.
         
         :param record: Record to wrap (str or AudioMetadata).
         '''
-        return WrapGenerator(self, record)
+        return Generator(self, record)
 
     def _cache(self):
         path = []
