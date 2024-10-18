@@ -144,9 +144,9 @@ Custom Fade-In and Mixing
         song.set_data(data)
 
     gain_duration = song.get_duration() / 2
-    modified = song + song[:gain_duration, :'100'] * .3
-    su.echo(modified)
-    su.export(modified, 'modified_song.ogg')
+    song += song[:gain_duration, :'100'] * .3
+    su.echo(song)
+    su.export(song, 'modified_song.ogg')
 
 This example shows how you can tweak audio using the sudio library. 
 We start with a simple 5-second fade-in by gradually increasing the volume from 0 to full over that time. 
