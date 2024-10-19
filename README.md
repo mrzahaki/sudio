@@ -62,7 +62,3 @@ If Sudio has been helpful to you, consider supporting its development:
 ## 📄 License
 
 Sudio is released under the Apache License 2.0. See the [LICENSE](https://github.com/mrzahaki/sudio/blob/Master/LICENSE) file for details.
-
----
-
-🎵 Let's compose the future of audio processing together with Sudio! 🎶
