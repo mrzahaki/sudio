@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/mrzahaki/sudio/blob/Master/docs/sudio.png" alt="sudio" width="60%" height="60%">
+  <img src="https://raw.githubusercontent.com/mrzahaki/sudio/Master/docs/sudio.png" alt="sudio" width="60%" height="60%">
 </div>
 
 # Sudio 🎵
