@@ -2,11 +2,24 @@
 Welcome to the Sudio 🎵
 =======================
 
+
 ``sudio`` is an **Open-source**, **easy-to-use** digital audio processing library featuring both a **real-time**, **non-real-time** mix/edit platform.
+
+
+.. raw:: html
+   
+   <br>
+
+
+.. image:: https://raw.githubusercontent.com/mrzahaki/sudio/Master/docs/sudio.png
+   :alt: sudio
+   :width: 60%
+   :align: center
+
 
 .. raw:: html
 
-   <br><br><br><br>
+   <br>
    <div align="center"> 🎵 <b>Sudio</b> is like a <b>budding musician</b> finding its rhythm. Your support can help it <b>compose a symphony</b>. 🎶</div>
    <br>
 
