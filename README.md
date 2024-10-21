@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/441386d0-fb4f-44b3-996a-bf3216bf4329" alt="sudio" width="60%" height="60%">
+</div>
+
 # Sudio 🎵
 
 [![PyPI version](https://badge.fury.io/py/sudio.svg)](https://badge.fury.io/py/sudio)
