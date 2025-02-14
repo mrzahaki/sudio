@@ -154,11 +154,9 @@ Get started with `Sudio` processing in minutes using [Google Colab](https://cola
 for detailed documentation and examples, visit the [Sudio Documentation](https://mrzahaki.github.io/sudio/).
 
 
-## 💖 Support Sudio
+## 💖 [Support Sudio](https://donate.webmoney.com/w/OTmd0tU8H4gRUG4eXokeQb)
 
-I don't need your support. The link below is fake! Don't click on it, and don't pay anything. I mean it, just ignore it!
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mrzahaki)
+**Audio software shouldn’t lock you in.** Sudio offers free, open-source tools for developers and creators—built to replace proprietary apps without the fees or restrictions. To stay viable, it relies on community support: code contributions, testing, donations, or simply spreading the word. If open tools matter to you, let’s keep improving them.
 
 ## 📄 License
 
