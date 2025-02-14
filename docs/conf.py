@@ -52,16 +52,18 @@ highlight_language = 'cpp'
 html_show_sourcelink = False
 autodoc_mock_imports = [
     'sudio._suio', 
+    'sudio._rateshift',
+    'sudio.rateshift',
     'sudio.io', 
     'scipy', 
-    'numpy',
+    # 'numpy',
     'sudio.process.fx._tempo',
     'sudio.process.fx._fade_envelope',
     'sudio.process.fx._channel_mixer',
     "sudio.process.fx._pitch_shifter",
     "sudio.utils.math",
-    'sudio._rateshift',
-    'sudio.rateshift',
+    "sudio.generator.tone.sinewave",
+    # "sudio.utils.functional",
     ]
 html_context = {
     "google_analytics_id": "G-RLP20V08DB",

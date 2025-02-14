@@ -1,4 +1,5 @@
-cimport numpy as cnp
+cimport numpy as _np
+import numpy as _np
 
 
 # SUDIO - Audio Processing Platform
@@ -20,9 +21,23 @@ cimport numpy as cnp
 # - GitHub: https://github.com/MrZahaki/sudio
 
 
-
-
 cpdef int find_nearest_divisible(int reference_number, int divisor)
 cpdef int find_nearest_divisor(int num, int divisor) except? -1
 cpdef db2amp(db)
 cpdef amp2db(amp)
+cpdef _np.ndarray normalize(_np.ndarray data, 
+              float peak_level=*, 
+              bint equalize_channels=*, 
+              float dc_offset=*)
+
+
+
+__all__ = [
+    'find_nearest_divisible', 
+    'find_nearest_divisor', 
+    'db2amp', 
+    'amp2db', 
+    'normalize' 
+    ]
+
+    

@@ -20,8 +20,8 @@
 # - GitHub: https://github.com/MrZahaki/sudio
 
 
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 cimport cython
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter1d
@@ -29,7 +29,7 @@ from scipy.signal import sawtooth
 from sudio.utils.math cimport db2amp
 
 
-cpdef np.ndarray[double, ndim=1] generate_envelope(
+cpdef _np.ndarray[double, ndim=1] generate_envelope(
     int envlen,
     FadePreset preset = FadePreset.SMOOTH_ENDS,
     object enable_spline = None,
@@ -45,8 +45,8 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
         int length = buffer_size if buffer_size > 0 else envlen
         double fade_max = db2amp(fade_max_db)
         double fade_min = db2amp(fade_min_db)
-        np.ndarray[double, ndim=1] linear_array = np.linspace(fade_min, fade_max, length)
-        np.ndarray[double, ndim=1] envelope
+        _np.ndarray[double, ndim=1] linear_array = _np.linspace(fade_min, fade_max, length)
+        _np.ndarray[double, ndim=1] envelope
         double sigma = 0.1
         bint use_spline = False
         int fade_attack_samples, fade_release_samples
@@ -97,18 +97,18 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
     assert (length - fade_attack_samples - fade_release_samples) >= 0, f"fade_attack + fade_release should be lower than or equal to one but {fade_attack + fade_release}"
 
     if preset == FadePreset.SMOOTH_ENDS:
-        envelope = np.concatenate([
-            np.linspace(fade_min, fade_max, fade_attack_samples),
-            np.full(length - fade_attack_samples - fade_release_samples, fade_max),
-            np.linspace(fade_max, fade_min, fade_release_samples)
+        envelope = _np.concatenate([
+            _np.linspace(fade_min, fade_max, fade_attack_samples),
+            _np.full(length - fade_attack_samples - fade_release_samples, fade_max),
+            _np.linspace(fade_max, fade_min, fade_release_samples)
         ])
         sigma = .01
 
     elif preset == FadePreset.BELL_CURVE:
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_max),
-            np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
-            np.full(fade_release_samples, fade_min)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_max),
+            _np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
+            _np.full(fade_release_samples, fade_min)
         ])
         use_spline = True
 
@@ -116,12 +116,12 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
         remained = length - fade_attack_samples - fade_release_samples
         r1 = int(remained * 0.15)
         r2 = int(remained * 0.3)
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_max),
-            np.linspace(fade_max, 0.45, r1),
-            np.linspace(0.45, 0.18, r2),
-            np.linspace(0.18, fade_min, remained - r1 - r2),
-            np.full(fade_release_samples, fade_min)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_max),
+            _np.linspace(fade_max, 0.45, r1),
+            _np.linspace(0.45, 0.18, r2),
+            _np.linspace(0.18, fade_min, remained - r1 - r2),
+            _np.full(fade_release_samples, fade_min)
         ])
 
     elif preset == FadePreset.LINEAR_FADE_IN:
@@ -131,10 +131,10 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
         envelope = 1 - linear_array
 
     elif preset == FadePreset.PULSE:
-        envelope = np.hstack((
-                np.linspace(fade_min, fade_max, fade_attack_samples),
-                np.full(length - fade_attack_samples - fade_release_samples, fade_max),
-                np.linspace(fade_max, fade_min, fade_release_samples),
+        envelope = _np.hstack((
+                _np.linspace(fade_min, fade_max, fade_attack_samples),
+                _np.full(length - fade_attack_samples - fade_release_samples, fade_max),
+                _np.linspace(fade_max, fade_min, fade_release_samples),
             ))
         sigma = .2
         use_spline = True
@@ -143,45 +143,45 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
         remained = length - fade_attack_samples - fade_release_samples
         r1 = int(remained * 0.3)
         r2 = int(remained * 0.6)
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_min),
-            np.linspace(fade_min, 0.5, r1),
-            np.linspace(0.5, 0.82, r2),
-            np.linspace(0.82, fade_max, remained - r1 - r2),
-            np.full(fade_release_samples, fade_max)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_min),
+            _np.linspace(fade_min, 0.5, r1),
+            _np.linspace(0.5, 0.82, r2),
+            _np.linspace(0.82, fade_max, remained - r1 - r2),
+            _np.full(fade_release_samples, fade_max)
         ])
 
 
     elif preset == FadePreset.SMOOTH_ATTACK:
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_min),
-            np.linspace(fade_min, fade_max, length - fade_attack_samples - fade_release_samples),
-            np.full(fade_release_samples, fade_max)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_min),
+            _np.linspace(fade_min, fade_max, length - fade_attack_samples - fade_release_samples),
+            _np.full(fade_release_samples, fade_max)
         ])
         use_spline = True
         sigma = 0.13
 
     elif preset == FadePreset.SMOOTH_FADE_IN:
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_min),
-            np.linspace(fade_min, fade_max, length - fade_attack_samples - fade_release_samples),
-            np.full(fade_release_samples, fade_max)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_min),
+            _np.linspace(fade_min, fade_max, length - fade_attack_samples - fade_release_samples),
+            _np.full(fade_release_samples, fade_max)
         ])
         use_spline = True
 
     elif preset == FadePreset.SMOOTH_FADE_OUT:
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_max),
-            np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
-            np.full(fade_release_samples, fade_min)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_max),
+            _np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
+            _np.full(fade_release_samples, fade_min)
         ])
         use_spline = True
 
     elif preset == FadePreset.SMOOTH_RELEASE:
-        envelope = np.concatenate([
-            np.full(fade_attack_samples, fade_max),
-            np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
-            np.full(fade_release_samples, fade_min)
+        envelope = _np.concatenate([
+            _np.full(fade_attack_samples, fade_max),
+            _np.linspace(fade_max, fade_min, length - fade_attack_samples - fade_release_samples),
+            _np.full(fade_release_samples, fade_min)
         ])
         use_spline = True
         sigma = 0.13
@@ -204,7 +204,7 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
         envelope = gaussian_filter1d(envelope, length * sigma)
 
     if envlen != length:
-        x_new = np.linspace(fade_min, fade_max, envlen)
+        x_new = _np.linspace(fade_min, fade_max, envlen)
         envelope = interp1d(linear_array, envelope)(x_new)
 
     return envelope
@@ -212,9 +212,38 @@ cpdef np.ndarray[double, ndim=1] generate_envelope(
 
 
 
-cpdef np.ndarray[double, ndim=1] prepare_envelope(
+cpdef _np.ndarray[double, ndim=1] prepare_envelope(
     int envlen,
-    np.ndarray[double, ndim=1] envelope,
+    _np.ndarray[double, ndim=1] envelope,
+    bint enable_spline = False,
+    double spline_sigma = 0.1,
+    double fade_max = 1.0,
+    double fade_min = 0.0,
+    int buffer_size = 400,
+):
+    cdef:
+        int length = len(envelope)
+        _np.ndarray[double, ndim=1] linear_array = _np.linspace(fade_min, fade_max, length)
+
+    if enable_spline:
+        if length < 100:
+            length = buffer_size
+            new_rep = _np.linspace(fade_min, fade_max, length)
+            envelope = interp1d(linear_array, envelope)(new_rep)
+            linear_array = new_rep
+
+        envelope = gaussian_filter1d(envelope, length * spline_sigma)
+
+    if envlen != length:
+        x_new = _np.linspace(fade_min, fade_max, envlen)
+        envelope = interp1d(linear_array, envelope)(x_new)
+
+    return envelope
+
+
+cpdef _np.ndarray[double, ndim=1] prepare_envelope_db(
+    int envlen,
+    _np.ndarray[double, ndim=1] envelope,
     bint enable_spline = False,
     double spline_sigma = 0.1,
     double fade_max_db = 0.0,
@@ -225,20 +254,14 @@ cpdef np.ndarray[double, ndim=1] prepare_envelope(
         int length = len(envelope)
         double fade_max = db2amp(fade_max_db)
         double fade_min = db2amp(fade_min_db)
-        np.ndarray[double, ndim=1] linear_array = np.linspace(fade_min, fade_max, length)
 
-    if enable_spline:
-        if length < 100:
-            length = buffer_size
-            new_rep = np.linspace(fade_min, fade_max, length)
-            envelope = interp1d(linear_array, envelope)(new_rep)
-            linear_array = new_rep
-
-        envelope = gaussian_filter1d(envelope, length * spline_sigma)
-
-    if envlen != length:
-        x_new = np.linspace(fade_min, fade_max, envlen)
-        envelope = interp1d(linear_array, envelope)(x_new)
-
-    return envelope
+    return prepare_envelope(
+        envlen,
+        envelope,
+        enable_spline,
+        spline_sigma,
+        fade_max,
+        fade_min,
+        buffer_size,
+    )
 

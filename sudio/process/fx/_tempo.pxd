@@ -18,7 +18,7 @@
 
 # - GitHub: https://github.com/MrZahaki/sudio
 
-cimport numpy as np
+cimport numpy as _np
 
 
 # cdef int DEFAULT_SEQUENCE_MS = 82
@@ -26,9 +26,9 @@ cimport numpy as np
 # cdef int DEFAULT_OVERLAP_MS = 12
 
 
-cpdef np.ndarray tempo_cy(
-    np.ndarray input_audio,
-    np.ndarray[double, ndim=1] envelope,
+cpdef _np.ndarray tempo_cy(
+    _np.ndarray input_audio,
+    _np.ndarray[double, ndim=1] envelope,
     int sample_rate=*,
     int sequence_ms=*,
     int seekwindow_ms=*,
@@ -43,8 +43,8 @@ cpdef np.ndarray tempo_cy(
 )
 
 
-cpdef np.ndarray _tempo_cy(
-    np.ndarray input_audio,
+cpdef _np.ndarray _tempo_cy(
+    _np.ndarray input_audio,
     object intp,
     int sample_rate=*,
     int sequence_ms=*,

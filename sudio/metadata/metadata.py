@@ -76,7 +76,7 @@ class AudioMetadata:
         Returns:
         --------
 
-            list: Names of public attributes in the metadata.
+            public attributes in the metadata.
         """
         return [attr for attr in self.__dict__ if not attr.startswith('_')]
 
@@ -87,7 +87,7 @@ class AudioMetadata:
         Returns:
         --------
 
-            AudioMetadata: A new instance with the same attributes.
+           new instance with the same attributes.
         """
         return AudioMetadata(**{k: getattr(self, k) for k in self.keys()})
 
@@ -100,6 +100,6 @@ class AudioMetadata:
         Returns:
         --------
 
-            AudioMetadata: The current metadata instance.
+            current metadata instance.
         """
         return self

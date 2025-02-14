@@ -26,7 +26,7 @@ import numpy as np
 from typing import Union,Tuple
 import platform
 
-from sudio.audiosys.sync import synchronize_audio
+from .sync import synchronize_audio
 from sudio.utils.timed_indexed_string import TimedIndexedString
 from sudio.types import DecodeError
 from sudio.metadata import AudioMetadata

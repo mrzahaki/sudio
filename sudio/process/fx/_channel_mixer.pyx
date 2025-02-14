@@ -21,26 +21,26 @@
 
 
 
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 cimport cython
 
-DTYPE = np.float32
-ctypedef np.float32_t DTYPE_t
+DTYPE = _np.float32
+ctypedef _np.float32_t DTYPE_t
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
 
 def channel_mixer(
-    np.ndarray[DTYPE_t, ndim=2] data, 
-    np.ndarray[DTYPE_t, ndim=2] correlation,
+    _np.ndarray[DTYPE_t, ndim=2] data, 
+    _np.ndarray[DTYPE_t, ndim=2] correlation,
 ):
 
     cdef int nchannels = data.shape[0]
     cdef int nsamples = data.shape[1]
     
-    cdef np.ndarray[DTYPE_t, ndim=2] result = np.zeros((nchannels, nsamples), dtype=DTYPE)
+    cdef _np.ndarray[DTYPE_t, ndim=2] result = _np.zeros((nchannels, nsamples), dtype=DTYPE)
     
     cdef int i, j, k
     cdef DTYPE_t temp

@@ -19,19 +19,19 @@
 # - GitHub: https://github.com/MrZahaki/sudio
 
 
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 cimport cython
 from sudio.process.fx._tempo cimport _tempo_cy
-from sudio.process.fx._fade_envelope cimport prepare_envelope
+from sudio.process.fx._fade_envelope cimport prepare_envelope_db
 from scipy.interpolate import interp1d
 from sudio.rateshift import ConverterType, resample, Resampler
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray pitch_shifter_cy(
-        np.ndarray input_audio, 
-        np.ndarray[double, ndim=1] envelope,
+cpdef _np.ndarray pitch_shifter_cy(
+        _np.ndarray input_audio, 
+        _np.ndarray[double, ndim=1] envelope,
         float ratio=1.0, 
         int sample_rate=44100,
         bint enable_spline=True,
@@ -49,7 +49,7 @@ cpdef np.ndarray pitch_shifter_cy(
 
     if len(envelope) > 1:
         envelope = 1.0 / envelope
-        envelope = prepare_envelope(
+        envelope = prepare_envelope_db(
             envlen,
             envelope,
             enable_spline,
@@ -60,15 +60,15 @@ cpdef np.ndarray pitch_shifter_cy(
         )
     else:
         ratio = 1.0 / ratio
-        envelope = np.full(envlen, ratio, dtype=np.float64)
+        envelope = _np.full(envlen, ratio, dtype=_np.float64)
 
 
     intp = interp1d(
-            np.linspace(0, 1, len(envelope)), 
+            _np.linspace(0, 1, len(envelope)), 
             envelope
         )
     
-    cdef np.ndarray tempo_res = _tempo_cy(
+    cdef _np.ndarray tempo_res = _tempo_cy(
         input_audio,
         intp,
         sample_rate=sample_rate,
@@ -78,22 +78,22 @@ cpdef np.ndarray pitch_shifter_cy(
     )
     
     if tempo_res.ndim == 1:
-        tempo_res = tempo_res[np.newaxis, :]
+        tempo_res = tempo_res[_np.newaxis, :]
 
 
-    cdef np.ndarray[np.float32_t, ndim=2] result
+    cdef _np.ndarray[_np.float32_t, ndim=2] result
     cdef int nchannels = tempo_res.shape[0]
     cdef int samples = tempo_res.shape[1]
     cdef int data_chunk = (sample_rate * frame_length) // 1000
     cdef int total_steps = samples // data_chunk
     cdef int current_pos
     cdef float current_ratio
-    cdef np.ndarray[np.float32_t, ndim=1] frame
-    cdef np.ndarray[np.float32_t, ndim=2] resampled
+    cdef _np.ndarray[_np.float32_t, ndim=1] frame
+    cdef _np.ndarray[_np.float32_t, ndim=2] resampled
 
 
     if len(envelope) > 1:
-        result = np.zeros((nchannels, 0), dtype=np.float32)
+        result = _np.zeros((nchannels, 0), dtype=_np.float32)
         resampler = Resampler(converter_type, nchannels)
         
         for i in range(total_steps):
@@ -104,7 +104,7 @@ cpdef np.ndarray pitch_shifter_cy(
             frame = tempo_res[:, current_pos: current_pos + data_chunk].T.flatten()
             frame = resampler.process(frame, current_ratio, is_last_chunk)
             resampled = frame.reshape(len(frame) // nchannels, nchannels).T
-            result = np.concatenate((result, resampled), axis=1)
+            result = _np.concatenate((result, resampled), axis=1)
     
     else:
         result = resample(
@@ -122,8 +122,8 @@ cpdef np.ndarray pitch_shifter_cy(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray _pitch_shifter_cy(
-        np.ndarray input_audio, 
+cpdef _np.ndarray _pitch_shifter_cy(
+        _np.ndarray input_audio, 
         object intp,
         int sample_rate=44100,
         int frame_length = 85, 
@@ -133,7 +133,7 @@ cpdef np.ndarray _pitch_shifter_cy(
         object converter_type=ConverterType.sinc_fastest
 ):
 
-    cdef np.ndarray tempo_res = _tempo_cy(
+    cdef _np.ndarray tempo_res = _tempo_cy(
         input_audio,
         intp,
         sample_rate=sample_rate,
@@ -143,21 +143,21 @@ cpdef np.ndarray _pitch_shifter_cy(
     )
     
     if tempo_res.ndim == 1:
-        tempo_res = tempo_res[np.newaxis, :]
+        tempo_res = tempo_res[_np.newaxis, :]
 
 
-    cdef np.ndarray[np.float32_t, ndim=2] result
+    cdef _np.ndarray[_np.float32_t, ndim=2] result
     cdef int nchannels = tempo_res.shape[0]
     cdef int samples = tempo_res.shape[1]
     cdef int data_chunk = (sample_rate * frame_length) // 1000
     cdef int total_steps = samples // data_chunk
     cdef int current_pos
     cdef float current_ratio
-    cdef np.ndarray[np.float32_t, ndim=1] frame
-    cdef np.ndarray[np.float32_t, ndim=2] resampled
+    cdef _np.ndarray[_np.float32_t, ndim=1] frame
+    cdef _np.ndarray[_np.float32_t, ndim=2] resampled
 
 
-    result = np.zeros((nchannels, 0), dtype=np.float32)
+    result = _np.zeros((nchannels, 0), dtype=_np.float32)
     resampler = Resampler(converter_type, nchannels)
     
     for i in range(total_steps):
@@ -167,7 +167,7 @@ cpdef np.ndarray _pitch_shifter_cy(
         frame = tempo_res[:, current_pos: current_pos + data_chunk].T.flatten()
         frame = resampler.process(frame, current_ratio, is_last_chunk)
         resampled = frame.reshape(len(frame) // nchannels, nchannels).T
-        result = np.concatenate((result, resampled), axis=1)
+        result = _np.concatenate((result, resampled), axis=1)
     
 
     if nchannels == 1:

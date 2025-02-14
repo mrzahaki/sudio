@@ -23,7 +23,7 @@ import queue
 import time
 from typing import Union
 import traceback
-from sudio.types.pipelineonbusytype import PipelineOnBusyType
+from sudio.types import PipelineOnBusyType
 
 class Pipeline(threading.Thread):
     """

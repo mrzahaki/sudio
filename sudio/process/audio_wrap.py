@@ -26,11 +26,11 @@ from typing import Union
 import warnings
 from enum import Enum, auto
 
-from sudio.types.name import Name
+from sudio.types import Name
 from sudio.io import SampleFormat, get_sample_size
-from sudio.utils.typeconversion import convert_array_type
+from sudio.utils.typeconversion import dtype_converter
 from sudio.utils.strtool import parse_dictionary_string
-from sudio.audiosys.cacheman import write_to_cached_file
+from sudio.audiosys import write_to_cached_file
 from sudio.utils.timed_indexed_string import TimedIndexedString
 from sudio.metadata import AudioMetadata
 from sudio.process.fx._fade_envelope import generate_envelope
@@ -218,10 +218,10 @@ class AudioWrap:
         self._sample_rate = self._rec.frameRate
         self._nchannels = self._rec.nchannels
         self._sample_format = self._rec.sampleFormat
-        self._nperseg = self._rec.nperseg
+        self._nperseg = master._nperseg
         self._sample_type = master._sample_width_format_str
         self.sample_width = get_sample_size(self._rec.sampleFormat)
-        self._data = self._rec['o']
+        self._data = self._rec.o
         
         # state tracking
         self._packed = True
@@ -403,7 +403,7 @@ class AudioWrap:
                 self._data = data
             if not astype == SampleFormat.UNKNOWN:
                 astype_backup = self._sample_format
-                data = convert_array_type(data, astype, source_format=self._sample_format)
+                data = dtype_converter(data, astype, source_format=self._sample_format)
             yield data
 
         finally:
@@ -411,7 +411,7 @@ class AudioWrap:
 
             data = self._data
             if astype_backup is not None:
-                data = convert_array_type(data, astype_backup, source_format=astype)
+                data = dtype_converter(data, astype_backup, source_format=astype)
 
             data = self._to_buffer(data)
             with self.get(self._cache_info_size + bstart, 0) as file:
@@ -1068,8 +1068,8 @@ class AudioWrap:
 
         dtype = fx.get_preferred_datatype()
 
-        input_gain = convert_array_type(db2amp(input_gain_db), dtype)
-        output_gain = convert_array_type(db2amp(output_gain_db), dtype)
+        input_gain = dtype_converter(db2amp(input_gain_db), dtype)
+        output_gain = dtype_converter(db2amp(output_gain_db), dtype)
 
 
         with other.unpack(

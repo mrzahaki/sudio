@@ -190,6 +190,17 @@ cython_extensions = [
     include_dirs=[numpy_include], 
     extra_compile_args=['-O3'],
     language='c'
+    ),
+    Extension(
+    "sudio.generator.tone.sinewave",
+    ["sudio/generator/tone/sinewave.pyx"],
+    extra_link_args=extra_link_args,
+    include_dirs=[
+        numpy_include,
+        "sudio/generator/tone"
+        ], 
+    extra_compile_args=['-O3'],
+    language='c++'
     )
 ]
 

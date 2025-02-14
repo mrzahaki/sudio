@@ -22,17 +22,13 @@
 
 class AudioRecordDatabase:
     """
-    A lightweight in-memory database for managing audio records.
-
-    Provides dictionary-like access and manipulation of audio records
+    lightweight in-memory database for managing audio records. provides dictionary-like access and manipulation of audio records
     with simple key (name) based storage and retrieval.
     """
 
     def __init__(self):
         """
         Initialize an empty audio record database.
-
-        Creates an empty dictionary to store audio records with names as keys.
         """
         self.records = {}
 
@@ -55,11 +51,6 @@ class AudioRecordDatabase:
         -----
             
             name (str): Name of the audio record to retrieve.
-
-        Returns:
-        --------
-
-            The audio record if found, None otherwise.
         """
 
         return self.records.get(name)
@@ -96,10 +87,6 @@ class AudioRecordDatabase:
 
             name (str): Name of the record to retrieve.
 
-        Returns:
-        --------
-
-            The audio record corresponding to the name.
         """
         return self.get_record(name)
 

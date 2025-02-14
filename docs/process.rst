@@ -49,6 +49,11 @@ Process Module
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: sudio.process.fx.normalize
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. automodule:: sudio.process.fx.fade_envelope
    :members:
    :undoc-members:

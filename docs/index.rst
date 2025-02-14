@@ -114,6 +114,7 @@ Sudio is released under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3. See the
    utils
    rateshift
    process
+   generator
    Source code <https://github.com/mrzahaki/sudio>
 
 

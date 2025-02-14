@@ -68,7 +68,12 @@ PYBIND11_MODULE(_rateshift, m) {
         .def("reset", &rateshift::CallbackResampler::reset,
              "Reset the internal state of the resampler.");
 
-    m.def("resample", [](py::array_t<float, py::array::c_style | py::array::forcecast> input, double sr_ratio, rateshift::ConverterType converter_type) {
+    m.def("resample", [](
+        py::array_t<float, py::array::c_style | py::array::forcecast> input, 
+        double sr_ratio, 
+        rateshift::ConverterType converter_type
+        ) {
+            
         py::buffer_info buf = input.request();
         size_t channels = (buf.ndim < 2) ? 1 : buf.shape[0];
         size_t samples = (buf.ndim < 2) ? buf.shape[0] : buf.shape[1];

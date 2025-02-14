@@ -20,7 +20,7 @@
 import numpy as np
 from sudio.process.fx import FX
 from sudio.io import SampleFormat
-from sudio.process.fx._fade_envelope import generate_envelope, prepare_envelope
+from sudio.process.fx._fade_envelope import generate_envelope, prepare_envelope_db
 from sudio.process.fx._fade_envelope import FadePreset as FP
 from enum import Enum
 from typing import Union
@@ -157,7 +157,7 @@ class FadeEnvelope(FX):
         """
         if isinstance(preset, (np.ndarray, list, tuple)):
             
-            envelope = prepare_envelope(
+            envelope = prepare_envelope_db(
             data.shape[-1], 
             np.array(preset, dtype=np.double), 
             **kwargs

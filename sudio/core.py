@@ -27,29 +27,30 @@ import warnings
 import gc
 import time
 import os
-from io import BufferedRandom
+from io import BufferedRandom, IOBase
 import traceback
 from pathlib import Path
 
 
-from sudio.types import StreamMode, RefreshError
-from sudio.types import PipelineProcessType
-from sudio.process.audio_wrap import AudioWrap
-from sudio.utils.strtool import generate_timestamp_name 
-from sudio.utils.timed_indexed_string import TimedIndexedString 
-from sudio.stream.stream import Stream
-from sudio.stream.streamcontrol import StreamControl
-from sudio.utils.window import multi_channel_overlap, single_channel_overlap
-from sudio.utils.window import multi_channel_windowing, single_channel_windowing
-from sudio.utils.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
-from sudio.audiosys.sync import synchronize_audio
-from sudio.audiosys.cacheman import handle_cached_record, write_to_cached_file
-from sudio.pipeline import Pipeline
-from sudio.metadata import AudioRecordDatabase, AudioMetadata
-from sudio.io import SampleFormat, codec, write_to_default_output, AudioStream
-from sudio.io import AudioDeviceInfo, get_sample_size, FileFormat
-from sudio.io._webio import WebAudioIO
-
+from .types import StreamMode, RefreshError
+from .types import PipelineProcessType
+from .process.audio_wrap import AudioWrap
+from .stream.stream import Stream
+from .stream.streamcontrol import StreamControl
+from .utils.strtool import generate_timestamp_name 
+from .utils.timed_indexed_string import TimedIndexedString 
+from .utils.window import multi_channel_overlap, single_channel_overlap
+from .utils.window import multi_channel_windowing, single_channel_windowing
+from .utils.channel import shuffle3d_channels, shuffle2d_channels, get_mute_mode_data, map_channels
+from .utils.functional import type_check, filter_kwargs as fw, exclude_kwargs as ekw
+from .utils.typeconversion import dtype_descriptor
+from .audiosys import synchronize_audio, handle_cached_record, write_to_cached_file
+from .pipeline import Pipeline
+from .metadata import AudioRecordDatabase, AudioMetadata
+from .io import SampleFormat, codec, write_to_default_output, AudioStream
+from .io import AudioDeviceInfo, get_sample_size, FileFormat
+from .io._webio import WebAudioIO
+from .generator import Generator
 
 
 class Master:
@@ -147,9 +148,7 @@ class Master:
         self._nperseg = nperseg
         self._data_chunk = nperseg
         self._sample_width = get_sample_size(data_format)
-        self._sample_width_format_str = (
-            '<f{}'.format(self._sample_width) if data_format == SampleFormat.FLOAT32.value else '<i{}'.format(self._sample_width)
-        )
+        self._sample_width_format_str = dtype_descriptor(data_format)
 
         self._exstream_mode = threading.Event()
         self._master_mute_mode = threading.Event()
@@ -675,13 +674,11 @@ class Master:
 
         record = AudioMetadata(name, **{
                 'size': None,
-                'noise': None,
                 'frameRate': sample_rate,
                 'o': None,
                 'sampleFormat': sample_format,
                 'nchannels': nchannels,
                 'duration': info.duration,
-                'nperseg': self._nperseg,
             }
         )
 
@@ -713,7 +710,7 @@ class Master:
         return self.load(name)
 
 
-    def add(self, record, safe_load=True):
+    def add(self, record, safe_load:bool=True):
         """
         Adds audio data to the local database from various input types.
 
@@ -776,7 +773,7 @@ class Master:
                                                                                 ch0=record.nchannels,
                                                                                 ch1=self._nchannels))
             if type(record.o) is not BufferedRandom:
-                if record.name in self._local_database.index():
+                if (not record.name.strip()) or (record.name in self._local_database.index()):
                     record.name = generate_timestamp_name()
 
                 if safe_load:
@@ -901,11 +898,9 @@ class Master:
             name, 
             **{
                 'size': sample.nbytes,
-                'noise': None,
                 'frameRate': self._sample_rate,
                 'nchannels': self._nchannels,
                 'sampleFormat': self._sample_format,
-                'nperseg': self._nperseg,
                 'duration': record_duration,
             }
         )
@@ -955,12 +950,12 @@ class Master:
                                                                             ch0=rec['nchannels'],
                                                                             ch1=self._nchannels))
         if safe_load:
-            rec['o'] = file.read()
+            rec.o = file.read()
             rec = self._sync_record(rec)
-            rec['o'] = file
+            rec.o = file
 
-        if file_size > rec['size']:
-            file.seek(rec['size'], 0)
+        if file_size > rec.size:
+            file.seek(rec.size, 0)
         else:
             file.seek(Master.CACHE_INFO_SIZE, 0)
 
@@ -977,7 +972,7 @@ class Master:
         :param record: The record (str, or AudioWrap) whose info is requested.
 
         :return: information about saved record in a dict format ['frameRate'  'sizeInByte' 'duration'
-            'nchannels' 'nperseg' 'name'].
+            'nchannels' 'name'].
         '''
         if isinstance(record, AudioWrap):
             name = record.name
@@ -996,7 +991,6 @@ class Master:
             'sizeInByte': rec['size'],
             'duration': rec['duration'],
             'nchannels': rec['nchannels'],
-            'nperseg': rec['nperseg'],
             'name': name,
             'sampleFormat': rec['sampleFormat'].name
         }
@@ -1118,7 +1112,7 @@ class Master:
         assert local, ValueError(f'can not found the {name} in the '
                                             f'local {ex}databases'.format(name=name, ex=ex))
         if local:
-            file = self._local_database.get_record(name)['o']
+            file = self._local_database.get_record(name).o
             if not file.closed:
                 file.close()
 
@@ -1338,7 +1332,7 @@ class Master:
                                                                               ch1=self._nchannels))
 
         elif not self._sample_rate == record.frameRate:
-            warnings.warn('Warning, frame rate must be same')
+            warnings.warn(f'Warning, frame rate must be same, use {self.__class__}')
 
         assert  type(record.o) is BufferedRandom, TypeError('The record object is not standard')
         file = record.o
@@ -1563,16 +1557,22 @@ class Master:
             if isinstance(record, str):
                 record_data = self.load(record, series=True)
             elif isinstance(record, AudioMetadata):
-                pass
+                record_data = record
             else:
                 ValueError('unknown type')
 
-        file = record_data.o
-        assert not file.closed, "cache file is inaccessible."
-        # file_pos = file.tell()
-        file.seek(0, 0)
-        data = file.read()
-        file.seek(0, 0)
+        db = record_data.o
+        if isinstance(db, IOBase):
+            assert not db.closed, "cache file is inaccessible."
+            # file_pos = file.tell()
+            db.seek(0, 0)
+            data = db.read()
+            db.seek(0, 0)
+        elif isinstance(record_data.o, bytes):
+            data = db
+            warnings.warn('use .add to sync before usage.')
+        else:
+            raise TypeError('unknown type')
 
         flg = False
         if not main_output_enable and self._echo_flag.is_set():
@@ -2067,6 +2067,124 @@ class Master:
         Returns the sample format of the master instance.
         '''
         return self._sample_format
+
+    def generate(
+            self, 
+            Gen: Generator, 
+            *args, 
+            **kwargs
+            ):
+        """
+        Generates audio using a specified Generator subclass and adds it to the database.
+
+        Creates an instance of the provided Generator class, configures it with the Master's 
+        audio parameters, and processes the generated audio through the system pipeline.
+
+        Parameters:
+        -----------
+        Gen : Generator subclass
+            Generator class to use for audio synthesis. Must inherit from `Generator`.
+        *args : tuple
+            Positional arguments forwarded to both:
+            - Generator.__init__() for configuration
+            - Generator.generate() for synthesis parameters
+        **kwargs : dict
+            Keyword arguments filtered to:
+            - Generator.__init__() for object initialization
+            - Generator.generate() for synthesis control
+            See specific Generator subclass documentation for valid parameters.
+
+        Returns:
+        --------
+        AudioWrap
+            Wrapped audio record containing metadata and access to audio data.
+
+        Raises:
+        -------
+        TypeError
+            If `Gen` is not a subclass of Generator.
+        ValueError
+            If invalid keyword arguments are provided for the Generator's methods.
+
+        Examples:
+        ---------
+        **Basic Sine Wave Generation**
+        ```python
+        master = Master()
+        audio = master.generate(SineWave, 
+                            duration=2, 
+                            base_freq=440, 
+                            amplitude=-6)
+        ```
+
+        **FM Synthesis with Harmonics**
+        ```python
+        master.generate(SineWave,
+                    [220, 880],  # Frequency components
+                    duration=5,
+                    base_freq=110,
+                    type=7,       # 7 harmonics
+                    modulation_depth=50,
+                    modulation_freq=2.5)
+        ```
+
+        **Multi-channel Phase Effects**
+        ```python
+        master.generate(SineWave,
+                    [1000, 3000],
+                    duration=3,
+                    phase_different_map=[0, [0, 20]],  # Stereo phase variation
+                    nchannels=2)
+        ```
+
+        **Dynamic Parameter Sweeps**
+        ```python
+        # Frequency sweep from 20Hz to 20kHz over 10 seconds
+        master.generate(SineWave,
+                    duration=10,
+                    base_freq=[20, 20000],
+                    amplitude_spline=True)  # Smooth amplitude transitions
+        ```
+
+        Notes:
+        ------
+        - The Master's audio parameters (sample rate, channels, etc.) are automatically
+        forwarded to the Generator
+        - Uses kwarg filtering to ensure parameters reach the correct generator methods
+        - Generated audio is immediately added to the Master's database for processing
+        """
+        if not issubclass(Gen, Generator):
+            raise TypeError('Gen must be a subclass of Generator')
+        
+        if ekw(
+            Gen.__call__, 
+            Gen.generate, 
+            cls=Gen, 
+            property='__init__', 
+            **kwargs
+            ):
+            raise ValueError('Invalid keyword arguments')
+        
+        gen = Gen(
+            *args,
+            sample_rate=self._sample_rate,
+            nchannels=self._nchannels,
+            data_nperseg=self._nperseg,
+            target_sample_format=self._sample_format,
+            **fw(
+                cls=Gen,
+                property='__init__', 
+                **kwargs
+                ),
+        )         
+
+        metadata = gen(
+            *args,
+            **fw(Gen.generate, gen.__call__, **kwargs),
+        )   
+
+        record = self.add(metadata)
+        return record
 
     @staticmethod
     def get_default_input_device_info()-> AudioDeviceInfo:

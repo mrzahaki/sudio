@@ -22,15 +22,16 @@
 import numpy as np
 from sudio.rateshift import ConverterType, resample
 from sudio.io import SampleFormat
-from sudio.io import get_sample_size
+from sudio.utils.typeconversion import dtype_descriptor, dtype_converter
 from sudio.utils.channel import shuffle2d_channels
+from sudio.io import get_sample_size
 from sudio.metadata import AudioMetadata
 
 
 def synchronize_audio(rec: AudioMetadata,
                       nchannels: int,
                       sample_rate: int,
-                      sample_format_id: int,
+                      sample_format: SampleFormat,
                       output_data='byte') -> dict:
     """
     Synchronizes and transforms audio recording parameters.
@@ -44,7 +45,7 @@ def synchronize_audio(rec: AudioMetadata,
         - rec: Audio recording metadata
         - nchannels: Desired number of audio channels
         - sample_rate: Target sample rate
-        - sample_format_id: Desired audio sample format
+        - sample_format: Desired audio sample format
         - output_data: Output data format ('byte' or 'ndarray')
 
     Returns:
@@ -53,19 +54,14 @@ def synchronize_audio(rec: AudioMetadata,
         - Modified audio recording metadata
     """
 
-    form = get_sample_size(rec.sampleFormat)
-    if rec.sampleFormat == SampleFormat.FLOAT32:
-        form = '<f{}'.format(form)
-    else:
-        form = '<i{}'.format(form)
+    form = dtype_descriptor(rec.sampleFormat)
     data = np.frombuffer(rec.o, form)
     if rec.nchannels == 1:
-        if nchannels > rec.nchannels:
+        if not nchannels == rec.nchannels:
             data = np.vstack([data for i in range(nchannels)])
             rec.nchannels = nchannels
 
     else:
-        # Safety update: Ensure all arrays have the same size
         channel_data = [data[i::rec.nchannels] for i in range(nchannels)]
         min_length = min(len(channel) for channel in channel_data)
         channel_data = [channel[:min_length] for channel in channel_data]
@@ -78,23 +74,18 @@ def synchronize_audio(rec: AudioMetadata,
         data = resample(data, scale, ConverterType.sinc_fastest)
         data.astype(dtype)
 
+    data = dtype_converter(data, sample_format, rec.sampleFormat)
+    
     if output_data.startswith('b') and rec.nchannels > 1:
         data = shuffle2d_channels(data)
 
-    rec.nchannels = nchannels
-    rec.sampleFormat = sample_format_id
-
-    form = get_sample_size(sample_format_id)
-    if sample_format_id == SampleFormat.FLOAT32:
-        form = '<f{}'.format(form)
-    else:
-        form = '<i{}'.format(form)
-
     if output_data.startswith('b'):
-        rec.o = data.astype(form).tobytes()
+        rec.o = data.tobytes()
     else:
-        rec.o = data.astype(form)
+        rec.o = data
 
+    rec.nchannels = nchannels
+    rec.sampleFormat = sample_format
     rec.size = len(rec.o)
     rec.frameRate = sample_rate
 

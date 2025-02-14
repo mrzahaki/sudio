@@ -19,12 +19,12 @@
 
 
 
-from sudio.io import SampleFormat
+from sudio.io import SampleFormat, get_sample_size
 import numpy as np
 
 
 
-def convert_array_type(arr:np.ndarray, target_format:SampleFormat, source_format:SampleFormat=SampleFormat.UNKNOWN):
+def dtype_converter(arr:np.ndarray, target_format:SampleFormat, source_format:SampleFormat=SampleFormat.UNKNOWN):
     """
     Convert the data type of a NumPy array based on the given SampleFormat.
     
@@ -72,3 +72,19 @@ def convert_array_type(arr:np.ndarray, target_format:SampleFormat, source_format
         return arr  
     else:
         raise ValueError("Unsupported sample format")
+
+
+def dtype_descriptor(sf:SampleFormat):
+    """
+    Get the NumPy data type descriptor for the given SampleFormat.
+
+    Args:
+    sf (SampleFormat): Sample format
+
+    Returns:
+    np.dtype: NumPy data type descriptor
+    """
+    width = get_sample_size(sf)
+    return '<f{}'.format(width) if sf == SampleFormat.FLOAT32.value else '<i{}'.format(width)
+
+    

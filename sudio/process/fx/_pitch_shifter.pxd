@@ -19,11 +19,11 @@
 # - GitHub: https://github.com/MrZahaki/sudio
 
 
-cimport numpy as np
+cimport numpy as _np
 
-cpdef np.ndarray pitch_shifter_cy(
-        np.ndarray input_audio, 
-        np.ndarray[double, ndim=1] envelope,
+cpdef _np.ndarray pitch_shifter_cy(
+        _np.ndarray input_audio, 
+        _np.ndarray[double, ndim=1] envelope,
         float ratio=*,
         int sample_rate=*,
         bint enable_spline=*,
@@ -40,8 +40,8 @@ cpdef np.ndarray pitch_shifter_cy(
 )
 
 
-cpdef np.ndarray _pitch_shifter_cy(
-    np.ndarray input_audio, 
+cpdef _np.ndarray _pitch_shifter_cy(
+    _np.ndarray input_audio, 
     object intp,
     int sample_rate=*,
     int frame_length =*,

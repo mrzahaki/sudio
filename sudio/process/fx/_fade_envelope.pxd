@@ -18,9 +18,9 @@
 
 # - GitHub: https://github.com/MrZahaki/sudio
 
-cimport numpy as np
+cimport numpy as _np
 
-cpdef np.ndarray[double, ndim=1]  generate_envelope(
+cpdef _np.ndarray[double, ndim=1]  generate_envelope(
     int envlen,
     FadePreset preset=*,
     object enable_spline = *,
@@ -33,9 +33,19 @@ cpdef np.ndarray[double, ndim=1]  generate_envelope(
     double sawtooth_freq = *,
 )
 
-cpdef np.ndarray[double, ndim=1] prepare_envelope(
+cpdef _np.ndarray[double, ndim=1] prepare_envelope(
     int envlen,
-    np.ndarray[double, ndim=1] envelope,
+    _np.ndarray[double, ndim=1] envelope,
+    bint enable_spline=*,
+    double spline_sigma=*,
+    double fade_max=*,
+    double fade_min=*,
+    int buffer_size=*
+)
+
+cpdef _np.ndarray[double, ndim=1] prepare_envelope_db(
+    int envlen,
+    _np.ndarray[double, ndim=1] envelope,
     bint enable_spline=*,
     double spline_sigma=*,
     double fade_max_db=*,

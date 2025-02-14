@@ -42,6 +42,8 @@ sudio/process/fx/*.c
 sudio/process/fx/*.cpp
 sudio/utils/*.c
 sudio/utils/*.cpp
+sudio/generator/tone/*.c
+sudio/generator/tone/*.cpp
 docs/_build
 docs/doxyoutput
 docs/api

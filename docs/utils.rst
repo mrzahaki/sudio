@@ -36,6 +36,11 @@ utils Module
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: sudio.utils.metadata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. automodule:: sudio.utils.typeconversion
    :members:
    :undoc-members:

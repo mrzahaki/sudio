@@ -23,8 +23,8 @@
 # distutils: language=c++
 # cython: language_level=3
 
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 cimport cython
 cimport sudio.process.fx._fade_envelope as fade_envelope
 
@@ -40,9 +40,9 @@ DEF DEFAULT_OVERLAP_MS = 12
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray tempo_cy(
-    np.ndarray input_audio,
-    np.ndarray[double, ndim=1] envelope,
+cpdef _np.ndarray tempo_cy(
+    _np.ndarray input_audio,
+    _np.ndarray[double, ndim=1] envelope,
     int sample_rate=44100,
     int sequence_ms=DEFAULT_SEQUENCE_MS,
     int seekwindow_ms=DEFAULT_SEEKWINDOW_MS, 
@@ -57,16 +57,16 @@ cpdef np.ndarray tempo_cy(
 ):
 
     
-    input_audio = np.asarray(input_audio, dtype=np.float32)
+    input_audio = _np.asarray(input_audio, dtype=_np.float32)
     if input_audio.ndim == 1:
-        input_audio = input_audio[np.newaxis, :]
+        input_audio = input_audio[_np.newaxis, :]
     
     cdef:
-        np.ndarray[double, ndim=1] tempo_values
+        _np.ndarray[double, ndim=1] tempo_values
         
     
     if len(envelope) > 1:
-       tempo_values =  fade_envelope.prepare_envelope(
+       tempo_values =  fade_envelope.prepare_envelope_db(
             envlen,
             envelope,
             enable_spline,
@@ -76,14 +76,14 @@ cpdef np.ndarray tempo_cy(
             envbuffer
         )
     else:
-        tempo_values = np.full(envlen, default_tempo, dtype=np.float64)
+        tempo_values = _np.full(envlen, default_tempo, dtype=_np.float64)
 
     intp = interp1d(
-            np.linspace(0, 1, len(tempo_values)), 
+            _np.linspace(0, 1, len(tempo_values)), 
             tempo_values
         )
 
-    cdef np.ndarray result =  _tempo_cy(
+    cdef _np.ndarray result =  _tempo_cy(
             input_audio,
             intp,
             sample_rate,
@@ -99,8 +99,8 @@ cpdef np.ndarray tempo_cy(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray _tempo_cy(
-    np.ndarray input_audio,
+cpdef _np.ndarray _tempo_cy(
+    _np.ndarray input_audio,
     object intp,
     int sample_rate=44100,
     int sequence_ms=DEFAULT_SEQUENCE_MS,
@@ -109,9 +109,9 @@ cpdef np.ndarray _tempo_cy(
 ):
 
     
-    input_audio = np.asarray(input_audio, dtype=np.float32)
+    input_audio = _np.asarray(input_audio, dtype=_np.float32)
     if input_audio.ndim == 1:
-        input_audio = input_audio[np.newaxis, :]
+        input_audio = input_audio[_np.newaxis, :]
     
     cdef:
         int channels = input_audio.shape[0]
@@ -128,8 +128,8 @@ cpdef np.ndarray _tempo_cy(
         float scale1, scale2
         float[:] signal1_view
         float[:] signal2_view
-        np.ndarray[np.float32_t, ndim=2] output_buffer = np.zeros((channels, output_frames), dtype=np.float32)
-        np.ndarray[np.float32_t, ndim=2] mid_buffer = np.zeros((channels, overlap_length), dtype=np.float32)
+        _np.ndarray[_np.float32_t, ndim=2] output_buffer = _np.zeros((channels, output_frames), dtype=_np.float32)
+        _np.ndarray[_np.float32_t, ndim=2] mid_buffer = _np.zeros((channels, overlap_length), dtype=_np.float32)
         
         double current_tempo
         double skip_fract = 0.0

@@ -18,6 +18,7 @@
 
 
 from sudio.io import SampleFormat
+from sudio.utils.typeconversion import dtype_converter
 
 class FX:
     def __init__(
@@ -145,6 +146,30 @@ class FX:
         Retrieve the bit depth or bytes per sample.
         """
         return self._sample_width
+
+    def typesafe_process(self, dt, *args, **kwargs):
+        """
+        Process audio data with automatic type conversion.
+
+        Converts the input data type to the preferred type (and normalize data for target) before processing and reverts it back after processing.
+
+        Parameters:
+        dt : any
+            The audio data to be processed.
+        *args : tuple
+            Additional positional arguments for the processing method.
+        **kwargs : dict
+            Additional keyword arguments for the processing method.
+
+        Returns:
+        any
+            The processed audio data with the original data type.
+        """
+
+        dt = dtype_converter(dt, self._preferred_datatype, self._sample_format)
+        dt = self.process(dt, *args, **kwargs)
+        dt = dtype_converter(dt, self._sample_format, self._preferred_datatype)
+        return dt
 
     def process(*args, **kwargs):
         """
