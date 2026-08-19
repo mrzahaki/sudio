@@ -154,9 +154,14 @@ Get started with `Sudio` processing in minutes using [Google Colab](https://cola
 for detailed documentation and examples, visit the [Sudio Documentation](https://mrzahaki.github.io/sudio/).
 
 
-## 💖 [Support Sudio](https://donate.webmoney.com/w/OTmd0tU8H4gRUG4eXokeQb)
+## 💖 [Support Sudio](https://nowpayments.io/donation/mrzahaki)
 
 **Audio software shouldn’t lock you in.** Sudio offers free, open-source tools for developers and creators—built to replace proprietary apps without the fees or restrictions. To stay viable, it relies on community support: code contributions, testing, donations, or simply spreading the word. If open tools matter to you, let’s keep improving them.
+
+<a href="https://nowpayments.io/donation?api_key=d3ea2e87-3333-4b87-90bc-152d8f22c723" target="_blank" rel="noreferrer noopener">
+   <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
+</a>
+
 
 ## 📄 License
 
